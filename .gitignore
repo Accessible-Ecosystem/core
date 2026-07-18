@@ -1,0 +1,8 @@
+# Lock files.
+package-lock.json
+
+# Dependency directories.
+node_modules
+
+# VSCode stuff.
+testing/flashpost
