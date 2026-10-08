@@ -233,8 +233,11 @@ class StorageManager {
   }
 
   dispose() {
+    if (typeof window !== "undefined" && window[this.scope] === this) {
+      delete window[this.scope];
+    }
+
     delete this._storage;
-    delete this;
   }
 }
 

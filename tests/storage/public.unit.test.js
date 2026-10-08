@@ -112,13 +112,14 @@ describe("StorageManager public methods", () => {
   // Test StorageManager dispose().
   describe("dispose", () => {
     // Test that dispose removes the storage object.
-    it("should remove the storage object from the instance", () => {
+    it("should remove the storage object from the instance and the global scope", () => {
       const storage = new StorageManager({ scope });
       storage.set({ data: { id: 1 } });
 
       storage.dispose();
 
       expect(storage._storage).toBeUndefined();
+      expect(window[scope]).toBeUndefined();
     });
   });
 });
