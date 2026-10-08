@@ -82,17 +82,9 @@ jobs:
       - name: Install modules
         run: npm install
 
-      - name: Publish workspaces to npm (full release)
-        if: needs.meta.outputs.is_prerelease != 'true'
-        run: npm publish --workspaces --access public
-
       - name: Publish root to npm (full release)
         if: needs.meta.outputs.is_prerelease != 'true'
         run: npm publish --access public
-
-      - name: Publish workspaces to npm (prerelease)
-        if: needs.meta.outputs.is_prerelease == 'true'
-        run: npm publish --workspaces --access public --tag "${{ needs.meta.outputs.prerelease_type }}"
 
       - name: Publish root to npm (prerelease)
         if: needs.meta.outputs.is_prerelease == 'true'
@@ -117,21 +109,9 @@ jobs:
       - name: Install modules
         run: npm install
 
-      - name: Publish workspaces to GitHub Packages (full release)
-        if: needs.meta.outputs.is_prerelease != 'true'
-        run: npm publish --workspaces --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Publish root to GitHub Packages (full release)
         if: needs.meta.outputs.is_prerelease != 'true'
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish workspaces to GitHub Packages (prerelease)
-        if: needs.meta.outputs.is_prerelease == 'true'
-        run: npm publish --workspaces --access public --tag "${{ needs.meta.outputs.prerelease_type }}"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
