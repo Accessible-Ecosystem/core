@@ -355,6 +355,7 @@ class Component {
 
       this._dispatchEvent("postinitialize", this.rootDOMElement);
     } catch (error) {
+      this._valid = false;
       console.error(error);
     }
   }
