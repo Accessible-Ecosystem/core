@@ -21,7 +21,9 @@
     ".": {
       "import": "./src/Component.js"
     },
-    "./*": "./src/*"
+    "./*": {
+      "import": "./src/*"
+    }
   },
   "scripts": {
     "prepare": "husky",
