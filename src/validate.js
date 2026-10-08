@@ -212,28 +212,47 @@ export function isValidClassList(values, { shouldThrow = true } = {}) {
 
     for (const key in values) {
       try {
-        const type = typeof values[key];
+        const value = values[key];
 
-        if (type !== "string") {
-          if (Array.isArray(values[key])) {
-            values[key].forEach((value) => {
-              if (typeof value !== "string") {
-                throw new TypeError(
-                  `${key} must be a string or an array of strings. An array containing non-strings given.`
-                );
-              }
-            });
-          } else {
+        if (value === "") {
+          continue;
+        }
+
+        if (typeof value === "string") {
+          if (/\s/.test(value)) {
             throw new TypeError(
-              `${key} must be a string or an array of strings. "${type}" given.`
+              `${key} must be a valid class token without whitespace. "${value}" given.`
             );
           }
-        } else {
-          const obj = {};
-          obj[key] = values[key];
 
-          isQuerySelector(obj);
+          continue;
         }
+
+        if (Array.isArray(value)) {
+          value.forEach((className) => {
+            if (typeof className !== "string") {
+              throw new TypeError(
+                `${key} must be a string or an array of strings. An array containing non-strings given.`
+              );
+            }
+
+            if (className === "") {
+              return;
+            }
+
+            if (/\s/.test(className)) {
+              throw new TypeError(
+                `${key} must be a valid class token without whitespace. "${className}" given.`
+              );
+            }
+          });
+
+          continue;
+        }
+
+        throw new TypeError(
+          `${key} must be a string or an array of strings. "${typeof value}" given.`
+        );
       } catch (error) {
         result.status = false;
         result.errors.push(error);

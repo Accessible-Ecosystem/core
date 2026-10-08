@@ -48,6 +48,15 @@ describe("isValidClassList", () => {
     }).toThrow(TypeError);
   });
 
+  // Test that class names are validated as class tokens, not CSS selectors.
+  it("should reject class names that contain whitespace", () => {
+    const classList = "class one";
+
+    expect(() => {
+      isValidClassList({ classList });
+    }).toThrow(TypeError);
+  });
+
   // Test passing a non-object.
   it("should return false when checking for a non-object", () => {
     const classList = "class";
