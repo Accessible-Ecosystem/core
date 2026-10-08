@@ -60,7 +60,7 @@ const config = {
     prerelease: "npm run lint && npm run test:unit",
     prechangelog: "rm -f CURRENT_RELEASE.md",
     postchangelog: "node scripts/current-release.js",
-    precommit: "git add dist/. packages/*/dist/. CURRENT_RELEASE.md",
+    precommit: "git add CURRENT_RELEASE.md",
   },
 };
 
