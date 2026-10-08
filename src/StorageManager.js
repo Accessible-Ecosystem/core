@@ -143,10 +143,10 @@ class StorageManager {
    * @return {object}  - The storage object.
    */
   get({ type = this.type, key = null } = {}) {
-    const typeCheck = isValidType("string", { type });
+    const typeCheck = isValidType("string", { type }, { shouldThrow: false });
 
     if (!typeCheck.status) {
-      throw new Error(`StorageManager (${this.scope}): ${typeCheck.message}`);
+      throw typeCheck.errors[0];
     }
 
     if (!this.storage[type]) {
@@ -156,10 +156,10 @@ class StorageManager {
     }
 
     if (key !== null) {
-      const keyCheck = isValidType("string", { key });
+      const keyCheck = isValidType("string", { key }, { shouldThrow: false });
 
       if (!keyCheck.status) {
-        throw new Error(`StorageManager (${this.scope}): ${keyCheck.message}`);
+        throw keyCheck.errors[0];
       }
 
       return this.storage[type][key];
@@ -177,22 +177,22 @@ class StorageManager {
    * @param {object}  [options.data = {}]        - The data to set.
    */
   set({ type = this.type, key = null, data = {} } = {}) {
-    const typeCheck = isValidType("string", { type });
-    const dataCheck = isValidType("object", { data });
+    const typeCheck = isValidType("string", { type }, { shouldThrow: false });
+    const dataCheck = isValidType("object", { data }, { shouldThrow: false });
 
     if (!typeCheck.status) {
-      throw new Error(`StorageManager (${this.scope}): ${typeCheck.message}`);
+      throw typeCheck.errors[0];
     }
 
     if (!dataCheck.status) {
-      throw new Error(`StorageManager (${this.scope}): ${dataCheck.message}`);
+      throw dataCheck.errors[0];
     }
 
     if (key !== null) {
-      const keyCheck = isValidType("string", { key });
+      const keyCheck = isValidType("string", { key }, { shouldThrow: false });
 
       if (!keyCheck.status) {
-        throw new Error(`StorageManager (${this.scope}): ${keyCheck.message}`);
+        throw keyCheck.errors[0];
       }
 
       if (!this._storage[type]) {
@@ -213,17 +213,17 @@ class StorageManager {
    * @param {?string} [options.key = null]       - The key to remove the value from.
    */
   clear({ type = this.type, key = null } = {}) {
-    const typeCheck = isValidType("string", { type });
+    const typeCheck = isValidType("string", { type }, { shouldThrow: false });
 
     if (!typeCheck.status) {
-      throw new Error(`StorageManager (${this.scope}): ${typeCheck.message}`);
+      throw typeCheck.errors[0];
     }
 
     if (key !== null) {
-      const keyCheck = isValidType("string", { key });
+      const keyCheck = isValidType("string", { key }, { shouldThrow: false });
 
       if (!keyCheck.status) {
-        throw new Error(`StorageManager (${this.scope}): ${keyCheck.message}`);
+        throw keyCheck.errors[0];
       }
 
       delete this.storage[type][key];
