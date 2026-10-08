@@ -190,26 +190,7 @@ class Component {
    *
    * @type {Object<CustomEvent>}
    */
-  _events = {
-    initialize: new CustomEvent(`${this.scope}ComponentInitialize`, {
-      detail: { component: this },
-    }),
-    preinitialize: new CustomEvent(`${this.scope}ComponentPreinitialize`, {
-      detail: { component: this },
-    }),
-    postinitialize: new CustomEvent(`${this.scope}ComponentPostinitialize`, {
-      detail: { component: this },
-    }),
-    validate: new CustomEvent(`${this.scope}ComponentValidate`, {
-      detail: { component: this },
-    }),
-    prevalidate: new CustomEvent(`${this.scope}ComponentPrevalidate`, {
-      detail: { component: this },
-    }),
-    postvalidate: new CustomEvent(`${this.scope}ComponentPostvalidate`, {
-      detail: { component: this },
-    }),
-  };
+  _events = {};
 
   /**
    * The prefix used for CSS custom properties and attributes.
@@ -316,6 +297,14 @@ class Component {
     // Set the prefix and key.
     this._prefix = prefix || "";
     this._key = key || "";
+
+    // Register the base component events.
+    this._registerEvent("initialize");
+    this._registerEvent("preinitialize");
+    this._registerEvent("postinitialize");
+    this._registerEvent("validate");
+    this._registerEvent("prevalidate");
+    this._registerEvent("postvalidate");
   }
 
   /**
