@@ -13,7 +13,16 @@
   "license": "GPL-3.0-or-later",
   "author": "Nick Milton",
   "type": "module",
-  "main": "index.js",
+  "main": "src/Component.js",
+  "files": [
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "import": "./src/Component.js"
+    },
+    "./*": "./src/*"
+  },
   "scripts": {
     "prepare": "husky",
     "commit": "git cz",
