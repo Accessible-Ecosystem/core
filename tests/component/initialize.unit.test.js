@@ -160,4 +160,17 @@ describe("Component", () => {
       component.initialize();
     }).toThrow();
   });
+
+  // Test that validation clears stale errors before each pass.
+  it("should reset validation errors between runs", () => {
+    const component = new Component();
+    component._dom["element"] = document.createElement("div");
+    component._rootDOMElement = "element";
+    component._errors.push(new Error("stale error"));
+
+    component._validate();
+
+    expect(component.errors).toHaveLength(0);
+    expect(component.isValid).toBeTruthy();
+  });
 });

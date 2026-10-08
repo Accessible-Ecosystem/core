@@ -57,6 +57,14 @@ describe("StorageManager getter/setters", () => {
       expect(spy).toHaveBeenCalledWith("string", { type: "custom" });
       expect(storage._type).toBe("custom");
     });
+
+    // Test that invalid storage types surface the validator error.
+    it("should throw a useful error when the storage type is not a string", () => {
+      const storage = new StorageManager({ scope, initialize: false });
+
+      expect(() => storage.get({ type: 123 })).toThrow(TypeError);
+      expect(() => storage.get({ type: 123 })).toThrow(/must be a string/i);
+    });
   });
 
   // Test StorageManager storage.

@@ -743,6 +743,9 @@ class Component {
    * @return {boolean} - The result of the validation checks.
    */
   _validate() {
+    this._errors = [];
+    this._valid = true;
+
     this._dispatchEvent("prevalidate", this.rootDOMElement);
 
     // _rootDOMElement check.
