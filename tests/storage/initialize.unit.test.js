@@ -48,4 +48,28 @@ describe("StorageManager initialization", () => {
 
     expect(storage.type).toBe("menus");
   });
+
+  // Test that an existing scoped storage is reused instead of being replaced.
+  it("should reuse an existing scoped storage when crush is disabled", () => {
+    const existing = new StorageManager({ scope, initialize: false });
+    existing.set({ type: "menus", key: "main", data: { id: 1 } });
+    window[scope] = existing;
+
+    const storage = new StorageManager({ scope });
+
+    expect(window[scope]).toBe(storage);
+    expect(storage.storage).toEqual(existing.storage);
+  });
+
+  // Test that an existing scoped storage can be replaced when crush mode is enabled.
+  it("should replace the existing scoped storage when crush is true", () => {
+    const existing = new StorageManager({ scope, initialize: false });
+    existing.set({ type: "menus", key: "main", data: { id: 1 } });
+    window[scope] = existing;
+
+    const storage = new StorageManager({ scope, crush: true });
+
+    expect(window[scope]).toBe(storage);
+    expect(storage.storage).not.toEqual(existing.storage);
+  });
 });
