@@ -114,7 +114,7 @@ class Component {
   _currentEvent = "none";
 
   /**
-   * The breakoint that the component will call media query list events.
+   * The breakpoint that the component will call media query list events.
    *
    * @protected
    *

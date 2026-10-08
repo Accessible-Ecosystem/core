@@ -6,7 +6,7 @@
 /* global Component */
 
 /**
- * Check to see if the provided elements have a specific contructor.
+ * Check to see if the provided elements have a specific constructor.
  *
  * The values must be provided inside of an object
  * so the variable name can be retrieved in case of errors.
@@ -16,14 +16,14 @@
  *
  * Will return `{ status: true }` if the check is successful.
  *
- * @param  {object}                   contructor                    - The constructor to check for.
- * @param  {object}                   elements                      - The element(s) to check.
- * @param  {object}                   [options = {}]                - Additional options.
- * @param  {boolean}                  [options.shouldThrow = true ] - Whether to throw on error or return it.
- * @return {Object<boolean, Error[]>}                               - The result of the check.
+ * @param  {object}                   constructor                  - The constructor to check for.
+ * @param  {object}                   elements                     - The element(s) to check.
+ * @param  {object}                   [options = {}]               - Additional options.
+ * @param  {boolean}                  [options.shouldThrow = true] - Whether to throw on error or return it.
+ * @return {Object<boolean, Error[]>}                              - The result of the check.
  */
 export function isValidInstance(
-  contructor,
+  constructor,
   elements,
   { shouldThrow = true } = {}
 ) {
@@ -43,10 +43,10 @@ export function isValidInstance(
 
     for (const key in elements) {
       try {
-        if (!(elements[key] instanceof contructor)) {
+        if (!(elements[key] instanceof constructor)) {
           const elementType = typeof elements[key];
           throw new TypeError(
-            `${key} must be an instance of ${contructor.name}. "${elementType}" given.`
+            `${key} must be an instance of ${constructor.name}. "${elementType}" given.`
           );
         }
       } catch (error) {
@@ -77,11 +77,11 @@ export function isValidInstance(
  *
  * Will return `{ status: true }` if the check is successful.
  *
- * @param  {string}                   type                          - The type to check for.
- * @param  {object}                   values                        - The value(s) to check.
- * @param  {object}                   [options = {}]                - Additional options.
- * @param  {boolean}                  [options.shouldThrow = true ] - Whether to throw on error or return it.
- * @return {Object<boolean, Error[]>}                               - The result of the check.
+ * @param  {string}                   type                         - The type to check for.
+ * @param  {object}                   values                       - The value(s) to check.
+ * @param  {object}                   [options = {}]               - Additional options.
+ * @param  {boolean}                  [options.shouldThrow = true] - Whether to throw on error or return it.
+ * @return {Object<boolean, Error[]>}                              - The result of the check.
  */
 export function isValidType(type, values, { shouldThrow = true } = {}) {
   const result = {
@@ -132,10 +132,10 @@ export function isValidType(type, values, { shouldThrow = true } = {}) {
  *
  * Will return `{ status: true }` if the check is successful.
  *
- * @param  {Object<string>}           values                        - The value(s) to check.
- * @param  {object}                   [options = {}]                - Additional options.
- * @param  {boolean}                  [options.shouldThrow = true ] - Whether to throw on error or return it.
- * @return {Object<boolean, Error[]>}                               - The result of the check.
+ * @param  {Object<string>}           values                       - The value(s) to check.
+ * @param  {object}                   [options = {}]               - Additional options.
+ * @param  {boolean}                  [options.shouldThrow = true] - Whether to throw on error or return it.
+ * @return {Object<boolean, Error[]>}                              - The result of the check.
  */
 export function isQuerySelector(values, { shouldThrow = true } = {}) {
   const result = {
@@ -190,10 +190,10 @@ export function isQuerySelector(values, { shouldThrow = true } = {}) {
  *
  * Will return `{ status: true }` if the check is successful.
  *
- * @param  {Object<string, string[]>} values                        - The value(s) to check.
- * @param  {object}                   [options = {}]                - Additional options.
- * @param  {boolean}                  [options.shouldThrow = true ] - Whether to throw on error or return it.
- * @return {Object<boolean, Error[]>}                               - The result of the check.
+ * @param  {Object<string, string[]>} values                       - The value(s) to check.
+ * @param  {object}                   [options = {}]               - Additional options.
+ * @param  {boolean}                  [options.shouldThrow = true] - Whether to throw on error or return it.
+ * @return {Object<boolean, Error[]>}                              - The result of the check.
  */
 export function isValidClassList(values, { shouldThrow = true } = {}) {
   const result = {
@@ -261,10 +261,10 @@ export function isValidClassList(values, { shouldThrow = true } = {}) {
  *
  * Will return `{ status: true }` if the check is successful.
  *
- * @param  {Object<string>}           values                        - The value(s) to check.
- * @param  {object}                   [options = {}]                - Additional options.
- * @param  {boolean}                  [options.shouldThrow = true ] - Whether to throw on error or return it.
- * @return {Object<boolean, Error[]>}                               - The result of the check.
+ * @param  {Object<string>}           values                       - The value(s) to check.
+ * @param  {object}                   [options = {}]               - Additional options.
+ * @param  {boolean}                  [options.shouldThrow = true] - Whether to throw on error or return it.
+ * @return {Object<boolean, Error[]>}                              - The result of the check.
  */
 export function isValidState(values, { shouldThrow = true } = {}) {
   const result = {
@@ -319,10 +319,10 @@ export function isValidState(values, { shouldThrow = true } = {}) {
  *
  * Will return `{ status: true }` if the check is successful.
  *
- * @param  {Object<string>}           values                        - The value(s) to check.
- * @param  {object}                   [options = {}]                - Additional options.
- * @param  {boolean}                  [options.shouldThrow = true ] - Whether to throw on error or return it.
- * @return {Object<boolean, Error[]>}                               - The result of the check.
+ * @param  {Object<string>}           values                       - The value(s) to check.
+ * @param  {object}                   [options = {}]               - Additional options.
+ * @param  {boolean}                  [options.shouldThrow = true] - Whether to throw on error or return it.
+ * @return {Object<boolean, Error[]>}                              - The result of the check.
  */
 export function isValidEvent(values, { shouldThrow = true } = {}) {
   const result = {
@@ -377,10 +377,10 @@ export function isValidEvent(values, { shouldThrow = true } = {}) {
  *
  * Will return `{ status: true }` if the check is successful.
  *
- * @param  {Object<string>}           values                        - The value(s) to check.
- * @param  {object}                   [options = {}]                - Additional options.
- * @param  {boolean}                  [options.shouldThrow = true ] - Whether to throw on error or return it.
- * @return {Object<boolean, Error[]>}                               - The result of the check.
+ * @param  {Object<string>}           values                       - The value(s) to check.
+ * @param  {object}                   [options = {}]               - Additional options.
+ * @param  {boolean}                  [options.shouldThrow = true] - Whether to throw on error or return it.
+ * @return {Object<boolean, Error[]>}                              - The result of the check.
  */
 export function isValidHoverType(values, { shouldThrow = true } = {}) {
   const result = {
@@ -433,11 +433,11 @@ export function isValidHoverType(values, { shouldThrow = true } = {}) {
  *
  * Will return `{ status: true }` if the check is successful.
  *
- * @param  {string}                   tagName                       - The name of the tag.
- * @param  {Object<HTMLElement>}      elements                      - The element(s) to check.
- * @param  {object}                   [options = {}]                - Additional options.
- * @param  {boolean}                  [options.shouldThrow = true ] - Whether to throw on error or return it.
- * @return {Object<boolean, Error[]>}                               - The result of the check.
+ * @param  {string}                   tagName                      - The name of the tag.
+ * @param  {Object<HTMLElement>}      elements                     - The element(s) to check.
+ * @param  {object}                   [options = {}]               - Additional options.
+ * @param  {boolean}                  [options.shouldThrow = true] - Whether to throw on error or return it.
+ * @return {Object<boolean, Error[]>}                              - The result of the check.
  */
 export function isTag(tagName, elements, { shouldThrow = true } = {}) {
   const result = {
@@ -484,11 +484,11 @@ export function isTag(tagName, elements, { shouldThrow = true } = {}) {
  *
  * Will return `{ status: true }` if the check is successful.
  *
- * @param  {string}                   eventType                     - The event type to check.
- * @param  {Component}                component                     - The component to check.
- * @param  {object}                   [options = {}]                - Additional options.
- * @param  {boolean}                  [options.shouldThrow = true ] - Whether to throw on error or return it.
- * @return {Object<boolean, Error[]>}                               - The result of the check.
+ * @param  {string}                   eventType                    - The event type to check.
+ * @param  {Component}                component                    - The component to check.
+ * @param  {object}                   [options = {}]               - Additional options.
+ * @param  {boolean}                  [options.shouldThrow = true] - Whether to throw on error or return it.
+ * @return {Object<boolean, Error[]>}                              - The result of the check.
  */
 export function isValidEventType(
   eventType,
