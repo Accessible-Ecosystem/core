@@ -3,6 +3,7 @@
     "postinitialize",
     "postvalidate",
     "preinitialize",
-    "prevalidate"
+    "prevalidate",
+    "vitest"
   ]
 }
