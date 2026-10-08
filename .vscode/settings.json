@@ -1,7 +1,9 @@
 {
   "cSpell.words": [
+    "postchangelog",
     "postinitialize",
     "postvalidate",
+    "prechangelog",
     "preinitialize",
     "prevalidate",
     "vitest"
