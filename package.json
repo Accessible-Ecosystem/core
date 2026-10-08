@@ -1,14 +1,14 @@
 {
-  "name": "@accessible-core/core",
+  "name": "@accessible-ecosystem/core",
   "version": "1.0.0",
   "description": "The core for all accessible components.",
-  "homepage": "https://github.com/Accessible-Core/core#readme",
+  "homepage": "https://github.com/Accessible-Ecosystem/core#readme",
   "bugs": {
-    "url": "https://github.com/Accessible-Core/core/issues"
+    "url": "https://github.com/Accessible-Ecosystem/core/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Accessible-Core/core.git"
+    "url": "git+https://github.com/Accessible-Ecosystem/core.git"
   },
   "license": "GPL-3.0-or-later",
   "author": "Nick Milton",

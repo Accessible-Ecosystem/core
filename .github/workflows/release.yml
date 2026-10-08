@@ -16,7 +16,7 @@ jobs:
     uses: ./.github/workflows/test.yml
 
   meta:
-    if: github.repository == 'accessible-core/core'
+    if: github.repository == 'accessible-ecosystem/core'
     needs: test
     runs-on: ubuntu-24.04
     outputs:
@@ -47,7 +47,7 @@ jobs:
           echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
 
   release_github:
-    if: github.repository == 'accessible-core/core'
+    if: github.repository == 'accessible-ecosystem/core'
     needs: meta
     runs-on: ubuntu-24.04
     environment: Release
@@ -65,7 +65,7 @@ jobs:
           body_path: CURRENT_RELEASE.md
 
   publish_npm:
-    if: github.repository == 'accessible-core/core'
+    if: github.repository == 'accessible-ecosystem/core'
     needs: [meta, release_github]
     runs-on: ubuntu-24.04
     environment: Release
@@ -99,7 +99,7 @@ jobs:
         run: npm publish --access public --tag "${{ needs.meta.outputs.prerelease_type }}"
 
   publish_github:
-    if: github.repository == 'accessible-core/core'
+    if: github.repository == 'accessible-ecosystem/core'
     needs: [meta, release_github]
     runs-on: ubuntu-24.04
     environment: Release
@@ -112,7 +112,7 @@ jobs:
         with:
           node-version: 24.x
           registry-url: "https://npm.pkg.github.com/"
-          scope: "@accessible-core"
+          scope: "@accessible-ecosystem"
 
       - name: Install modules
         run: npm install

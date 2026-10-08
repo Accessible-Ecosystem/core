@@ -218,7 +218,7 @@ class Component {
    *
    * @type {string}
    */
-  _prefix = "ac-";
+  _prefix = "ae-";
 
   /**
    * The key used to generate IDs throughout the component.
@@ -245,7 +245,7 @@ class Component {
    *
    * @type {string}
    */
-  _scope = "AccessibleCore";
+  _scope = "AccessibleEcosystem";
 
   /**
    * The key used for storage.
@@ -301,12 +301,12 @@ class Component {
    * Constructs a new component.
    *
    * @param {object}             [options = {}]                           - The options for generating the component.
-   * @param {?string}            [options.prefix = ac-]                   - The prefix used for CSS custom properties and attributes.
+   * @param {?string}            [options.prefix = ae-]                   - The prefix used for CSS custom properties and attributes.
    * @param {?string}            [options.key = null]                     - The key used to generate IDs throughout the component.
    * @param {?(string|string[])} [options.initializeClass = initializing] - The class(es) to apply when the component is initializing.
    */
   constructor({
-    prefix = "ac-",
+    prefix = "ae-",
     key = null,
     initializeClass = "initializing",
   } = {}) {
