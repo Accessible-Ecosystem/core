@@ -584,7 +584,7 @@ class Component {
   }
 
   /**
-   * The breakoint that the component will call media query list events.
+   * The breakpoint that the component will call media query list events.
    *
    * @type {string}
    *
@@ -969,7 +969,7 @@ class Component {
       );
     }
 
-    // Make sure the context element is actually an HTMLELement.
+    // Make sure the context element is actually an HTMLElement.
     isValidInstance(HTMLElement, { context });
 
     // Get the all elements matching the selector in the context.
