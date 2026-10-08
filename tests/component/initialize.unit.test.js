@@ -173,4 +173,41 @@ describe("Component", () => {
     expect(component.errors).toHaveLength(0);
     expect(component.isValid).toBeTruthy();
   });
+
+  // Test that a component can register its own custom event names.
+  it("should register custom events with the correct name and payload", () => {
+    const component = new Component({ key: "demo" });
+
+    component._registerEvent("ready", { detail: { step: 2 } });
+
+    expect(component.events.ready).toBeInstanceOf(CustomEvent);
+    expect(component.events.ready.type).toBe(
+      "accessibleEcosystemComponentReady"
+    );
+    expect(component.events.ready.detail.component).toBe(component);
+    expect(component.events.ready.detail.step).toBe(2);
+  });
+
+  // Test that listeners added to a component are tracked and can be removed.
+  it("should track and remove event listeners that are added to the component", () => {
+    const component = new Component();
+    const element = document.createElement("button");
+    const listener = vi.fn();
+
+    component._addEventListener("click", element, listener, { capture: true });
+
+    expect(component.listeners).toHaveLength(1);
+    expect(component.listeners[0]).toMatchObject({
+      type: "click",
+      element,
+      listener,
+      options: { capture: true },
+    });
+
+    component._removeEventListener("click", element, listener, {
+      capture: true,
+    });
+
+    expect(component.listeners).toHaveLength(0);
+  });
 });

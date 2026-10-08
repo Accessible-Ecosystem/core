@@ -81,4 +81,14 @@ describe("isValidType", () => {
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
+
+  // Test that the no-throw result contains the original validation error.
+  it("should return the original validation error when shouldThrow is false", () => {
+    const result = isValidType("string", { value: 1 }, { shouldThrow: false });
+
+    expect(result).toHaveProperty("status", false);
+    expect(result).toHaveProperty("errors");
+    expect(result.errors[0]).toBeInstanceOf(TypeError);
+    expect(result.errors[0].message).toContain("must be a string");
+  });
 });
