@@ -1,9 +1,13 @@
 {
   "cSpell.words": [
     "postchangelog",
+    "postcollapse",
+    "postexpand",
     "postinitialize",
     "postvalidate",
     "prechangelog",
+    "precollapse",
+    "preexpand",
     "preinitialize",
     "prevalidate",
     "vitest"
