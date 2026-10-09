@@ -20,13 +20,16 @@ import {
 import StorageManager from "./StorageManager.js";
 import { addClass, removeClass } from "./domHelpers.js";
 
+/**
+ * A generic component class that can be extended to create specific components.
+ */
 class Component {
   /**
    * The DOM elements within the component.
    *
    * @protected
    *
-   * @type {Object<HTMLElement, HTMLElement[]>}
+   * @type {Object<string, HTMLElement|HTMLElement[]>}
    */
   _dom = {};
 
@@ -53,7 +56,7 @@ class Component {
    *
    * @protected
    *
-   * @type {Object<string>}
+   * @type {Object<string, string>}
    */
   _selectors = {};
 
@@ -71,7 +74,9 @@ class Component {
    *
    * @protected
    *
-   * @type {Object<string, string[]>}
+   * @type {Object<string, string|string[]>}
+   *
+   * @property {string|string[]} initialize - The class(es) to apply when the component is initializing.
    */
   _classes = {
     initialize: "",
@@ -82,7 +87,7 @@ class Component {
    *
    * @protected
    *
-   * @type {Object<number>}
+   * @type {Object<string, number>}
    */
   _durations = {};
 
@@ -91,7 +96,7 @@ class Component {
    *
    * @protected
    *
-   * @type {Object<number>}
+   * @type {Object<string, number>}
    */
   _delays = {};
 
@@ -161,7 +166,7 @@ class Component {
    *
    * @protected
    *
-   * @type {Object<Function>}
+   * @type {Object<string, Function>}
    */
   _intervals = {};
 
@@ -170,7 +175,7 @@ class Component {
    *
    * @protected
    *
-   * @type {Object<Function>}
+   * @type {Object<string, Function>}
    */
   _timeouts = {};
 
@@ -188,7 +193,7 @@ class Component {
    *
    * @protected
    *
-   * @type {Object<CustomEvent>}
+   * @type {Object<string, CustomEvent>}
    */
   _events = {};
 
@@ -239,6 +244,10 @@ class Component {
 
   /**
    * A flag to check if the component should be stored in the StorageManager.
+   *
+   * @protected
+   *
+   * @type {boolean}
    */
   _shouldStore = true;
 
@@ -916,6 +925,8 @@ class Component {
 
   /**
    * Sets IDs throughout the component.
+   *
+   * @abstract
    */
   _setIds() {
     // Add functionality to set IDs throughout the component.
@@ -923,6 +934,8 @@ class Component {
 
   /**
    * Sets ARIA attributes throughout the component.
+   *
+   * @abstract
    */
   _setAriaAttributes() {
     // Add functionality to set attributes throughout the component.
@@ -930,6 +943,8 @@ class Component {
 
   /**
    * Sets custom props throughout the component.
+   *
+   * @abstract
    */
   _setCustomProps() {
     // Add functionality to set custom props throughout the component.
@@ -1035,6 +1050,8 @@ class Component {
    *
    * Utilizes _setDOMElementType and _resetDOMElementType.
    *
+   * @abstract
+   *
    * @protected
    */
   _setDOMElements() {
@@ -1043,6 +1060,8 @@ class Component {
 
   /**
    * Creates and initializes child elements throughout the component.
+   *
+   * @abstract
    *
    * @protected
    */
@@ -1072,6 +1091,8 @@ class Component {
   /**
    * Handles focus events through the component.
    *
+   * @abstract
+   *
    * @protected
    */
   _handleFocus() {
@@ -1080,6 +1101,8 @@ class Component {
 
   /**
    * Handles click events through the component.
+   *
+   * @abstract
    *
    * @protected
    */
@@ -1090,6 +1113,8 @@ class Component {
   /**
    * Handles hover events through the component.
    *
+   * @abstract
+   *
    * @protected
    */
   _handleHover() {
@@ -1099,6 +1124,8 @@ class Component {
   /**
    * Handles keydown events through the component.
    *
+   * @abstract
+   *
    * @protected
    */
   _handleKeydown() {
@@ -1107,6 +1134,8 @@ class Component {
 
   /**
    * Handles keyup events through the component.
+   *
+   * @abstract
    *
    * @protected
    */
