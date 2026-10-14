@@ -76,7 +76,7 @@ class Component {
    *
    * @type {Object<string, string|string[]>}
    *
-   * @property {string|string[]} initialize - The class(es) to apply when the component is initializing.
+   * @property {string|string[]} initialize - The class(es) to apply when the component is in the initialization state.
    */
   _classes = {
     initialize: "",
@@ -250,7 +250,7 @@ class Component {
    * @param {object}             [options = {}]                           - The options for generating the component.
    * @param {?string}            [options.prefix = ae-]                   - The prefix used for CSS custom properties and attributes.
    * @param {?string}            [options.key = null]                     - The key used to generate IDs throughout the component.
-   * @param {?(string|string[])} [options.initializeClass = initializing] - The class(es) to apply when the component is initializing.
+   * @param {?(string|string[])} [options.initializeClass = initializing] - The class(es) to apply when the component is in the initialization state.
    * @param {boolean}            [options.bootstrap = true]               - A flag to determine if the component should bootstrap itself.
    */
   constructor({
@@ -491,7 +491,7 @@ class Component {
   }
 
   /**
-   * The class(es) to apply when the component is initializing.
+   * The class(es) to apply when the component is in the initialization state.
    *
    * @type {string|string[]}
    *

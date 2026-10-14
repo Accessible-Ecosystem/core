@@ -50,11 +50,11 @@ class ResponsiveComponent extends Component {
    * Constructs a new component.
    *
    * @param {object}             [options = {}]                           - The options for generating the component.
-   * @param {?string}            [options.breakpoint = ""]                - The breakpoint that the component will call media query list events.
-   * @param {?string}            [options.mediaQuery = ""]                - The media query to use to trigger media query list events.
+   * @param {?string}            [options.breakpoint = ""]                - The breakpoint at which the component will call media query list events.
+   * @param {?string}            [options.mediaQuery = ""]                - An explicit media query to use to trigger media query list events.
    * @param {?string}            [options.prefix = ae-]                   - The prefix used for CSS custom properties and attributes.
    * @param {?string}            [options.key = null]                     - The key used to generate IDs throughout the component.
-   * @param {?(string|string[])} [options.initializeClass = initializing] - The class(es) to apply when the component is initializing.
+   * @param {?(string|string[])} [options.initializeClass = initializing] - The class(es) to apply when the component is in the initialization state.
    * @param {boolean}            [options.bootstrap = true]               - A flag to determine if the component should bootstrap itself.
    */
   constructor({
