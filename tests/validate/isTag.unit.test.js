@@ -115,3 +115,42 @@ describe("isTag", () => {
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
 });
+
+describe("isTag error aggregation", () => {
+  it("should collect all invalid entries while allowing valid entries", () => {
+    const result = isTag(
+      "p",
+      {
+        valid: document.createElement("p"),
+        first: document.createElement("div"),
+        second: document.createElement("div"),
+      },
+      { shouldThrow: false }
+    );
+
+    expect(result.status).toBe(false);
+    expect(result.errors).toHaveLength(2);
+    expect(result.errors.every((error) => error instanceof TypeError)).toBe(
+      true
+    );
+    expect(result.errors[0].message).toContain("first");
+    expect(result.errors[1].message).toContain("second");
+  });
+
+  it("should throw the first error when multiple entries are invalid", () => {
+    expect(() =>
+      isTag("p", {
+        first: document.createElement("div"),
+        second: document.createElement("div"),
+      })
+    ).toThrow(/^first\b/);
+  });
+});
+
+describe("isTag casing", () => {
+  it("should match tags without case sensitivity", () => {
+    expect(
+      isTag("BUTTON", { element: document.createElement("button") })
+    ).toEqual({ status: true, errors: [] });
+  });
+});

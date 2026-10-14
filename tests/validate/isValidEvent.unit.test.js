@@ -8,6 +8,7 @@ import { isValidEvent } from "../../src/validate.js";
 describe("isValidEvent", () => {
   // Test for all valid events.
   const events = ["none", "mouse", "keyboard", "character"];
+
   it.each(events)(
     "should return true when checking if %p is a valid event",
     (event) => {
@@ -21,6 +22,7 @@ describe("isValidEvent", () => {
   // Test for an invalid event.
   it("should return false when checking if an invalid event is a valid event", () => {
     const event = "invalid";
+
     expect(() => {
       isValidEvent({ event });
     }).toThrow(TypeError);
@@ -29,6 +31,7 @@ describe("isValidEvent", () => {
   // Test passing a non-object.
   it("should return false when checking for a non-object", () => {
     const event = "none";
+
     expect(() => {
       isValidEvent(event);
     }).toThrow(TypeError);
@@ -47,5 +50,28 @@ describe("isValidEvent", () => {
 
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
+  });
+});
+
+describe("isValidEvent error aggregation", () => {
+  it("should collect all invalid entries while allowing valid entries", () => {
+    const result = isValidEvent(
+      { valid: "keyboard", first: "invalid", second: "invalid" },
+      { shouldThrow: false }
+    );
+
+    expect(result.status).toBe(false);
+    expect(result.errors).toHaveLength(2);
+    expect(result.errors.every((error) => error instanceof TypeError)).toBe(
+      true
+    );
+    expect(result.errors[0].message).toContain("first");
+    expect(result.errors[1].message).toContain("second");
+  });
+
+  it("should throw the first error when multiple entries are invalid", () => {
+    expect(() => isValidEvent({ first: "invalid", second: "invalid" })).toThrow(
+      /^first\b/
+    );
   });
 });

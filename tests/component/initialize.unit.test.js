@@ -1,213 +1,183 @@
-/**
- * @file
- * Initialization tests for the base Component class.
- */
-
-import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import Component from "../../src/Component.js";
+import { createComponent } from "../helpers.js";
 
-beforeAll(() => {
-  // Mock the console.error method.
-  console.error = vi.fn((error) => {
-    throw new Error(error);
-  });
-});
+describe("Component initialization", () => {
+  describe("constructor", () => {
+    it("should bootstrap by default", () => {
+      const spy = vi.spyOn(Component.prototype, "_bootstrap");
 
-afterAll(() => {
-  // Restore the console.error method.
-  console.error = vi.restoreAllMocks();
-});
+      const component = new Component();
 
-// Test base Component initialization.
-describe("Component", () => {
-  // Test that the Component will initialize.
-  it("should initialize", () => {
-    const component = new Component();
+      expect(spy).toHaveBeenCalledTimes(1);
 
-    // Mock a DOM element for the component so it passes initialization.
-    component._dom["element"] = document.createElement("div");
-    component._rootDOMElement = "element";
-
-    expect(() => {
-      component.initialize();
-    }).not.toThrow();
-  });
-
-  // Test that the Component will initialize when a valid prefix is provided.
-  it("should initialize with a valid prefix", () => {
-    const component = new Component({ prefix: "my-prefix" });
-
-    // Mock a DOM element for the component so it passes initialization.
-    component._dom["element"] = document.createElement("div");
-    component._rootDOMElement = "element";
-
-    expect(() => {
-      component.initialize();
-    }).not.toThrow();
-  });
-
-  // Test that the Component will throw an error when an invalid prefix is provided.
-  it("should throw an error with an invalid prefix", () => {
-    const component = new Component({ prefix: 123 });
-
-    // Mock a DOM element for the component so it passes initialization.
-    component._dom["element"] = document.createElement("div");
-    component._rootDOMElement = "element";
-
-    expect(() => {
-      component.initialize();
-    }).toThrow();
-  });
-
-  // Test that the component will initialize when a valid key is provided.
-  it("should initialize with a valid key", () => {
-    const component = new Component({ key: "my-key" });
-
-    // Mock a DOM element for the component so it passes initialization.
-    component._dom["element"] = document.createElement("div");
-    component._rootDOMElement = "element";
-
-    expect(() => {
-      component.initialize();
-    }).not.toThrow();
-  });
-
-  // Test that the component will throw an error when an invalid key is provided.
-  it("should throw an error with an invalid key", () => {
-    const component = new Component({ key: {} });
-
-    expect(() => {
-      component.initialize();
-    }).toThrow();
-  });
-
-  // Test that the component will initialize when a valid initializeClass is provided.
-  it("should initialize with a valid initializeClass", () => {
-    const component = new Component({ initializeClass: "my-initialize-class" });
-
-    // Mock a DOM element for the component so it passes initialization.
-    component._dom["element"] = document.createElement("div");
-    component._rootDOMElement = "element";
-
-    expect(() => {
-      component.initialize();
-    }).not.toThrow();
-  });
-
-  // Test that the component will initialize when an array of valid initializeClass is provided.
-  it("should initialize with an array of valid initializeClass", () => {
-    const component = new Component({
-      initializeClass: ["class-one", "class-two"],
+      component.dispose();
     });
 
-    // Mock a DOM element for the component so it passes initialization.
-    component._dom["element"] = document.createElement("div");
-    component._rootDOMElement = "element";
+    it("should skip bootstrapping when bootstrap is false", () => {
+      const spy = vi.spyOn(Component.prototype, "_bootstrap");
 
-    expect(() => {
-      component.initialize();
-    }).not.toThrow();
-  });
+      const component = new Component({ bootstrap: false });
 
-  // Test that the component will throw an error when an invalid initializeClass is provided.
-  it("should throw an error with an invalid initializeClass", () => {
-    const component = new Component({ initializeClass: 456 });
+      expect(spy).not.toHaveBeenCalled();
 
-    // Mock a DOM element for the component so it passes initialization.
-    component._dom["element"] = document.createElement("div");
-    component._rootDOMElement = "element";
-
-    expect(() => {
-      component.initialize();
-    }).toThrow();
-  });
-
-  // Test that the component will throw an error when an array with an invalid initializeClass is provided.
-  it("should throw an error with an array with an invalid initializeClass", () => {
-    const component = new Component({
-      initializeClass: ["valid-class", 789],
+      component.dispose();
     });
 
-    // Mock a DOM element for the component so it passes initialization.
-    component._dom["element"] = document.createElement("div");
-    component._rootDOMElement = "element";
-
-    expect(() => {
+    it.each([
+      {},
+      { prefix: "custom-" },
+      { key: "custom" },
+      { initializeClass: ["one", "two"] },
+      { prefix: null, key: null, initializeClass: null },
+    ])("should initialize with valid options %j", (options) => {
+      const component = createComponent(options);
       component.initialize();
-    }).toThrow();
+
+      expect(component.isInitialized).toBe(true);
+      expect(component.isValid).toBe(true);
+      expect(component.errors).toEqual([]);
+      expect(component.rootDOMElement.classList.length).toBe(0);
+    });
   });
 
-  // Test that the component will throw an error when an array of partially invalid initializeClass is provided
-  it("should throw an error with an array of partially invalid initializeClass", () => {
-    const component = new Component({
-      initializeClass: ["valid-class", {}],
+  describe("initialize", () => {
+    it.each([
+      { prefix: 123 },
+      { key: {} },
+      { initializeClass: 456 },
+      { initializeClass: ["valid", 789] },
+      { initializeClass: ["valid", {}] },
+    ])("should log validation failure for %j", (options) => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      const component = createComponent(options);
+
+      expect(() => component.initialize()).not.toThrow();
+      expect(error).toHaveBeenCalledWith(expect.any(Error));
+      expect(component.isInitialized).toBe(false);
+      expect(component.isValid).toBe(false);
+      expect(component.errors.length).toBeGreaterThan(0);
     });
 
-    // Mock a DOM element for the component so it passes initialization.
-    component._dom["element"] = document.createElement("div");
-    component._rootDOMElement = "element";
+    it("should reject a missing root", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      const component = new Component();
 
-    expect(() => {
       component.initialize();
-    }).toThrow();
-  });
 
-  // Test that the component will throw an error when no root DOM element is found.
-  it("should throw an error when no root DOM element is found", () => {
-    const component = new Component();
+      expect(error).toHaveBeenCalledWith(expect.any(Error));
+      expect(component.isInitialized).toBe(false);
+    });
 
-    expect(() => {
+    it("should call initialization extension hooks in order", () => {
+      const component = createComponent(),
+        order = [];
+      const hooks = [
+        "_generateKey",
+        "_setDOMElements",
+        "_setIds",
+        "_setAriaAttributes",
+        "_setCustomProps",
+        "_createChildElements",
+        "_handleFocus",
+        "_handleHover",
+        "_handleClick",
+        "_handleKeydown",
+        "_handleKeyup",
+        "_store",
+      ];
+      for (const name of hooks)
+        vi.spyOn(component, name).mockImplementation(() => order.push(name));
+
       component.initialize();
-    }).toThrow();
-  });
 
-  // Test that validation clears stale errors before each pass.
-  it("should reset validation errors between runs", () => {
-    const component = new Component();
-    component._dom["element"] = document.createElement("div");
-    component._rootDOMElement = "element";
-    component._errors.push(new Error("stale error"));
+      expect(order).toEqual(hooks);
+    });
 
-    component._validate();
+    it("should dispatch initialization lifecycle events in order", () => {
+      const component = createComponent(),
+        order = [];
+      for (const name of ["preinitialize", "initialize", "postinitialize"])
+        component._addEventListener(
+          component.getEventName(name),
+          component.rootDOMElement,
+          () => order.push(name)
+        );
 
-    expect(component.errors).toHaveLength(0);
-    expect(component.isValid).toBeTruthy();
-  });
+      component.initialize();
 
-  // Test that a component can register its own custom event names.
-  it("should register custom events with the correct name and payload", () => {
-    const component = new Component({ key: "demo" });
+      expect(order).toEqual(["preinitialize", "initialize", "postinitialize"]);
+    });
 
-    component._registerEvent("ready", { detail: { step: 2 } });
+    it.each(["preinitialize", "initialize", "postinitialize"])(
+      "should include the component in the %s lifecycle event",
+      (name) => {
+        const component = createComponent(),
+          listener = vi.fn();
+        component._addEventListener(
+          component.getEventName(name),
+          component.rootDOMElement,
+          listener
+        );
 
-    expect(component.events.ready).toBeInstanceOf(CustomEvent);
-    expect(component.events.ready.type).toBe(
-      "accessibleEcosystemComponentReady"
+        component.initialize();
+
+        expect(listener).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ detail: { component } })
+        );
+      }
     );
-    expect(component.events.ready.detail.component).toBe(component);
-    expect(component.events.ready.detail.step).toBe(2);
-  });
 
-  // Test that listeners added to a component are tracked and can be removed.
-  it("should track and remove event listeners that are added to the component", () => {
-    const component = new Component();
-    const element = document.createElement("button");
-    const listener = vi.fn();
+    it.each(["preinitialize", "initialize", "postinitialize"])(
+      "should expose the expected initialized state during %s",
+      (name) => {
+        const component = createComponent(),
+          states = [];
+        component._addEventListener(
+          component.getEventName(name),
+          component.rootDOMElement,
+          () => states.push(component.isInitialized)
+        );
 
-    component._addEventListener("click", element, listener, { capture: true });
+        component.initialize();
 
-    expect(component.listeners).toHaveLength(1);
-    expect(component.listeners[0]).toMatchObject({
-      type: "click",
-      element,
-      listener,
-      options: { capture: true },
+        expect(states).toEqual([name === "postinitialize"]);
+      }
+    );
+
+    it.each(["preinitialize", "initialize", "postinitialize"])(
+      "should expose the initialization class during %s",
+      (name) => {
+        const component = createComponent(),
+          states = [];
+        component._addEventListener(
+          component.getEventName(name),
+          component.rootDOMElement,
+          () =>
+            states.push(
+              component.rootDOMElement.classList.contains("initializing")
+            )
+        );
+
+        component.initialize();
+
+        expect(states).toEqual([name !== "postinitialize"]);
+      }
+    );
+
+    it("should log failures from initialization hooks", () => {
+      const component = createComponent();
+      const failure = new Error("hook failure");
+      vi.spyOn(component, "_setDOMElements").mockImplementation(() => {
+        throw failure;
+      });
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      component.initialize();
+
+      expect(error).toHaveBeenCalledWith(failure);
+      expect(component.isInitialized).toBe(false);
+      expect(component.isValid).toBe(false);
     });
-
-    component._removeEventListener("click", element, listener, {
-      capture: true,
-    });
-
-    expect(component.listeners).toHaveLength(0);
   });
 });

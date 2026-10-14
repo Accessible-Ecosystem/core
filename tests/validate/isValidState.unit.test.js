@@ -8,6 +8,7 @@ import { isValidState } from "../../src/validate.js";
 describe("isValidState", () => {
   // Test for all valid states.
   const states = ["none", "self", "child"];
+
   it.each(states)(
     "should return true when checking if %p is a valid state",
     (state) => {
@@ -21,6 +22,7 @@ describe("isValidState", () => {
   // Test for an invalid state.
   it("should return false when checking if an invalid state is a valid state", () => {
     const state = "invalid";
+
     expect(() => {
       isValidState({ state });
     }).toThrow(TypeError);
@@ -29,6 +31,7 @@ describe("isValidState", () => {
   // Test passing a non-object.
   it("should return false when checking for a non-object", () => {
     const state = "none";
+
     expect(() => {
       isValidState(state);
     }).toThrow(TypeError);
@@ -47,5 +50,28 @@ describe("isValidState", () => {
 
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
+  });
+});
+
+describe("isValidState error aggregation", () => {
+  it("should collect all invalid entries while allowing valid entries", () => {
+    const result = isValidState(
+      { valid: "self", first: "invalid", second: "invalid" },
+      { shouldThrow: false }
+    );
+
+    expect(result.status).toBe(false);
+    expect(result.errors).toHaveLength(2);
+    expect(result.errors.every((error) => error instanceof TypeError)).toBe(
+      true
+    );
+    expect(result.errors[0].message).toContain("first");
+    expect(result.errors[1].message).toContain("second");
+  });
+
+  it("should throw the first error when multiple entries are invalid", () => {
+    expect(() => isValidState({ first: "invalid", second: "invalid" })).toThrow(
+      /^first\b/
+    );
   });
 });

@@ -58,22 +58,17 @@ describe("StorageManager getter/setters", () => {
       expect(storage._type).toBe("custom");
     });
 
-    // Test that invalid storage types rethrow the validation error message.
-    it("should rethrow the validation error when the storage type is invalid", () => {
-      const storage = new StorageManager({ scope, initialize: false });
-      const validationError = new TypeError(
-        "The storage type must be a string."
-      );
-      vi.spyOn(validation, "isValidType").mockReturnValue({
-        status: false,
-        errors: [validationError],
-      });
+    it.each([123, null, {}, []])(
+      "should reject invalid type %j without changing the default",
+      (type) => {
+        const storage = new StorageManager({ scope, initialize: false });
 
-      expect(() => storage.get({ type: 123 })).toThrow(validationError);
-      expect(() => storage.get({ type: 123 })).toThrow(
-        "The storage type must be a string."
-      );
-    });
+        expect(() => {
+          storage.type = type;
+        }).toThrow(TypeError);
+        expect(storage.type).toBe("_default");
+      }
+    );
   });
 
   // Test StorageManager storage.

@@ -27,6 +27,7 @@ describe("isValidClassList", () => {
   // Test an invalid single class.
   it("should return false when checking if an invalid single class is a valid class list", () => {
     const classList = 1;
+
     expect(() => {
       isValidClassList({ classList });
     }).toThrow(TypeError);
@@ -35,6 +36,7 @@ describe("isValidClassList", () => {
   // Test an invalid multiple classes.
   it("should return false when checking if invalid multiple classes are a valid class list", () => {
     const classList = [1, 2];
+
     expect(() => {
       isValidClassList({ classList });
     }).toThrow(TypeError);
@@ -43,6 +45,7 @@ describe("isValidClassList", () => {
   // Test a mixed valid and invalid classes.
   it("should return false when checking if a mixed valid and invalid classes are a valid class list", () => {
     const classList = ["class", 1];
+
     expect(() => {
       isValidClassList({ classList });
     }).toThrow(TypeError);
@@ -60,6 +63,7 @@ describe("isValidClassList", () => {
   // Test passing a non-object.
   it("should return false when checking for a non-object", () => {
     const classList = "class";
+
     expect(() => {
       isValidClassList(classList);
     }).toThrow(TypeError);
@@ -78,5 +82,41 @@ describe("isValidClassList", () => {
 
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
+  });
+});
+
+describe("isValidClassList error aggregation", () => {
+  it("should collect all invalid entries while allowing valid entries", () => {
+    const result = isValidClassList(
+      { valid: "valid", first: "invalid token", second: "invalid token" },
+      { shouldThrow: false }
+    );
+
+    expect(result.status).toBe(false);
+    expect(result.errors).toHaveLength(2);
+    expect(result.errors.every((error) => error instanceof TypeError)).toBe(
+      true
+    );
+    expect(result.errors[0].message).toContain("first");
+    expect(result.errors[1].message).toContain("second");
+  });
+
+  it("should throw the first error when multiple entries are invalid", () => {
+    expect(() =>
+      isValidClassList({ first: "invalid token", second: "invalid token" })
+    ).toThrow(/^first\b/);
+  });
+});
+
+describe("isValidClassList optional classes", () => {
+  it.each(["", [], ["", "valid"], "colon:token", "123"])(
+    "should allow class tokens %j",
+    (value) => {
+      expect(isValidClassList({ value })).toEqual({ status: true, errors: [] });
+    }
+  );
+
+  it("should reject an array as the values container", () => {
+    expect(() => isValidClassList(["valid"])).toThrow(TypeError);
   });
 });

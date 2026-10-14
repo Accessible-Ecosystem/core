@@ -49,3 +49,13 @@ describe("isValidEventType", () => {
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
 });
+
+describe("isValidEventType own properties", () => {
+  it("should reject inherited event keys", () => {
+    const component = { events: Object.create({ inherited: {} }) };
+
+    expect(
+      isValidEventType("inherited", component, { shouldThrow: false }).status
+    ).toBe(false);
+  });
+});

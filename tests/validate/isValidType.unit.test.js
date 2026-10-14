@@ -28,6 +28,7 @@ describe("isValidType", () => {
   // Test checking for a non-string.
   it("should return false when checking if a non-string is a string", () => {
     const string = 1;
+
     expect(() => {
       isValidType("string", { string });
     }).toThrow(TypeError);
@@ -37,6 +38,7 @@ describe("isValidType", () => {
   it("should return false when checking if multiple non-strings are strings", () => {
     const string1 = 1;
     const string2 = 1;
+
     expect(() => {
       isValidType("string", { string1, string2 });
     }).toThrow(TypeError);
@@ -46,6 +48,7 @@ describe("isValidType", () => {
   it("should return false when checking if a mixed string and non-string are strings", () => {
     const string1 = "string";
     const string2 = 1;
+
     expect(() => {
       isValidType("string", { string1, string2 });
     }).toThrow(TypeError);
@@ -54,6 +57,7 @@ describe("isValidType", () => {
   // Test passing a non-valid type.
   it("should return false when checking for a non-valid type", () => {
     const string = "string";
+
     expect(() => {
       isValidType(1, { string });
     }).toThrow(TypeError);
@@ -62,6 +66,7 @@ describe("isValidType", () => {
   // Test passing a non-object as the values argument.
   it("should return false when passing a non-object as the values argument", () => {
     const string = "string";
+
     expect(() => {
       isValidType("string", string);
     }).toThrow(TypeError);
@@ -90,5 +95,29 @@ describe("isValidType", () => {
     expect(result).toHaveProperty("errors");
     expect(result.errors[0]).toBeInstanceOf(TypeError);
     expect(result.errors[0].message).toContain("must be a string");
+  });
+});
+
+describe("isValidType error aggregation", () => {
+  it("should collect all invalid entries while allowing valid entries", () => {
+    const result = isValidType(
+      "string",
+      { valid: "valid", first: 123, second: 123 },
+      { shouldThrow: false }
+    );
+
+    expect(result.status).toBe(false);
+    expect(result.errors).toHaveLength(2);
+    expect(result.errors.every((error) => error instanceof TypeError)).toBe(
+      true
+    );
+    expect(result.errors[0].message).toContain("first");
+    expect(result.errors[1].message).toContain("second");
+  });
+
+  it("should throw the first error when multiple entries are invalid", () => {
+    expect(() => isValidType("string", { first: 123, second: 123 })).toThrow(
+      /^first\b/
+    );
   });
 });

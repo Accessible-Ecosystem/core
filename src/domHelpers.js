@@ -18,7 +18,8 @@ export function addClass(className, element) {
   if (typeof className === "string") {
     element.classList.add(className);
   } else {
-    element.classList.add(...className);
+    const classes = className.filter((name) => name !== "");
+    if (classes.length > 0) element.classList.add(...classes);
   }
 }
 
@@ -37,7 +38,8 @@ export function removeClass(className, element) {
   if (typeof className === "string") {
     element.classList.remove(className);
   } else {
-    element.classList.remove(...className);
+    const classes = className.filter((name) => name !== "");
+    if (classes.length > 0) element.classList.remove(...classes);
   }
 }
 
@@ -110,7 +112,7 @@ export function selectNextFocusableElement(
   const tabbableElements = selectAllFocusableElements(context, fn);
   const index = tabbableElements.indexOf(element);
 
-  return index === tabbableElements.length - 1
+  return index === -1 || index === tabbableElements.length - 1
     ? false
     : tabbableElements[index + 1];
 }
@@ -131,5 +133,5 @@ export function selectPreviousFocusableElement(
   const tabbableElements = selectAllFocusableElements(context, fn);
   const index = tabbableElements.indexOf(element);
 
-  return index === 0 ? false : tabbableElements[index - 1];
+  return index <= 0 ? false : tabbableElements[index - 1];
 }

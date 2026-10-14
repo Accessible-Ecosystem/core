@@ -86,7 +86,7 @@ describe("addClass", () => {
 
     addClass("", element);
 
-    expect(element.classList.add).not.toHaveBeenCalledWith();
+    expect(element.classList.add).not.toHaveBeenCalled();
   });
 
   // Test passing an empty array.
@@ -99,7 +99,7 @@ describe("addClass", () => {
 
     addClass([], element);
 
-    expect(element.classList.add).not.toHaveBeenCalledWith();
+    expect(element.classList.add).not.toHaveBeenCalled();
   });
 
   // Test passing an array of empty strings.
@@ -112,6 +112,16 @@ describe("addClass", () => {
 
     addClass(["", ""], element);
 
-    expect(element.classList.add).not.toHaveBeenCalledWith();
+    expect(element.classList.add).not.toHaveBeenCalled();
+  });
+
+  it("should ignore empty tokens in mixed arrays", () => {
+    const element = document.createElement("div");
+    element.classList.add("existing");
+
+    addClass(["", "existing", "valid", ""], element);
+
+    expect(element.classList.contains("existing")).toBe(true);
+    expect(element.classList.contains("valid")).toBe(true);
   });
 });
