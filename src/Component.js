@@ -119,49 +119,6 @@ class Component {
   _currentEvent = "none";
 
   /**
-   * The breakpoint that the component will call media query list events.
-   *
-   * @protected
-   *
-   * @type {string}
-   */
-  _breakpoint = "";
-
-  /**
-   * The media query to use to trigger media query list events.
-   *
-   * @type {string}
-   */
-  _mediaQueryString = "";
-
-  /**
-   * This MediaQueryList for the component.
-   *
-   * @protected
-   *
-   * @type {MediaQueryList|null}
-   */
-  _mediaQueryList = null;
-
-  /**
-   * A callback for media query list events.
-   *
-   * @protected
-   *
-   * @type {Function}
-   *
-   * @param {MediaQueryListEvent} event - The event.
-   */
-  _mediaQueryListEventCallback = (event) => {
-    // Add functionality to handle media matches.
-    if (event.matches) {
-      // Do something.
-    } else {
-      // Do something else.
-    }
-  };
-
-  /**
    * Intervals throughout the component.
    *
    * @protected
@@ -365,7 +322,6 @@ class Component {
       this._createChildElements();
 
       // Handle events.
-      this._handleMediaMatch();
       this._handleFocus();
       this._handleHover();
       this._handleClick();
@@ -609,52 +565,6 @@ class Component {
     }
 
     return check;
-  }
-
-  /**
-   * The breakpoint that the component will call media query list events.
-   *
-   * @type {string}
-   *
-   * @see _breakpoint
-   */
-  get breakpoint() {
-    return this._breakpoint;
-  }
-
-  set breakpoint(value) {
-    isValidType("string", { breakpoint: value });
-
-    if (this._breakpoint !== value) {
-      this._breakpoint = value;
-    }
-  }
-
-  /**
-   * The media query to use to trigger media query list events.
-   *
-   * @type {string}
-   *
-   * @see _mediaQueryString
-   */
-  get mediaQuery() {
-    if (this._mediaQueryString !== "") {
-      return this._mediaQueryString;
-    }
-
-    if (this._breakpoint === "") {
-      return "";
-    }
-
-    return `(width <= ${this._breakpoint})`;
-  }
-
-  set mediaQuery(value) {
-    isValidType("string", { mediaQuery: value });
-
-    if (this._mediaQueryString !== value) {
-      this._mediaQueryString = value;
-    }
   }
 
   /**
@@ -902,11 +812,11 @@ class Component {
 
     // String checks.
     const strings = {
+      _name: this._name,
+      _scope: this._scope,
       _storageKey: this._storageKey,
       key: this._key,
       prefix: this._prefix,
-      mediaQuery: this._mediaQueryString,
-      breakpoint: this._breakpoint,
     };
 
     this._protectedDOMElements.forEach((elementType) => {
@@ -918,6 +828,22 @@ class Component {
     // Handle string check failure.
     if (!stringChecks.status) {
       this._errors = [...this._errors, ...stringChecks.errors];
+      this._valid = false;
+    }
+
+    // Boolean checks.
+    const booleans = {
+      _shouldStore: this._shouldStore,
+    };
+
+    // Check the booleans.
+    const booleanChecks = isValidType("boolean", booleans, {
+      shouldThrow: false,
+    });
+
+    // Handle string check failure.
+    if (!booleanChecks.status) {
+      this._errors = [...this._errors, ...booleanChecks.errors];
       this._valid = false;
     }
 
@@ -1086,25 +1012,6 @@ class Component {
    */
   _createChildElements() {
     // Add functionality to handle creating child elements throughout the component.
-  }
-
-  /**
-   * Handles media match events throughout the component.
-   *
-   * @protected
-   */
-  _handleMediaMatch() {
-    if (this.mediaQuery === "") {
-      return;
-    }
-
-    this._mediaQueryList = window.matchMedia(this.mediaQuery);
-    this._addEventListener(
-      "change",
-      this._mediaQueryList,
-      this._mediaQueryListEventCallback
-    );
-    this._mediaQueryListEventCallback(this._mediaQueryList);
   }
 
   /**
@@ -1317,12 +1224,26 @@ class Component {
   }
 
   /**
+   * Gets the name of an event type stored in the _events object.
+   *
+   * @param  {string} type - The type of the event to get from the _events object.
+   * @return {?string}     - The event name (or null if none exists).
+   */
+  getEventName(type) {
+    if (Object.keys(this._events).includes(type)) {
+      return this._events[type].type;
+    } else {
+      return null;
+    }
+  }
+
+  /**
    * Dispatch a custom event on an element in the DOM.
    *
-   * @param {string}      eventType - The type of the event to dispatch.
-   * @param {HTMLElement} element   - The element to dispatch the event on.
+   * @param {string}      eventType                       - The type of the event to dispatch.
+   * @param {HTMLElement} [element = this.rootDOMElement] - The element to dispatch the event on.
    */
-  _dispatchEvent(eventType, element) {
+  _dispatchEvent(eventType, element = this.rootDOMElement) {
     // Make sure the event type exists.
     isValidEventType(eventType, this);
 

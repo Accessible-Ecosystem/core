@@ -4,11 +4,15 @@
     "postcollapse",
     "postexpand",
     "postinitialize",
+    "postlock",
+    "postunlock",
     "postvalidate",
     "prechangelog",
     "precollapse",
     "preexpand",
     "preinitialize",
+    "prelock",
+    "preunlock",
     "prevalidate",
     "vitest"
   ]
