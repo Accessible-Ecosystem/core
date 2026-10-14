@@ -49,3 +49,16 @@ describe("hasValidRootDOMElement", () => {
     expect(result.errors[0]).toBeInstanceOf(Error);
   });
 });
+
+describe("hasValidRootDOMElement own properties", () => {
+  it("should reject inherited DOM slots", () => {
+    const component = {
+      _dom: Object.create({ root: document.createElement("div") }),
+      _rootDOMElement: "root",
+    };
+
+    expect(
+      hasValidRootDOMElement(component, { shouldThrow: false }).status
+    ).toBe(false);
+  });
+});

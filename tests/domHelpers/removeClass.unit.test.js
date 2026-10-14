@@ -88,7 +88,7 @@ describe("removeClass", () => {
 
     removeClass("", element);
 
-    expect(element.classList.remove).not.toHaveBeenCalledWith();
+    expect(element.classList.remove).not.toHaveBeenCalled();
   });
 
   // Test passing an empty array.
@@ -101,7 +101,7 @@ describe("removeClass", () => {
 
     removeClass([], element);
 
-    expect(element.classList.remove).not.toHaveBeenCalledWith();
+    expect(element.classList.remove).not.toHaveBeenCalled();
   });
 
   // Test passing an array of empty strings.
@@ -114,6 +114,16 @@ describe("removeClass", () => {
 
     removeClass(["", ""], element);
 
-    expect(element.classList.remove).not.toHaveBeenCalledWith();
+    expect(element.classList.remove).not.toHaveBeenCalled();
+  });
+
+  it("should ignore empty tokens in mixed arrays", () => {
+    const element = document.createElement("div");
+    element.classList.add("existing");
+
+    removeClass(["", "existing", "valid", ""], element);
+
+    expect(element.classList.contains("existing")).toBe(false);
+    expect(element.classList.contains("valid")).toBe(false);
   });
 });

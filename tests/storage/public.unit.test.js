@@ -2,8 +2,10 @@
  * Tests for public methods of the StorageManager class.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import StorageManager from "../../src/StorageManager.js";
+
+import * as validation from "../../src/validate.js";
 
 const scope = "TestStorage";
 
@@ -12,6 +14,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   delete window[scope];
 });
 
@@ -19,6 +22,22 @@ afterEach(() => {
 describe("StorageManager public methods", () => {
   // Test StorageManager get().
   describe("get", () => {
+    // Test that invalid storage types rethrow the validation error message.
+    it("should rethrow the validation error when the storage type is invalid", () => {
+      const storage = new StorageManager({ scope, initialize: false });
+      const validationError = new TypeError(
+        "The storage type must be a string."
+      );
+      vi.spyOn(validation, "isValidType").mockReturnValue({
+        status: false,
+        errors: [validationError],
+      });
+
+      expect(() => storage.get({ type: 123 })).toThrow(validationError);
+      expect(() => storage.get({ type: 123 })).toThrow(
+        "The storage type must be a string."
+      );
+    });
     // Test that get returns a type's data.
     it("should return the storage for a given type", () => {
       const storage = new StorageManager({ scope, type: "menus" });
@@ -55,6 +74,7 @@ describe("StorageManager public methods", () => {
     it("should set data for a type when no key is provided", () => {
       const storage = new StorageManager({ scope });
       const data = { id: 1 };
+
       storage.set({ data });
 
       expect(storage.storage._default).toEqual(data);
@@ -64,6 +84,7 @@ describe("StorageManager public methods", () => {
     it("should set data for a key when a key is provided", () => {
       const storage = new StorageManager({ scope, type: "menus" });
       const data = { id: 1 };
+
       storage.set({ key: "main", data });
 
       expect(storage.storage.menus.main).toEqual(data);
@@ -74,6 +95,7 @@ describe("StorageManager public methods", () => {
       const storage = new StorageManager({ scope, type: "menus" });
       const mainMenu = { id: 1 };
       const sideMenu = { id: 2 };
+
       storage.set({ key: "main", data: mainMenu });
       storage.set({ key: "side", data: sideMenu });
 
@@ -112,13 +134,129 @@ describe("StorageManager public methods", () => {
   // Test StorageManager dispose().
   describe("dispose", () => {
     // Test that dispose removes the storage object.
-    it("should remove the storage object from the instance and the global scope", () => {
+    it("should remove the backing storage from the instance", () => {
       const storage = new StorageManager({ scope });
-      storage.set({ data: { id: 1 } });
 
       storage.dispose();
 
-      expect(storage._storage).toBeUndefined();
+      expect(storage.storage).toBeUndefined();
+    });
+
+    it("should remove its owned global registration", () => {
+      const storage = new StorageManager({ scope });
+
+      storage.dispose();
+
+      expect(window[scope]).toBeUndefined();
+    });
+  });
+});
+
+describe("StorageManager public validation", () => {
+  for (const method of ["get", "set", "clear"])
+    describe(method, () => {
+      it.each([{ type: 123 }, { type: null }, { key: 123 }, { key: {} }])(
+        "should reject invalid options %j without modifying data",
+        (options) => {
+          const storage = new StorageManager({ scope });
+          storage.set({ key: "main", data: { id: 1 } });
+
+          expect(() => storage[method](options)).toThrow(TypeError);
+          expect(storage.get()).toEqual({ main: { id: 1 } });
+        }
+      );
+
+      it("should operate on an explicitly requested type", () => {
+        const storage = new StorageManager({ scope });
+        storage.set({ type: "custom", key: "main", data: { id: 1 } });
+
+        if (method === "get")
+          expect(storage.get({ type: "custom", key: "main" })).toEqual({
+            id: 1,
+          });
+
+        if (method === "set") {
+          storage.set({ type: "custom", key: "main", data: { id: 2 } });
+          expect(storage.get({ type: "custom", key: "main" })).toEqual({
+            id: 2,
+          });
+        }
+        if (method === "clear") {
+          storage.clear({ type: "custom", key: "main" });
+          expect(storage.get({ type: "custom" })).toEqual({});
+        }
+      });
+
+      it("should leave the default type unchanged when an explicit type is used", () => {
+        const storage = new StorageManager({ scope });
+        storage.set({ type: "custom", key: "main", data: { id: 1 } });
+
+        storage[method]({ type: "custom", key: "main" });
+
+        expect(storage.type).toBe("_default");
+      });
+    });
+
+  describe("get", () => {
+    it("should return undefined for a missing key in an initialized type", () => {
+      const storage = new StorageManager({ scope });
+      storage.set();
+
+      expect(storage.get({ key: "missing" })).toBeUndefined();
+    });
+  });
+
+  describe("set", () => {
+    it.each([123, "invalid"])("should reject invalid data %j", (data) => {
+      const storage = new StorageManager({ scope });
+
+      expect(() => storage.set({ data })).toThrow(TypeError);
+      expect(storage.storage).toEqual({});
+    });
+
+    it("should default undefined data to an empty object", () => {
+      const storage = new StorageManager({ scope });
+
+      storage.set({ data: undefined });
+
+      expect(storage.get()).toEqual({});
+    });
+
+    it("should replace type data rather than merge it", () => {
+      const storage = new StorageManager({ scope });
+
+      storage.set({ data: { old: true } });
+      storage.set({ data: { current: true } });
+
+      expect(storage.get()).toEqual({ current: true });
+    });
+  });
+
+  describe("clear", () => {
+    it("should tolerate a missing type when clearing the whole type", () => {
+      const storage = new StorageManager({ scope });
+
+      expect(() => storage.clear()).not.toThrow();
+      expect(storage.storage).toEqual({});
+    });
+  });
+
+  describe("dispose", () => {
+    it("should preserve a newer owner of the global scope", () => {
+      const first = new StorageManager({ scope });
+      const second = new StorageManager({ scope });
+
+      first.dispose();
+
+      expect(window[scope]).toBe(second);
+    });
+
+    it("should tolerate repeated disposal", () => {
+      const storage = new StorageManager({ scope });
+
+      storage.dispose();
+
+      expect(() => storage.dispose()).not.toThrow();
       expect(window[scope]).toBeUndefined();
     });
   });

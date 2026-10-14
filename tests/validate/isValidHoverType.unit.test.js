@@ -8,6 +8,7 @@ import { isValidHoverType } from "../../src/validate.js";
 describe("isValidHoverType", () => {
   // Test for all valid hover types.
   const hoverTypes = ["off", "on", "dynamic"];
+
   it.each(hoverTypes)(
     "should return true when checking if %p is a valid hover type",
     (hoverType) => {
@@ -21,6 +22,7 @@ describe("isValidHoverType", () => {
   // Test for an invalid hover type.
   it("should return false when checking if an invalid hover type is a valid hover type", () => {
     const hoverType = "invalid";
+
     expect(() => {
       isValidHoverType({ hoverType });
     }).toThrow(TypeError);
@@ -29,6 +31,7 @@ describe("isValidHoverType", () => {
   // Test passing a non-object.
   it("should return false when checking for a non-object", () => {
     const hoverType = "off";
+
     expect(() => {
       isValidHoverType(hoverType);
     }).toThrow(TypeError);
@@ -50,5 +53,28 @@ describe("isValidHoverType", () => {
 
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
+  });
+});
+
+describe("isValidHoverType error aggregation", () => {
+  it("should collect all invalid entries while allowing valid entries", () => {
+    const result = isValidHoverType(
+      { valid: "on", first: "invalid", second: "invalid" },
+      { shouldThrow: false }
+    );
+
+    expect(result.status).toBe(false);
+    expect(result.errors).toHaveLength(2);
+    expect(result.errors.every((error) => error instanceof TypeError)).toBe(
+      true
+    );
+    expect(result.errors[0].message).toContain("first");
+    expect(result.errors[1].message).toContain("second");
+  });
+
+  it("should throw the first error when multiple entries are invalid", () => {
+    expect(() =>
+      isValidHoverType({ first: "invalid", second: "invalid" })
+    ).toThrow(/^first\b/);
   });
 });
