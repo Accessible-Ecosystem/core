@@ -20,7 +20,7 @@ afterAll(() => {
 
 // Test base Component initialization.
 describe("Component", () => {
-  // Test that the Component will initailize.
+  // Test that the Component will initialize.
   it("should initialize", () => {
     const component = new Component();
 
