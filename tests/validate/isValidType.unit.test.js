@@ -99,7 +99,7 @@ describe("isValidType", () => {
 });
 
 describe("isValidType error aggregation", () => {
-  it("should collect all invalid entries while allowing valid entries", () => {
+  it("should return errors for all invalid values", () => {
     const result = isValidType(
       "string",
       { valid: "valid", first: 123, second: 123 },

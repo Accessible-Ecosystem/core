@@ -1,3 +1,7 @@
+/**
+ * Getter/Setter tests for the CollapsibleComponent class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import { createCollapsible } from "../helpers.js";
 
@@ -103,7 +107,7 @@ describe("CollapsibleComponent getter/setters", () => {
         expect(component[name]).toBe(50);
       });
 
-      it("should restore the fallback when assigned the -1 sentinel", () => {
+      it("should use transitionDuration when set to -1", () => {
         const component = createCollapsible({ transitionDuration: 321 });
 
         component[name] = 50;
@@ -164,14 +168,14 @@ describe("CollapsibleComponent getter/setters", () => {
         expect(createCollapsible()[name]).toBe(false);
       });
 
-      it("should expose the appropriate state before a commit", () => {
+      it("should get the current state before committing", () => {
         const component = createCollapsible();
         component[field].value = true;
 
         expect(component[name]).toBe(!committed);
       });
 
-      it("should expose the updated state after a commit", () => {
+      it("should get the committed state after committing", () => {
         const component = createCollapsible();
         component[field].value = true;
         component[field].commit();
@@ -179,7 +183,7 @@ describe("CollapsibleComponent getter/setters", () => {
         expect(component[name]).toBe(true);
       });
 
-      it("should reject assignment", () => {
+      it("should throw when set manually", () => {
         const component = createCollapsible();
 
         expect(() => {

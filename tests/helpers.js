@@ -6,10 +6,10 @@ import CollapsibleComponent from "../src/CollapsibleComponent.js";
 const components = [];
 
 /**
- * Creates a bootstrapped abstract component with a real root element.
+ * Creates a component with a root DOM element and registers its base events.
  *
- * @param  {object}           [options = {}]     - Constructor options.
- * @param  {typeof Component} [Type = Component] - Component class.
+ * @param  {object}           [options = {}]     - The options for generating the component.
+ * @param  {typeof Component} [Type = Component] - The class to use when generating the component.
  * @return {Component}                           - The component.
  */
 export function createComponent(options = {}, Type = Component) {
@@ -29,7 +29,7 @@ export function createComponent(options = {}, Type = Component) {
 /**
  * Creates a responsive component.
  *
- * @param  {object}              [options = {}] - Constructor options.
+ * @param  {object}              [options = {}] - The options for generating the component.
  * @return {ResponsiveComponent}                - The component.
  */
 export function createResponsive(options = {}) {
@@ -39,7 +39,7 @@ export function createResponsive(options = {}) {
 /**
  * Creates a collapsible component with controller and controlled elements.
  *
- * @param  {object}               [options = {}] - Constructor options.
+ * @param  {object}               [options = {}] - The options for generating the component.
  * @return {CollapsibleComponent}                - The component.
  */
 export function createCollapsible(options = {}) {
@@ -54,7 +54,7 @@ export function createCollapsible(options = {}) {
 }
 
 /**
- * Stubs matchMedia with a real EventTarget for change-event tests.
+ * Stubs matchMedia with an EventTarget that can dispatch change events.
  *
  * @param  {boolean} [matches = false] - The initial match state.
  * @return {object}                    - The media query list and matchMedia mock.

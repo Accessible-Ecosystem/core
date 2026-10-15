@@ -1,5 +1,10 @@
+/**
+ * Public method tests for the CollapsibleComponent class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import { createCollapsible } from "../helpers.js";
+
 const prepareAction = (action) => {
   const component = createCollapsible({ transitionClass: "" });
   component.initialize();
@@ -10,7 +15,7 @@ const prepareAction = (action) => {
 
 describe("CollapsibleComponent public methods", () => {
   describe("expand", () => {
-    it("should update aria-expanded", () => {
+    it("should set aria-expanded to true", () => {
       const component = prepareAction("expand");
 
       component.expand();
@@ -20,7 +25,7 @@ describe("CollapsibleComponent public methods", () => {
       );
     });
 
-    it("should replace opposing state classes", () => {
+    it("should replace the collapse class with the expand class", () => {
       const component = createCollapsible({
         expandClass: "expanded",
         collapseClass: "collapsed",
@@ -40,7 +45,7 @@ describe("CollapsibleComponent public methods", () => {
   });
 
   describe("collapse", () => {
-    it("should update aria-expanded", () => {
+    it("should set aria-expanded to false", () => {
       const component = prepareAction("collapse");
 
       component.collapse();
@@ -50,7 +55,7 @@ describe("CollapsibleComponent public methods", () => {
       );
     });
 
-    it("should replace opposing state classes", () => {
+    it("should replace the expand class with the collapse class", () => {
       const component = createCollapsible({
         expandClass: "expanded",
         collapseClass: "collapsed",
@@ -70,7 +75,7 @@ describe("CollapsibleComponent public methods", () => {
   });
 
   describe("lock", () => {
-    it("should replace opposing state classes", () => {
+    it("should replace the unlocked class with the locked class", () => {
       const component = createCollapsible();
       component.dom.controlled.classList.add("unlocked");
 
@@ -92,7 +97,7 @@ describe("CollapsibleComponent public methods", () => {
   });
 
   describe("unlock", () => {
-    it("should replace opposing state classes", () => {
+    it("should replace the locked class with the unlocked class", () => {
       const component = createCollapsible();
       component.dom.controlled.classList.add("locked");
 

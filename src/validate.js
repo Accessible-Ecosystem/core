@@ -11,8 +11,7 @@
  * The values must be provided inside of an object
  * so the variable name can be retrieved in case of errors.
  *
- * This is essentially just a wrapper function around checking instanceof with
- * more descriptive error message to help debugging.
+ * Uses instanceof to check each element and includes its name in error messages.
  *
  * Will return `{ status: true }` if the check is successful.
  *
@@ -72,8 +71,7 @@ export function isValidInstance(
  * The values must be provided inside of an object
  * so the variable name can be retrieved in case of errors.
  *
- * This is essentially just a wrapper function around checking typeof with
- * more descriptive error message to help debugging.
+ * Uses typeof to check each value and includes its name in error messages.
  *
  * Will return `{ status: true }` if the check is successful.
  *
@@ -271,7 +269,7 @@ export function isValidClassList(values, { shouldThrow = true } = {}) {
 }
 
 /**
- * Check to see if the provided values are valid focus states for a menu.
+ * Check to see if the provided values are valid focus states for a component.
  *
  * Available states are: `"none"`, `"self"`, and `"child"`.
  *
@@ -329,7 +327,7 @@ export function isValidState(values, { shouldThrow = true } = {}) {
 }
 
 /**
- * Check to see if the provided values are valid event types for a menu.
+ * Check to see if the provided values are valid event types for a component.
  *
  * Available events are: `"none"`, `"mouse"`, `"keyboard"`, and `"character"`.
  *
@@ -387,7 +385,7 @@ export function isValidEvent(values, { shouldThrow = true } = {}) {
 }
 
 /**
- * Check to see if the provided values are valid hover types for a menu.
+ * Check to see if the provided values are valid hover types for a component.
  *
  * Available types are: `"off"`, `"on"`, and `"dynamic"`.
  *
@@ -542,10 +540,10 @@ export function isValidEventType(
  *
  * Will return `{ status: true }` if the check is successful.
  *
- * @param  {Component} component                  - The component to check.
- * @param  {object}    [options = {}]             - Additional options.
- * @param  {boolean}   [options.shouldThrow=true] - Whether to throw on error or return it.
- * @return {Object<boolean, Error[]>}             - The result of the check.
+ * @param  {Component}                component                  - The component to check.
+ * @param  {object}                   [options = {}]             - Additional options.
+ * @param  {boolean}                  [options.shouldThrow=true] - Whether to throw on error or return it.
+ * @return {Object<boolean, Error[]>}                            - The result of the check.
  */
 export function hasValidRootDOMElement(component, { shouldThrow = true } = {}) {
   const result = {

@@ -1,8 +1,12 @@
+/**
+ * Initialization and validation event tests for the ResponsiveComponent class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import { createResponsive } from "../helpers.js";
 
-describe("ResponsiveComponent lifecycle isolation", () => {
-  it("should ignore another component's initialization on the same element", () => {
+describe("ResponsiveComponent initialization and validation events", () => {
+  it("should ignore another component's initialize event", () => {
     const parent = createResponsive();
     const child = createResponsive();
     const handleMediaMatch = vi.spyOn(parent, "_handleMediaMatch");
@@ -12,7 +16,7 @@ describe("ResponsiveComponent lifecycle isolation", () => {
     expect(handleMediaMatch).not.toHaveBeenCalled();
   });
 
-  it("should ignore another component's validation on the same element", () => {
+  it("should ignore another component's validate event", () => {
     const parent = createResponsive();
     const child = createResponsive();
     parent._breakpoint = 12;

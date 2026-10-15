@@ -1,3 +1,7 @@
+/**
+ * Protected method tests for the Component class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import { createComponent } from "../helpers.js";
 
@@ -63,7 +67,7 @@ describe("Component protected methods", () => {
       expect(component.errors.length).toBeGreaterThan(0);
     });
 
-    it("should aggregate validation errors", () => {
+    it("should collect all validation errors", () => {
       const component = createComponent();
       component._prefix = 123;
       component._key = 456;
@@ -73,7 +77,7 @@ describe("Component protected methods", () => {
       expect(component.errors).toHaveLength(2);
     });
 
-    it("should clear stale errors on the next validation pass", () => {
+    it("should clear previous errors before validating again", () => {
       const component = createComponent();
       component._prefix = 123;
 
@@ -106,7 +110,7 @@ describe("Component protected methods", () => {
       expect(component._validate()).toBe(true);
     });
 
-    it("should accept a null optional DOM slot", () => {
+    it("should accept null for an optional DOM element", () => {
       const component = createComponent();
       component._dom.optional = null;
 
@@ -193,7 +197,7 @@ describe("Component protected methods", () => {
       );
     });
 
-    it("should select the first match for a scalar slot", () => {
+    it("should set a single DOM element to the first match", () => {
       const component = createComponent();
       const context = document.createElement("div");
       context.innerHTML = "<span></span><div><span></span></div>";
@@ -206,7 +210,7 @@ describe("Component protected methods", () => {
       expect(component.dom.child).toBe(context.firstElementChild);
     });
 
-    it("should assign null to a scalar slot when no matches exist", () => {
+    it("should set a single DOM element to null when no elements match", () => {
       const component = createComponent();
       const context = document.createElement("div");
       context.innerHTML = "<span></span><div><span></span></div>";
@@ -247,7 +251,7 @@ describe("Component protected methods", () => {
   });
 
   describe("_resetDOMElementType", () => {
-    it("should reset an array slot", () => {
+    it("should reset a DOM element array", () => {
       const component = createComponent();
       component._selectors.children = "span";
       component._dom.children = [document.createElement("span")];
@@ -257,7 +261,7 @@ describe("Component protected methods", () => {
       expect(component.dom.children).toEqual([]);
     });
 
-    it("should reset a scalar slot", () => {
+    it("should reset a single DOM element", () => {
       const component = createComponent();
       component._selectors.child = "span";
       component._dom.child = document.createElement("span");
@@ -372,13 +376,16 @@ describe("Component protected methods", () => {
       );
     });
 
-    it.each([true, false])("should honor bubbles=%s", (bubbles) => {
-      const component = createComponent();
+    it.each([true, false])(
+      "should set the event bubbles value to %s",
+      (bubbles) => {
+        const component = createComponent();
 
-      component._registerEvent("ready", { bubbles });
+        component._registerEvent("ready", { bubbles });
 
-      expect(component.events.ready.bubbles).toBe(bubbles);
-    });
+        expect(component.events.ready.bubbles).toBe(bubbles);
+      }
+    );
 
     it("should include the component in the default detail", () => {
       const component = createComponent();

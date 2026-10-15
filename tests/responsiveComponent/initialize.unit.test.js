@@ -1,3 +1,7 @@
+/**
+ * Initialization tests for the ResponsiveComponent class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import ResponsiveComponent from "../../src/ResponsiveComponent.js";
 import { createResponsive, setupMatchMedia } from "../helpers.js";
@@ -24,17 +28,17 @@ describe("ResponsiveComponent initialization", () => {
       component.dispose();
     });
 
-    it("should normalize a null breakpoint", () => {
+    it("should use an empty string when breakpoint is null", () => {
       expect(createResponsive({ breakpoint: null }).breakpoint).toBe("");
     });
 
-    it("should normalize a null media query", () => {
+    it("should use an empty string when mediaQuery is null", () => {
       expect(createResponsive({ mediaQuery: null }).mediaQuery).toBe("");
     });
   });
 
   describe("initialize", () => {
-    it("should connect media matching to initialization", () => {
+    it("should call _handleMediaMatch during initialization", () => {
       vi.useFakeTimers();
       const { list, matchMedia } = setupMatchMedia(true);
       const component = createResponsive({ breakpoint: "768px" });

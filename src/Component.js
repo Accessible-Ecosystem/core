@@ -34,7 +34,7 @@ class Component {
   _dom = {};
 
   /**
-   * The root DOM element of the component.
+   * The key used to get the root element from _dom.
    *
    * @protected
    *
@@ -83,7 +83,7 @@ class Component {
   };
 
   /**
-   * The duration times (in milliseconds) for various aspects throughout the component.
+   * The duration times (in milliseconds) for component transitions.
    *
    * @protected
    *
@@ -92,7 +92,7 @@ class Component {
   _durations = {};
 
   /**
-   * The delay times (in milliseconds) for various aspects throughout the component.
+   * The delay times (in milliseconds) for component events.
    *
    * @protected
    *
@@ -173,7 +173,7 @@ class Component {
   _key = "";
 
   /**
-   * The component name of the component.
+   * The component name.
    *
    * @protected
    *
@@ -415,7 +415,7 @@ class Component {
   }
 
   /**
-   * The duration times (in milliseconds) for various aspects throughout the component.
+   * The duration times (in milliseconds) for component transitions.
    *
    * @readonly
    *
@@ -428,7 +428,7 @@ class Component {
   }
 
   /**
-   * The delay times (in milliseconds) for various aspects throughout the component.
+   * The delay times (in milliseconds) for component events.
    *
    * @readonly
    *
@@ -484,7 +484,7 @@ class Component {
    *
    * @readonly
    *
-   * @type {Error[]}
+   * @type {Object<string, CustomEvent>}
    *
    * @see _events
    */
@@ -550,10 +550,9 @@ class Component {
   }
 
   /**
-   * A flag to check if the disclosure's focus methods should _actually_ move the focus in the DOM.
+   * A flag to check if the component's focus methods should move focus in the DOM.
    *
-   * This will be `false` unless any of the following criteria are met:
-   * - The disclosure's current event is "keyboard".
+   * This will be `true` when the component's current event is "keyboard".
    *
    * @readonly
    *
@@ -596,7 +595,7 @@ class Component {
   }
 
   /**
-   * The component name of the component.
+   * The component name.
    *
    * @readonly
    *
@@ -674,9 +673,9 @@ class Component {
   }
 
   /**
-   * Validates all aspects of the component to ensure proper functionality.
+   * Validates the component's DOM elements, selectors, classes, durations, delays, and options.
    *
-   * Keys are altered to match the arguments passed in during creation where possible.
+   * Error names match the constructor options where possible.
    *
    * @protected
    *
@@ -843,7 +842,7 @@ class Component {
       shouldThrow: false,
     });
 
-    // Handle string check failure.
+    // Handle boolean check failure.
     if (!booleanChecks.status) {
       this._errors = [...this._errors, ...booleanChecks.errors];
       this._valid = false;
@@ -921,7 +920,7 @@ class Component {
       );
     }
 
-    // Make sure the element type can actually be set through this method.
+    // Make sure the element type is not protected.
     if (
       this._rootDOMElement === elementType ||
       this._protectedDOMElements.includes(elementType)
@@ -931,10 +930,10 @@ class Component {
       );
     }
 
-    // Make sure the context element is actually an HTMLElement.
+    // Make sure the context is an HTMLElement.
     isValidInstance(HTMLElement, { context });
 
-    // Get the all elements matching the selector in the context.
+    // Get all elements matching the selector in the context.
     const domElements = Array.from(
       context.querySelectorAll(this.selectors[elementType])
     );
@@ -975,7 +974,7 @@ class Component {
       );
     }
 
-    // Make sure the element type can actually be reset through this method.
+    // Make sure the element type is not protected.
     if (
       this._rootDOMElement === elementType ||
       this._protectedDOMElements.includes(elementType)
@@ -995,7 +994,7 @@ class Component {
   /**
    * Sets all DOM elements throughout the component.
    *
-   * Utilizes _setDOMElementType and _resetDOMElementType.
+   * Uses _setDOMElementType and _resetDOMElementType.
    *
    * @abstract
    *
@@ -1093,7 +1092,7 @@ class Component {
       new StorageManager({ scope: `${this.scope}Storage` });
     }
 
-    // Store the menu
+    // Store the component.
     window[`${this.scope}Storage`].set({
       key: this.id !== "" ? this.id : this.key,
       type: this._storageKey,
@@ -1228,8 +1227,8 @@ class Component {
   /**
    * Gets the name of an event type stored in the _events object.
    *
-   * @param  {string} type - The type of the event to get from the _events object.
-   * @return {?string}     - The event name (or null if none exists).
+   * @param  {string}  type - The type of the event to get from the _events object.
+   * @return {?string}      - The event name (or null if none exists).
    */
   getEventName(type) {
     if (Object.keys(this._events).includes(type)) {
@@ -1249,7 +1248,7 @@ class Component {
     // Make sure the event type exists.
     isValidEventType(eventType, this);
 
-    // Make sure the element is actually an HTML Element.
+    // Make sure the element is an HTMLElement.
     isValidInstance(HTMLElement, { element });
 
     // Dispatch the event.
@@ -1339,8 +1338,8 @@ class Component {
   /**
    * Focus the component.
    *
-   * Sets the components's focus state to "self" and
-   * focusses the component if the component's shouldFocus
+   * Sets the component's focus state to "self" and
+   * focuses the component if the component's shouldFocus
    * value is `true`.
    */
   focus() {

@@ -57,7 +57,7 @@ describe("isValidHoverType", () => {
 });
 
 describe("isValidHoverType error aggregation", () => {
-  it("should collect all invalid entries while allowing valid entries", () => {
+  it("should return errors for all invalid values", () => {
     const result = isValidHoverType(
       { valid: "on", first: "invalid", second: "invalid" },
       { shouldThrow: false }

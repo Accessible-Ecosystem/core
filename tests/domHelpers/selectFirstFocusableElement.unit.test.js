@@ -1,5 +1,10 @@
+/**
+ * Tests for the selectFirstFocusableElement() function.
+ */
+
 import { describe, it, expect, afterEach } from "vitest";
 import { selectFirstFocusableElement } from "../../src/domHelpers.js";
+
 afterEach(() => {
   document.body.innerHTML = "";
 });
@@ -13,7 +18,7 @@ describe("selectFirstFocusableElement", () => {
     expect(selectFirstFocusableElement(context)).toBe(context.children[0]);
   });
 
-  it("should apply the supplied predicate", () => {
+  it("should apply the filter function", () => {
     const context = document.createElement("div");
     context.innerHTML =
       "<button>First</button><button>Middle</button><button>Last</button>";
@@ -32,7 +37,7 @@ describe("selectFirstFocusableElement", () => {
     );
   });
 
-  it("should return false when the predicate excludes every element", () => {
+  it("should return false when the filter excludes every element", () => {
     const context = document.createElement("div");
     context.innerHTML =
       "<button>First</button><button>Middle</button><button>Last</button>";

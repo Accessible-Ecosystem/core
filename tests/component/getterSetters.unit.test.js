@@ -1,3 +1,7 @@
+/**
+ * Getter/Setter tests for the Component class.
+ */
+
 import { describe, it, expect } from "vitest";
 import { createComponent } from "../helpers.js";
 
@@ -24,13 +28,13 @@ describe("Component getter/setters", () => {
   };
   for (const [name, field] of Object.entries(readonly))
     describe(name, () => {
-      it("should expose its backing value", () => {
+      it("should get the protected field value", () => {
         const component = createComponent();
 
         expect(component[name]).toBe(component[field]);
       });
 
-      it("should reject assignment", () => {
+      it("should throw when set manually", () => {
         const component = createComponent();
         const original = component[name];
 
@@ -62,7 +66,7 @@ describe("Component getter/setters", () => {
       expect(component.rootDOMElement).toBe(document.documentElement);
     });
 
-    it("should reject assignment", () => {
+    it("should throw when set manually", () => {
       const component = createComponent();
 
       expect(() => {
@@ -105,7 +109,7 @@ describe("Component getter/setters", () => {
     });
 
   describe("shouldFocus", () => {
-    it("should reject assignment", () => {
+    it("should throw when set manually", () => {
       const component = createComponent();
 
       expect(() => {

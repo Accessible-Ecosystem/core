@@ -12,17 +12,10 @@ import { isValidType } from "./validate.js";
  * @abstract
  */
 class ResponsiveComponent extends Component {
-  /**
-   * The component name of the component.
-   *
-   * @protected
-   *
-   * @type {string}
-   */
   _name = "ResponsiveComponent";
 
   /**
-   * The breakpoint that the component will call media query list events.
+   * The breakpoint used to generate the component's media query.
    *
    * @protected
    *
@@ -38,7 +31,7 @@ class ResponsiveComponent extends Component {
   _mediaQueryString = "";
 
   /**
-   * This MediaQueryList for the component.
+   * The MediaQueryList for the component.
    *
    * @protected
    *
@@ -50,7 +43,7 @@ class ResponsiveComponent extends Component {
    * Constructs a new component.
    *
    * @param {object}             [options = {}]                           - The options for generating the component.
-   * @param {?string}            [options.breakpoint = ""]                - The breakpoint at which the component will call media query list events.
+   * @param {?string}            [options.breakpoint = ""]                - The breakpoint used to generate the component's media query.
    * @param {?string}            [options.mediaQuery = ""]                - An explicit media query to use to trigger media query list events.
    * @param {?string}            [options.prefix = ae-]                   - The prefix used for CSS custom properties and attributes.
    * @param {?string}            [options.key = null]                     - The key used to generate IDs throughout the component.
@@ -85,7 +78,7 @@ class ResponsiveComponent extends Component {
     try {
       super._bootstrap();
 
-      // Integrate new validation functionality.
+      // Register the validation listener.
       this._addEventListener(
         this.getEventName("validate"),
         this.rootDOMElement,
@@ -110,7 +103,7 @@ class ResponsiveComponent extends Component {
         }
       );
 
-      // Integrate new initialization functionality.
+      // Register the initialization listener.
       this._addEventListener(
         this.getEventName("initialize"),
         this.rootDOMElement,
@@ -126,7 +119,7 @@ class ResponsiveComponent extends Component {
   }
 
   /**
-   * The breakpoint that the component will call media query list events.
+   * The breakpoint used to generate the component's media query.
    *
    * @type {string}
    *
@@ -183,9 +176,9 @@ class ResponsiveComponent extends Component {
   _mediaQueryListEventCallback(event) {
     // Add functionality to handle media matches.
     if (event.matches) {
-      // Do something.
+      // Handle a matching media query.
     } else {
-      // Do something else.
+      // Handle a media query that does not match.
     }
   }
 

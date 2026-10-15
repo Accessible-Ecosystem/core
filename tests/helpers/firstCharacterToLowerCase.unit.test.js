@@ -1,3 +1,7 @@
+/**
+ * Tests for the firstCharacterToLowerCase() function.
+ */
+
 import { describe, it, expect } from "vitest";
 import { firstCharacterToLowerCase } from "../../src/helpers.js";
 

@@ -54,7 +54,7 @@ describe("isValidEvent", () => {
 });
 
 describe("isValidEvent error aggregation", () => {
-  it("should collect all invalid entries while allowing valid entries", () => {
+  it("should return errors for all invalid values", () => {
     const result = isValidEvent(
       { valid: "keyboard", first: "invalid", second: "invalid" },
       { shouldThrow: false }

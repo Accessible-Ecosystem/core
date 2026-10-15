@@ -37,7 +37,7 @@ class StorageManager {
   _storage = {};
 
   /**
-   * Whether to crush the storage instance if it already exists.
+   * A flag to replace existing storage in the same scope.
    *
    * @protected
    *
@@ -46,12 +46,12 @@ class StorageManager {
   _crush = false;
 
   /**
-   * Creates a Storage instance.
+   * Constructs a new `StorageManager`.
    *
    * @param {object}  [options = {}]              - The options for the storage.
    * @param {string}  options.scope               - The scope of the storage.
    * @param {?string} [options.type = null]       - The type of storage.
-   * @param {boolean} [options.crush = false]     - Whether to crush the storage instance if it already exists.
+   * @param {boolean} [options.crush = false]     - A flag to replace existing storage in the same scope.
    * @param {boolean} [options.initialize = true] - Whether to initialize the storage.
    */
   constructor({ scope, type = null, crush = false, initialize = true } = {}) {
@@ -68,7 +68,7 @@ class StorageManager {
    * Initialize the storage.
    */
   initialize() {
-    // Try to make sure the storage instance won't crush other instances of StorageManager with the same scope.
+    // Reuse existing storage in the same scope unless crush is true.
     try {
       if (!this._crush && typeof window[this.scope] !== "undefined") {
         if (
@@ -140,7 +140,7 @@ class StorageManager {
    * @param  {object}  [options = {}]             - The options for getting the storage.
    * @param  {string}  [options.type = this.type] - The type of storage to get.
    * @param  {?string} [options.key = null]       - The key to get the value from.
-   * @return {object}  - The storage object.
+   * @return {object}                             - The storage object.
    */
   get({ type = this.type, key = null } = {}) {
     const typeCheck = isValidType("string", { type }, { shouldThrow: false });

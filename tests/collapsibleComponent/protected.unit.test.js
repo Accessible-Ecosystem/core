@@ -1,3 +1,7 @@
+/**
+ * Protected method tests for the CollapsibleComponent class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import { createCollapsible } from "../helpers.js";
 

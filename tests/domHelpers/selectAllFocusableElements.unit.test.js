@@ -1,5 +1,10 @@
+/**
+ * Tests for the selectAllFocusableElements() function.
+ */
+
 import { describe, it, expect, afterEach } from "vitest";
 import { selectAllFocusableElements } from "../../src/domHelpers.js";
+
 afterEach(() => {
   document.body.innerHTML = "";
 });
@@ -65,7 +70,7 @@ describe("selectAllFocusableElements", () => {
     ]);
   });
 
-  it("should apply the supplied predicate", () => {
+  it("should apply the filter function", () => {
     const context = document.createElement("div");
     context.innerHTML =
       '<button data-kind="primary">Primary</button><button>Secondary</button>';
@@ -78,7 +83,7 @@ describe("selectAllFocusableElements", () => {
     ).toEqual([context.firstElementChild]);
   });
 
-  it("should return an empty array when the predicate excludes all elements", () => {
+  it("should return an empty array when the filter excludes all elements", () => {
     const context = document.createElement("div");
     context.innerHTML = "<button>One</button>";
 

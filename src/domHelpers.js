@@ -7,10 +7,10 @@
  * Add a class or array of classes to an element.
  *
  * @param {string|string[]} className - The class or classes to add.
- * @param {HTMLElement} element - The element to add the class to.
+ * @param {HTMLElement}     element   - The element to add the class to.
  */
 export function addClass(className, element) {
-  // Gracefully handle empty strings or arrays.
+  // Skip empty strings and arrays.
   if (className === "" || className.length === 0) {
     return;
   }
@@ -27,10 +27,10 @@ export function addClass(className, element) {
  * Remove a class or array of classes from an element.
  *
  * @param {string|string[]} className - The class or classes to remove.
- * @param {HTMLElement} element - The element to remove the class from.
+ * @param {HTMLElement}     element   - The element to remove the class from.
  */
 export function removeClass(className, element) {
-  // Gracefully handle empty strings or arrays.
+  // Skip empty strings and arrays.
   if (className === "" || className.length === 0) {
     return;
   }
@@ -47,7 +47,7 @@ export function removeClass(className, element) {
  * Select all focusable elements within a given context.
  *
  * @param  {HTMLElement}                     [context = document] - The context in which to search for focusable elements.
- * @param  {?function(HTMLElement): boolean} [fn = null]          - An optional addition filter function to process out focusable elements.
+ * @param  {?function(HTMLElement): boolean} [fn = null]          - An optional function to filter focusable elements.
  * @return {HTMLElement[]}                                        - An array of focusable elements.
  */
 export function selectAllFocusableElements(context = document, fn = null) {
@@ -74,7 +74,7 @@ export function selectAllFocusableElements(context = document, fn = null) {
  * Select the first focusable element within a given context.
  *
  * @param  {HTMLElement}                     [context = document] - The context in which to search for focusable elements.
- * @param  {?function(HTMLElement): boolean} [fn = null]          - An optional addition filter function to process out focusable elements.
+ * @param  {?function(HTMLElement): boolean} [fn = null]          - An optional function to filter focusable elements.
  * @return {HTMLElement|boolean}                                  - The first focusable element or false if none found.
  */
 export function selectFirstFocusableElement(context = document, fn = null) {
@@ -87,7 +87,7 @@ export function selectFirstFocusableElement(context = document, fn = null) {
  * Select the last focusable element within a given context.
  *
  * @param  {HTMLElement}                     [context = document] - The context in which to search for focusable elements.
- * @param  {?function(HTMLElement): boolean} [fn = null]          - An optional addition filter function to process out focusable elements.
+ * @param  {?function(HTMLElement): boolean} [fn = null]          - An optional function to filter focusable elements.
  * @return {HTMLElement|boolean}                                  - The last focusable element or false if none found.
  */
 export function selectLastFocusableElement(context = document, fn = null) {
@@ -101,7 +101,7 @@ export function selectLastFocusableElement(context = document, fn = null) {
  *
  * @param  {HTMLElement}                     element              - The reference element.
  * @param  {HTMLElement}                     [context = document] - The context in which to search for focusable elements.
- * @param  {?function(HTMLElement): boolean} [fn = null]          - An optional addition filter function to process out focusable elements.
+ * @param  {?function(HTMLElement): boolean} [fn = null]          - An optional function to filter focusable elements.
  * @return {HTMLElement|boolean}                                  - The next focusable element or false if none found.
  */
 export function selectNextFocusableElement(
@@ -122,7 +122,7 @@ export function selectNextFocusableElement(
  *
  * @param  {HTMLElement}                     element              - The reference element.
  * @param  {HTMLElement}                     [context = document] - The context in which to search for focusable elements.
- * @param  {?function(HTMLElement): boolean} [fn = null]          - An optional addition filter function to process out focusable elements.
+ * @param  {?function(HTMLElement): boolean} [fn = null]          - An optional function to filter focusable elements.
  * @return {HTMLElement|boolean}                                  - The previous focusable element or false if none found.
  */
 export function selectPreviousFocusableElement(

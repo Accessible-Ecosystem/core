@@ -1,11 +1,16 @@
+/**
+ * Tests for the selectNextFocusableElement() function.
+ */
+
 import { describe, it, expect, afterEach } from "vitest";
 import { selectNextFocusableElement } from "../../src/domHelpers.js";
+
 afterEach(() => {
   document.body.innerHTML = "";
 });
 
 describe("selectNextFocusableElement", () => {
-  it("should return the adjacent match", () => {
+  it("should return the next focusable element", () => {
     const context = document.createElement("div");
     context.innerHTML =
       "<button>First</button><button>Middle</button><button>Last</button>";
@@ -15,7 +20,7 @@ describe("selectNextFocusableElement", () => {
     );
   });
 
-  it("should return false at the boundary", () => {
+  it("should return false for the last focusable element", () => {
     const context = document.createElement("div");
     context.innerHTML =
       "<button>First</button><button>Middle</button><button>Last</button>";
@@ -25,7 +30,7 @@ describe("selectNextFocusableElement", () => {
     );
   });
 
-  it("should skip elements excluded by the predicate", () => {
+  it("should skip elements excluded by the filter function", () => {
     const context = document.createElement("div");
     context.innerHTML =
       "<button>First</button><button>Middle</button><button>Last</button>";
@@ -48,7 +53,7 @@ describe("selectNextFocusableElement", () => {
     ).toBe(false);
   });
 
-  it("should return false when the target is absent", () => {
+  it("should return false when the element is outside the context", () => {
     const context = document.createElement("div");
     context.innerHTML =
       "<button>First</button><button>Middle</button><button>Last</button>";

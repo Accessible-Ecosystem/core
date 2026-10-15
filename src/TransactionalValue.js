@@ -42,7 +42,7 @@ class TransactionalValue {
   _current;
 
   /**
-   * The last committed (baseline) value.
+   * The last committed value.
    *
    * @protected
    *
@@ -51,11 +51,11 @@ class TransactionalValue {
   _committed;
 
   /**
-   * Creates a new TransactionalValue instance.
+   * Constructs a new `TransactionalValue`.
    *
    * @param {*}                       initialValue                 - The starting (and initially committed) value.
-   * @param {object}                  [options = {}]               - Options for configuring the instance.
-   * @param {function(*, *): boolean} [options.equals = Object.is] - Custom equality comparator. Defaults to `Object.is`.
+   * @param {object}                  [options = {}]               - The options for generating the value.
+   * @param {function(*, *): boolean} [options.equals = Object.is] - The function used to compare the current and committed values.
    */
   constructor(initialValue, { equals = Object.is } = {}) {
     this._equals = equals || Object.is;
@@ -66,7 +66,7 @@ class TransactionalValue {
   /**
    * Gets the current editable value.
    *
-   * @return {*} The current value.
+   * @return {*} - The current value.
    *
    * @see _current
    */
@@ -110,7 +110,7 @@ class TransactionalValue {
   }
 
   /**
-   * Commits the current value, setting it as the new baseline.
+   * Sets the committed value to the current value.
    *
    * @return {TransactionalValue} - The current instance.
    */
@@ -120,7 +120,7 @@ class TransactionalValue {
   }
 
   /**
-   * Resets the current value to the committed baseline.
+   * Sets the current value to the committed value.
    *
    * @return {TransactionalValue} - The current instance.
    */
@@ -130,7 +130,7 @@ class TransactionalValue {
   }
 
   /**
-   * Applies a functional update to the current value.
+   * Updates the current value using a function.
    *
    * @param  {function(*): *}     fn - A function that receives the previous value and returns the new one.
    * @return {TransactionalValue}    - The current instance.

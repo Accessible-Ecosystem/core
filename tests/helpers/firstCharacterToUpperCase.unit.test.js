@@ -1,3 +1,7 @@
+/**
+ * Tests for the firstCharacterToUpperCase() function.
+ */
+
 import { describe, it, expect } from "vitest";
 import { firstCharacterToUpperCase } from "../../src/helpers.js";
 

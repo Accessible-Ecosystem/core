@@ -1,3 +1,7 @@
+/**
+ * Getter/Setter tests for the ResponsiveComponent class.
+ */
+
 import { describe, it, expect } from "vitest";
 import { createResponsive } from "../helpers.js";
 

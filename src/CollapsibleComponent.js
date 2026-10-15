@@ -16,13 +16,6 @@ import { addClass, removeClass } from "./domHelpers.js";
  * @extends ResponsiveComponent
  */
 class CollapsibleComponent extends ResponsiveComponent {
-  /**
-   * The component name of the component.
-   *
-   * @protected
-   *
-   * @type {string}
-   */
   _name = "CollapsibleComponent";
 
   /**
@@ -139,7 +132,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @param {boolean}            [options.unlockInsideBreakpoint = false]    - Whether to unlock inside the breakpoint.
    * @param {boolean}            [options.unlockOutsideBreakpoint = false]   - Whether to unlock outside the breakpoint.
    * @param {boolean}            [options.locked = false]                    - The initial locked state.
-   * @param {?string}            [options.breakpoint = ""]                   - The breakpoint at which the component will call media query list events.
+   * @param {?string}            [options.breakpoint = ""]                   - The breakpoint used to generate the component's media query.
    * @param {?string}            [options.mediaQuery = ""]                   - An explicit media query to use to trigger media query list events.
    * @param {?string}            [options.prefix = ae-]                      - The prefix for CSS properties and attributes.
    * @param {?string}            [options.key = null]                        - The key for generated IDs.
@@ -183,7 +176,7 @@ class CollapsibleComponent extends ResponsiveComponent {
       bootstrap: false,
     });
 
-    // Set the dom elements.
+    // Set the DOM elements.
     this._dom.controller = controllerElement;
     this._dom.controlled = controlledElement;
 
@@ -246,7 +239,7 @@ class CollapsibleComponent extends ResponsiveComponent {
     this._registerEvent("unlock");
     this._registerEvent("postunlock");
 
-    // Integrate new validation functionality.
+    // Register the validation listener.
     this._addEventListener(
       this.getEventName("validate"),
       this.rootDOMElement,
@@ -270,7 +263,7 @@ class CollapsibleComponent extends ResponsiveComponent {
           shouldThrow: false,
         });
 
-        // Handle string check failure.
+        // Handle boolean check failure.
         if (!booleanChecks.status) {
           this._errors = [...this._errors, ...booleanChecks.errors];
           this._valid = false;
@@ -278,7 +271,7 @@ class CollapsibleComponent extends ResponsiveComponent {
       }
     );
 
-    // Integrate new initialization functionality.
+    // Register the initialization listener.
     this._addEventListener(
       this.getEventName("initialize"),
       this.rootDOMElement,
@@ -417,7 +410,7 @@ class CollapsibleComponent extends ResponsiveComponent {
   }
 
   /**
-   * The duration time (in milliseconds) for the transition from collapsed to expand states.
+   * The duration time (in milliseconds) for the transition from collapsed to expanded states.
    *
    * If expandDuration is set to -1, the transitionDuration value will be used instead.
    *
@@ -507,7 +500,7 @@ class CollapsibleComponent extends ResponsiveComponent {
   }
 
   /**
-   * The expand state of the component.
+   * The expanded state of the component.
    *
    * @readonly
    *
@@ -520,7 +513,7 @@ class CollapsibleComponent extends ResponsiveComponent {
   }
 
   /**
-   * The committed expand state of the component.
+   * The committed expanded state of the component.
    *
    * @readonly
    *
@@ -767,7 +760,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    *
    * @param {Object<boolean>} [options = {}]                            - Options for expanding the component.
    * @param {boolean}         [options.emit = this.isInitialized]       - Emit the expand events.
-   * @param {boolean}         [options.transition = this.isInitialized] - Respect the transition class.
+   * @param {boolean}         [options.transition = this.isInitialized] - A flag to use transitions when changing the expanded state.
    */
   _expand({ emit = this.isInitialized, transition = this.isInitialized } = {}) {
     if (emit) {
@@ -776,9 +769,8 @@ class CollapsibleComponent extends ResponsiveComponent {
 
     this.dom.controller.setAttribute("aria-expanded", "true");
 
-    // If we're dealing with transition classes, then we need to utilize
-    // requestAnimationFrame to add the transition class, remove the close class,
-    // add the open class, and finally remove the transition class.
+    // Use animation frames to remove the collapse class and add the expand class.
+    // Remove the transition class after the expand duration.
     if (transition && this.transitionClass !== "") {
       addClass(this.transitionClass, this.dom.controlled);
 
@@ -796,10 +788,10 @@ class CollapsibleComponent extends ResponsiveComponent {
         });
       });
     } else {
-      // Add the open class
+      // Add the expand class.
       addClass(this.expandClass, this.dom.controlled);
 
-      // Remove the close class.
+      // Remove the collapse class.
       removeClass(this.collapseClass, this.dom.controlled);
     }
 
@@ -812,8 +804,8 @@ class CollapsibleComponent extends ResponsiveComponent {
   /**
    * Applies the required attributes and classes for the component's collapsed state.
    *
-   * Sets the controller's `aria-expanded` to "false", adds the close class to
-   * the controlled element, and removes the open class from the controlled element.
+   * Sets the controller's `aria-expanded` to "false", adds the collapse class(es) to
+   * the controlled element, and removes the expand class(es) from the controlled element.
    *
    * @protected
    *
@@ -825,7 +817,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    *
    * @param {Object<boolean>} [options = {}]                            - Options for collapsing the component.
    * @param {boolean}         [options.emit = this.isInitialized]       - Emit the collapse events.
-   * @param {boolean}         [options.transition = this.isInitialized] - Respect the transition class.
+   * @param {boolean}         [options.transition = this.isInitialized] - A flag to use transitions when changing the expanded state.
    */
   _collapse({
     emit = this.isInitialized,
@@ -837,9 +829,8 @@ class CollapsibleComponent extends ResponsiveComponent {
 
     this.dom.controller.setAttribute("aria-expanded", "false");
 
-    // If we're dealing with transition classes, then we need to utilize
-    // requestAnimationFrame to add the transition class, remove the open class,
-    // add the close class, and finally remove the transition class.
+    // Use animation frames to remove the expand class and add the collapse class.
+    // Remove the transition class after the collapse duration.
     if (transition && this.transitionClass !== "") {
       addClass(this.transitionClass, this.dom.controlled);
 
@@ -857,10 +848,10 @@ class CollapsibleComponent extends ResponsiveComponent {
         });
       });
     } else {
-      // Add the close class
+      // Add the collapse class.
       addClass(this.collapseClass, this.dom.controlled);
 
-      // Remove the open class.
+      // Remove the expand class.
       removeClass(this.expandClass, this.dom.controlled);
     }
 
@@ -883,7 +874,7 @@ class CollapsibleComponent extends ResponsiveComponent {
       this._dispatchEvent("prelock");
     }
 
-    // Add the locked class
+    // Add the locked class.
     addClass(this.lockedClass, this.dom.controlled);
 
     // Remove the unlocked class.
@@ -910,7 +901,7 @@ class CollapsibleComponent extends ResponsiveComponent {
       this._dispatchEvent("preunlock");
     }
 
-    // Add the unlocked class
+    // Add the unlocked class.
     addClass(this.unlockedClass, this.dom.controlled);
 
     // Remove the locked class.
@@ -932,7 +923,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @param {Object<boolean>} [options = {}]                            - Options for expanding the component.
    * @param {boolean}         [options.force = !this.isInitialized]     - Force the expand action.
    * @param {boolean}         [options.emit = this.isInitialized]       - Emit the expand events.
-   * @param {boolean}         [options.transition = this.isInitialized] - Respect the transition class.
+   * @param {boolean}         [options.transition = this.isInitialized] - A flag to use transitions when changing the expanded state.
    * @param {boolean}         [options.preserveState = false]           - Preserve the expanded state.
    */
   expand({
@@ -967,7 +958,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @param {Object<boolean>} [options = {}]                            - Options for previewing the component.
    * @param {boolean}         [options.force = !this.isInitialized]     - Force the preview action.
    * @param {boolean}         [options.emit = this.isInitialized]       - Emit the expand events.
-   * @param {boolean}         [options.transition = this.isInitialized] - Respect the transition class.
+   * @param {boolean}         [options.transition = this.isInitialized] - A flag to use transitions when changing the expanded state.
    * @param {boolean}         [options.preserveState = false]           - Preserve the expanded state.
    */
   preview({
@@ -1002,7 +993,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @param {Object<boolean>} [options = {}]                            - Options for closing the component.
    * @param {boolean}         [options.force = !this.isInitialized]     - Force the collapse action.
    * @param {boolean}         [options.emit = this.isInitialized]       - Emit the collapse events.
-   * @param {boolean}         [options.transition = this.isInitialized] - Respect the transition class.
+   * @param {boolean}         [options.transition = this.isInitialized] - A flag to use transitions when changing the expanded state.
    * @param {boolean}         [options.preserveState = false]           - Preserve the expanded state.
    */
   collapse({
@@ -1035,7 +1026,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @param {Object<boolean>} [options = {}]                            - Options for expanding/collapsing the component.
    * @param {boolean}         [options.force = !this.isInitialized]     - Force the expand or collapse action.
    * @param {boolean}         [options.emit = this.isInitialized]       - Emit the expand/collapse events.
-   * @param {boolean}         [options.transition = this.isInitialized] - Respect the transition class.
+   * @param {boolean}         [options.transition = this.isInitialized] - A flag to use transitions when changing the expanded state.
    * @param {boolean}         [options.preserveState = false]           - Preserve the expanded state.
    */
   toggle({

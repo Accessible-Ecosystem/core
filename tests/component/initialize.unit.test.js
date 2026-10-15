@@ -1,3 +1,7 @@
+/**
+ * Initialization tests for the Component class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import Component from "../../src/Component.js";
 import { createComponent } from "../helpers.js";
@@ -69,7 +73,7 @@ describe("Component initialization", () => {
       expect(component.isInitialized).toBe(false);
     });
 
-    it("should call initialization extension hooks in order", () => {
+    it("should call initialization methods in order", () => {
       const component = createComponent(),
         order = [];
       const hooks = [

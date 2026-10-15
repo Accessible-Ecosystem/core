@@ -1,3 +1,7 @@
+/**
+ * Initialization tests for the CollapsibleComponent class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import CollapsibleComponent from "../../src/CollapsibleComponent.js";
 import { createCollapsible } from "../helpers.js";
@@ -60,7 +64,7 @@ describe("CollapsibleComponent initialization", () => {
       ["expandClass", "expandClass"],
       ["collapseClass", "collapseClass"],
       ["transitionClass", "transitionClass"],
-    ])("should normalize a null %s option", (option, property) => {
+    ])("should use an empty string when %s is null", (option, property) => {
       const component = createCollapsible({ [option]: null });
 
       expect(component[property]).toBe("");

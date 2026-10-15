@@ -1,3 +1,7 @@
+/**
+ * Public method tests for the Component class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import { createComponent } from "../helpers.js";
 

@@ -97,7 +97,7 @@ describe("isValidInstance", () => {
 });
 
 describe("isValidInstance error aggregation", () => {
-  it("should collect all invalid entries while allowing valid entries", () => {
+  it("should return errors for all invalid values", () => {
     const result = isValidInstance(
       HTMLElement,
       {

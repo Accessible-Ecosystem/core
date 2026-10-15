@@ -6,8 +6,8 @@
 /**
  * Retrieves the pressed key from an event.
  *
- * @param   {KeyboardEvent} event - The keyboard event.
- * @return  {string}              - The name of the key or an empty string.
+ * @param  {KeyboardEvent} event - The keyboard event.
+ * @return {string}              - The name of the key or an empty string.
  */
 export function keyPress(event) {
   try {

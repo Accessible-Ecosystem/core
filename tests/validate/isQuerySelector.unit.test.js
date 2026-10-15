@@ -118,7 +118,7 @@ describe("isQuerySelector", () => {
 });
 
 describe("isQuerySelector error aggregation", () => {
-  it("should collect all invalid entries while allowing valid entries", () => {
+  it("should return errors for all invalid values", () => {
     const result = isQuerySelector(
       { valid: "div", first: "[", second: "[" },
       { shouldThrow: false }

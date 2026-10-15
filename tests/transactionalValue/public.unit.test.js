@@ -65,9 +65,9 @@ describe("TransactionalValue public methods", () => {
   });
 });
 
-describe("TransactionalValue public edge cases", () => {
+describe("TransactionalValue public methods", () => {
   describe("update", () => {
-    it("should propagate callback failure without changing the current or committed value", () => {
+    it("should keep the current and committed values when the update function throws", () => {
       const value = new TransactionalValue(1);
       const failure = new Error("update failed");
 

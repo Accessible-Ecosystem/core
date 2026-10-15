@@ -1,3 +1,7 @@
+/**
+ * Protected method tests for the ResponsiveComponent class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import { createResponsive, setupMatchMedia } from "../helpers.js";
 

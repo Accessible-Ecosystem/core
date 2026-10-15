@@ -78,7 +78,7 @@ describe("StorageManager initialization", () => {
 });
 
 describe("StorageManager existing scope initialization", () => {
-  it("should share the existing backing storage by reference", () => {
+  it("should reuse the existing storage object", () => {
     const existing = new StorageManager({ scope });
     const storage = new StorageManager({ scope });
 

@@ -134,7 +134,7 @@ describe("StorageManager public methods", () => {
   // Test StorageManager dispose().
   describe("dispose", () => {
     // Test that dispose removes the storage object.
-    it("should remove the backing storage from the instance", () => {
+    it("should remove the storage object from the instance", () => {
       const storage = new StorageManager({ scope });
 
       storage.dispose();
@@ -142,7 +142,7 @@ describe("StorageManager public methods", () => {
       expect(storage.storage).toBeUndefined();
     });
 
-    it("should remove its owned global registration", () => {
+    it("should remove the instance from global storage", () => {
       const storage = new StorageManager({ scope });
 
       storage.dispose();

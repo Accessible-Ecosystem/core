@@ -1,8 +1,12 @@
+/**
+ * Initialization and validation event tests for the CollapsibleComponent class.
+ */
+
 import { describe, it, expect, vi } from "vitest";
 import { createCollapsible } from "../helpers.js";
 
-describe("CollapsibleComponent lifecycle isolation", () => {
-  it("should ignore a nested component's initialization", () => {
+describe("CollapsibleComponent initialization and validation events", () => {
+  it("should ignore a child component's initialize event", () => {
     const parent = createCollapsible();
     const child = createCollapsible();
     parent.rootDOMElement.append(child.rootDOMElement);
@@ -13,7 +17,7 @@ describe("CollapsibleComponent lifecycle isolation", () => {
     expect(collapse).not.toHaveBeenCalled();
   });
 
-  it("should ignore a nested component's validation", () => {
+  it("should ignore a child component's validate event", () => {
     const parent = createCollapsible();
     const child = createCollapsible();
     parent.rootDOMElement.append(child.rootDOMElement);
