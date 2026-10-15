@@ -180,4 +180,15 @@ describe("Component initialization", () => {
       expect(component.isValid).toBe(false);
     });
   });
+  it("should collect invalid-root validation errors before initialization", () => {
+    const component = createComponent();
+    component._dom.root = 12;
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    component.initialize();
+
+    expect(
+      component.errors.some((error) => error.message.includes("rootElement"))
+    ).toBe(true);
+  });
 });

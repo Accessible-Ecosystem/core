@@ -370,7 +370,9 @@ class Component {
    * @see _rootDOMElement
    */
   get rootDOMElement() {
-    return this._dom[this._rootDOMElement] || document.documentElement;
+    const element = this._dom[this._rootDOMElement];
+
+    return element instanceof HTMLElement ? element : document.documentElement;
   }
 
   /**
@@ -659,11 +661,11 @@ class Component {
   }
 
   /**
-   * An array to hold error messages.
+   * An array to hold validation errors.
    *
    * @readonly
    *
-   * @type {string[]}
+   * @type {Error[]}
    *
    * @see _errors
    */
@@ -1367,7 +1369,8 @@ class Component {
   /**
    * Disposes of the current instantiated component.
    *
-   * Removes all timeouts and event listeners, removes the component from the global storage, and delete's the object.
+   * Removes all intervals, timeouts, and event listeners, and removes the component
+   * from the global storage.
    */
   dispose() {
     this._clearIntervals();
