@@ -89,7 +89,8 @@ class ResponsiveComponent extends Component {
       this._addEventListener(
         this.getEventName("validate"),
         this.rootDOMElement,
-        () => {
+        (event) => {
+          if (event.detail.component !== this) return;
           // String checks.
           const strings = {
             mediaQuery: this._mediaQueryString,
@@ -113,7 +114,8 @@ class ResponsiveComponent extends Component {
       this._addEventListener(
         this.getEventName("initialize"),
         this.rootDOMElement,
-        () => {
+        (event) => {
+          if (event.detail.component !== this) return;
           this._handleMediaMatch();
         }
       );

@@ -250,7 +250,8 @@ class CollapsableComponent extends ResponsiveComponent {
     this._addEventListener(
       this.getEventName("validate"),
       this.rootDOMElement,
-      () => {
+      (event) => {
+        if (event.detail.component !== this) return;
         // Boolean checks.
         const booleans = {
           locked: this._locked.value,
@@ -281,7 +282,8 @@ class CollapsableComponent extends ResponsiveComponent {
     this._addEventListener(
       this.getEventName("initialize"),
       this.rootDOMElement,
-      () => {
+      (event) => {
+        if (event.detail.component !== this) return;
         if (this.dom.controller.getAttribute("aria-expanded") === "true") {
           this.expand();
         } else {

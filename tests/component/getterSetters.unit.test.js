@@ -48,6 +48,13 @@ describe("Component getter/setters", () => {
       expect(component.rootDOMElement).toBe(component.dom.root);
     });
 
+    it("should fall back to the document root when the configured root is invalid", () => {
+      const component = createComponent();
+      component._dom.root = 12;
+
+      expect(component.rootDOMElement).toBe(document.documentElement);
+    });
+
     it("should fall back to the document root when the configured root is missing", () => {
       const component = createComponent();
       component._rootDOMElement = "missing";
