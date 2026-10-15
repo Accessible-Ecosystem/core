@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.0-beta.4](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2026-10-15)
+
+
+### Bug Fixes
+
+* correct spelling of collapsible ([ed17f99](https://github.com/Accessible-Ecosystem/core/commit/ed17f99cf3f0e2bb852bf1b31c93131623b87ee6))
+
 ## [1.0.0-beta.3](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2026-10-15)
 
 
