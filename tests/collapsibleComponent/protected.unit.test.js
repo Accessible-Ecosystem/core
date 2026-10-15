@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
-import { createCollapsable } from "../helpers.js";
+import { createCollapsible } from "../helpers.js";
 
-describe("CollapsableComponent protected methods", () => {
+describe("CollapsibleComponent protected methods", () => {
   describe("_bootstrap", () => {
     it.each(["expand", "collapse", "lock", "unlock"])(
       "should register the %s action events",
       (action) => {
-        const component = createCollapsable();
+        const component = createCollapsible();
 
         for (const prefix of ["pre", "", "post"])
           expect(component.events[`${prefix}${action}`]).toBeInstanceOf(
@@ -16,13 +16,13 @@ describe("CollapsableComponent protected methods", () => {
     );
 
     it("should register lifecycle listeners", () => {
-      expect(createCollapsable().listeners).toHaveLength(4);
+      expect(createCollapsible().listeners).toHaveLength(4);
     });
   });
   for (const action of ["expand", "collapse", "lock", "unlock"])
     describe(`_${action}`, () => {
       it("should emit lifecycle events in order", () => {
-        const component = createCollapsable(),
+        const component = createCollapsible(),
           events = [];
         for (const prefix of ["pre", "", "post"]) {
           const name = `${prefix}${action}`;
@@ -39,7 +39,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it("should include the component in event detail", () => {
-        const component = createCollapsable(),
+        const component = createCollapsible(),
           listener = vi.fn();
         component._addEventListener(
           component.getEventName(action),
@@ -55,7 +55,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it("should suppress lifecycle events when emit is false", () => {
-        const component = createCollapsable(),
+        const component = createCollapsible(),
           listener = vi.fn();
         for (const prefix of ["pre", "", "post"])
           component._addEventListener(
@@ -70,7 +70,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it("should apply the action attribute", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
 
         component[`_${action}`]({ emit: false, transition: false });
 
@@ -82,7 +82,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it("should apply the action class", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
 
         component[`_${action}`]({ emit: false, transition: false });
         const className = {
@@ -101,7 +101,7 @@ describe("CollapsableComponent protected methods", () => {
     describe(`_${action} transitions`, () => {
       it("should sequence state class changes over animation frames", () => {
         vi.useFakeTimers();
-        const component = createCollapsable(),
+        const component = createCollapsible(),
           element = component.dom.controlled;
         const from = action === "expand" ? "hide" : "show",
           to = action === "expand" ? "show" : "hide";
@@ -123,7 +123,7 @@ describe("CollapsableComponent protected methods", () => {
 
       it("should add the transition class immediately", () => {
         vi.useFakeTimers();
-        const component = createCollapsable();
+        const component = createCollapsible();
 
         component[`_${action}`]({ emit: false, transition: true });
 
@@ -134,7 +134,7 @@ describe("CollapsableComponent protected methods", () => {
 
       it("should remove the transition class after the action duration", () => {
         vi.useFakeTimers();
-        const component = createCollapsable({
+        const component = createCollapsible({
           expandDuration: 80,
           collapseDuration: 120,
         });
@@ -157,7 +157,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it("should apply classes synchronously when no transition class is configured", () => {
-        const component = createCollapsable({ transitionClass: "" });
+        const component = createCollapsible({ transitionClass: "" });
 
         component[`_${action}`]({ emit: false, transition: true });
 
@@ -170,7 +170,7 @@ describe("CollapsableComponent protected methods", () => {
 
       it("should not schedule timers when no transition class is configured", () => {
         vi.useFakeTimers();
-        const component = createCollapsable({ transitionClass: "" });
+        const component = createCollapsible({ transitionClass: "" });
 
         component[`_${action}`]({ emit: false, transition: true });
 
@@ -180,7 +180,7 @@ describe("CollapsableComponent protected methods", () => {
 
   describe("_mediaQueryListEventCallback", () => {
     it("should prefer collapsing an expanded component when both breakpoint actions are enabled", () => {
-      const component = createCollapsable({
+      const component = createCollapsible({
         expandOutsideBreakpoint: true,
         collapseOutsideBreakpoint: true,
         transitionClass: "",
@@ -200,7 +200,7 @@ describe("CollapsableComponent protected methods", () => {
       ["Outside", false],
     ]) {
       it(`should expand ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsable({
+        const component = createCollapsible({
           [`expand${side}Breakpoint`]: true,
           transitionClass: "",
         });
@@ -212,7 +212,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it(`should lock ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsable({
+        const component = createCollapsible({
           [`lock${side}Breakpoint`]: true,
         });
         component.initialize();
@@ -223,7 +223,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it(`should lock after expansion ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsable({
+        const component = createCollapsible({
           [`expand${side}Breakpoint`]: true,
           [`lock${side}Breakpoint`]: true,
           transitionClass: "",
@@ -243,7 +243,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it(`should unlock before collapsing ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsable({
+        const component = createCollapsible({
           [`collapse${side}Breakpoint`]: true,
           transitionClass: "",
         });
@@ -264,7 +264,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it(`should preserve committed expansion when collapsing ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsable({
+        const component = createCollapsible({
           [`collapse${side}Breakpoint`]: true,
           transitionClass: "",
         });
@@ -278,7 +278,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it(`should honor explicit unlock ${side.toLowerCase()}`, () => {
-        const component = createCollapsable({
+        const component = createCollapsible({
           [`unlock${side}Breakpoint`]: true,
           locked: true,
         });
@@ -290,7 +290,7 @@ describe("CollapsableComponent protected methods", () => {
       });
 
       it(`should unlock before expanding ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsable({
+        const component = createCollapsible({
           [`expand${side}Breakpoint`]: true,
           locked: true,
           transitionClass: "",
@@ -313,7 +313,7 @@ describe("CollapsableComponent protected methods", () => {
     it.each([true, false])(
       "should leave state alone for matches=%s when no actions are configured",
       (matches) => {
-        const component = createCollapsable();
+        const component = createCollapsible();
 
         component._mediaQueryListEventCallback({ matches });
 

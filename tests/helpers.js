@@ -1,7 +1,7 @@
 import { afterEach, vi } from "vitest";
 import Component from "../src/Component.js";
 import ResponsiveComponent from "../src/ResponsiveComponent.js";
-import CollapsableComponent from "../src/CollapsableComponent.js";
+import CollapsibleComponent from "../src/CollapsibleComponent.js";
 
 const components = [];
 
@@ -15,7 +15,7 @@ const components = [];
 export function createComponent(options = {}, Type = Component) {
   const component = new Type({ ...options, bootstrap: false });
   const root =
-    Type === CollapsableComponent
+    Type === CollapsibleComponent
       ? options.controllerElement
       : document.createElement("button");
   component._dom.root = root;
@@ -37,19 +37,19 @@ export function createResponsive(options = {}) {
 }
 
 /**
- * Creates a collapsable component with controller and controlled elements.
+ * Creates a collapsible component with controller and controlled elements.
  *
  * @param  {object}               [options = {}] - Constructor options.
- * @return {CollapsableComponent}                - The component.
+ * @return {CollapsibleComponent}                - The component.
  */
-export function createCollapsable(options = {}) {
+export function createCollapsible(options = {}) {
   return createComponent(
     {
       controllerElement: document.createElement("button"),
       controlledElement: document.createElement("div"),
       ...options,
     },
-    CollapsableComponent
+    CollapsibleComponent
   );
 }
 

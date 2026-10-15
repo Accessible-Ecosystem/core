@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
-import { createCollapsable } from "../helpers.js";
+import { createCollapsible } from "../helpers.js";
 
-describe("CollapsableComponent lifecycle isolation", () => {
+describe("CollapsibleComponent lifecycle isolation", () => {
   it("should ignore a nested component's initialization", () => {
-    const parent = createCollapsable();
-    const child = createCollapsable();
+    const parent = createCollapsible();
+    const child = createCollapsible();
     parent.rootDOMElement.append(child.rootDOMElement);
     const collapse = vi.spyOn(parent, "collapse");
 
@@ -14,8 +14,8 @@ describe("CollapsableComponent lifecycle isolation", () => {
   });
 
   it("should ignore a nested component's validation", () => {
-    const parent = createCollapsable();
-    const child = createCollapsable();
+    const parent = createCollapsible();
+    const child = createCollapsible();
     parent.rootDOMElement.append(child.rootDOMElement);
     parent._expandInsideBreakpoint = "invalid";
 

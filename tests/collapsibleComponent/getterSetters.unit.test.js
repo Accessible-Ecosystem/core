@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { createCollapsable } from "../helpers.js";
+import { createCollapsible } from "../helpers.js";
 
-describe("CollapsableComponent getter/setters", () => {
+describe("CollapsibleComponent getter/setters", () => {
   for (const name of [
     "lockedClass",
     "unlockedClass",
@@ -13,7 +13,7 @@ describe("CollapsableComponent getter/setters", () => {
       it.each(["custom", ["one", "two"], "", []])(
         "should accept class value %j",
         (value) => {
-          const component = createCollapsable();
+          const component = createCollapsible();
 
           component[name] = value;
 
@@ -24,7 +24,7 @@ describe("CollapsableComponent getter/setters", () => {
       it.each(["custom", ["one", "two"], "", []])(
         "should retain class value %j when assigned again",
         (value) => {
-          const component = createCollapsable();
+          const component = createCollapsible();
 
           component[name] = value;
           component[name] = value;
@@ -36,7 +36,7 @@ describe("CollapsableComponent getter/setters", () => {
       it.each([123, null, "invalid token", ["valid", 123]])(
         "should reject %j without changing classes",
         (value) => {
-          const component = createCollapsable();
+          const component = createCollapsible();
           const original = component[name];
 
           expect(() => {
@@ -53,7 +53,7 @@ describe("CollapsableComponent getter/setters", () => {
   ])
     describe(name, () => {
       it("should update the duration", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
 
         component[name] = 300;
 
@@ -61,7 +61,7 @@ describe("CollapsableComponent getter/setters", () => {
       });
 
       it("should refresh custom properties when the duration changes", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
         const props = vi.spyOn(component, "_setCustomProps");
 
         component[name] = 300;
@@ -70,7 +70,7 @@ describe("CollapsableComponent getter/setters", () => {
       });
 
       it("should not refresh custom properties when the duration is unchanged", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
 
         component[name] = 300;
         const props = vi.spyOn(component, "_setCustomProps");
@@ -80,7 +80,7 @@ describe("CollapsableComponent getter/setters", () => {
       });
 
       it("should reject non-numeric durations without changing the duration", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
         const original = component[name];
 
         expect(() => {
@@ -92,11 +92,11 @@ describe("CollapsableComponent getter/setters", () => {
   for (const name of ["expandDuration", "collapseDuration"])
     describe(name, () => {
       it("should fall back to the transition duration by default", () => {
-        expect(createCollapsable({ transitionDuration: 321 })[name]).toBe(321);
+        expect(createCollapsible({ transitionDuration: 321 })[name]).toBe(321);
       });
 
       it("should use an explicit action duration", () => {
-        const component = createCollapsable({ transitionDuration: 321 });
+        const component = createCollapsible({ transitionDuration: 321 });
 
         component[name] = 50;
 
@@ -104,7 +104,7 @@ describe("CollapsableComponent getter/setters", () => {
       });
 
       it("should restore the fallback when assigned the -1 sentinel", () => {
-        const component = createCollapsable({ transitionDuration: 321 });
+        const component = createCollapsible({ transitionDuration: 321 });
 
         component[name] = 50;
         component[name] = -1;
@@ -126,7 +126,7 @@ describe("CollapsableComponent getter/setters", () => {
   ])
     describe(name, () => {
       it.each([true, false])("should accept %s", (value) => {
-        const component = createCollapsable();
+        const component = createCollapsible();
 
         component[name] = !value;
         component[name] = value;
@@ -135,7 +135,7 @@ describe("CollapsableComponent getter/setters", () => {
       });
 
       it("should retain a boolean value when assigned again", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
 
         component[name] = true;
         component[name] = true;
@@ -144,7 +144,7 @@ describe("CollapsableComponent getter/setters", () => {
       });
 
       it("should reject non-boolean values without changing state", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
         const original = component[name];
 
         expect(() => {
@@ -161,18 +161,18 @@ describe("CollapsableComponent getter/setters", () => {
   ])
     describe(name, () => {
       it("should return the initial state", () => {
-        expect(createCollapsable()[name]).toBe(false);
+        expect(createCollapsible()[name]).toBe(false);
       });
 
       it("should expose the appropriate state before a commit", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
         component[field].value = true;
 
         expect(component[name]).toBe(!committed);
       });
 
       it("should expose the updated state after a commit", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
         component[field].value = true;
         component[field].commit();
 
@@ -180,7 +180,7 @@ describe("CollapsableComponent getter/setters", () => {
       });
 
       it("should reject assignment", () => {
-        const component = createCollapsable();
+        const component = createCollapsible();
 
         expect(() => {
           component[name] = true;

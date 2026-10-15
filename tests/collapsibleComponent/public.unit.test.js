@@ -1,14 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
-import { createCollapsable } from "../helpers.js";
+import { createCollapsible } from "../helpers.js";
 const prepareAction = (action) => {
-  const component = createCollapsable({ transitionClass: "" });
+  const component = createCollapsible({ transitionClass: "" });
   component.initialize();
   if (action === "collapse") component.expand();
   if (action === "unlock") component.lock();
   return component;
 };
 
-describe("CollapsableComponent public methods", () => {
+describe("CollapsibleComponent public methods", () => {
   describe("expand", () => {
     it("should update aria-expanded", () => {
       const component = prepareAction("expand");
@@ -21,7 +21,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should replace opposing state classes", () => {
-      const component = createCollapsable({
+      const component = createCollapsible({
         expandClass: "expanded",
         collapseClass: "collapsed",
         transitionClass: "",
@@ -51,7 +51,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should replace opposing state classes", () => {
-      const component = createCollapsable({
+      const component = createCollapsible({
         expandClass: "expanded",
         collapseClass: "collapsed",
         transitionClass: "",
@@ -71,7 +71,7 @@ describe("CollapsableComponent public methods", () => {
 
   describe("lock", () => {
     it("should replace opposing state classes", () => {
-      const component = createCollapsable();
+      const component = createCollapsible();
       component.dom.controlled.classList.add("unlocked");
 
       component.lock({ force: true, emit: false });
@@ -93,7 +93,7 @@ describe("CollapsableComponent public methods", () => {
 
   describe("unlock", () => {
     it("should replace opposing state classes", () => {
-      const component = createCollapsable();
+      const component = createCollapsible();
       component.dom.controlled.classList.add("locked");
 
       component.unlock({ force: true, emit: false });
@@ -115,7 +115,7 @@ describe("CollapsableComponent public methods", () => {
 
   describe("expand", () => {
     it("should preserve committed expansion before initialization when requested", () => {
-      const component = createCollapsable();
+      const component = createCollapsible();
 
       component.expand({
         force: true,
@@ -235,7 +235,7 @@ describe("CollapsableComponent public methods", () => {
 
   describe("toggle", () => {
     it("should expand when currently collapsed", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
 
       component.toggle();
@@ -244,7 +244,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should forward explicit options to expand", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
       const spy = vi.spyOn(component, "expand");
       const options = {
@@ -260,7 +260,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should forward default options to expand", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
       const spy = vi.spyOn(component, "expand");
 
@@ -275,7 +275,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should collapse when currently expanded", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
       component.expand();
 
@@ -285,7 +285,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should forward explicit options to collapse", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
       component.expand();
       const spy = vi.spyOn(component, "collapse");
@@ -302,7 +302,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should forward default options to collapse", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
       component.expand();
       const spy = vi.spyOn(component, "collapse");
@@ -320,7 +320,7 @@ describe("CollapsableComponent public methods", () => {
 
   describe("toggleLock", () => {
     it("should lock when currently unlocked", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
 
       component.toggleLock();
@@ -329,7 +329,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should forward explicit options to lock", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
       const spy = vi.spyOn(component, "lock");
       const options = { force: true, emit: false, preserveState: true };
@@ -340,7 +340,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should forward default options to lock", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
       const spy = vi.spyOn(component, "lock");
 
@@ -354,7 +354,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should unlock when currently locked", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
       component.lock();
 
@@ -364,7 +364,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should forward explicit options to unlock", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
       component.lock();
       const spy = vi.spyOn(component, "unlock");
@@ -376,7 +376,7 @@ describe("CollapsableComponent public methods", () => {
     });
 
     it("should forward default options to unlock", () => {
-      const component = createCollapsable({ transitionClass: "" });
+      const component = createCollapsible({ transitionClass: "" });
       component.initialize();
       component.lock();
       const spy = vi.spyOn(component, "unlock");

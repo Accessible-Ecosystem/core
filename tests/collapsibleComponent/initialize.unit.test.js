@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
-import CollapsableComponent from "../../src/CollapsableComponent.js";
-import { createCollapsable } from "../helpers.js";
+import CollapsibleComponent from "../../src/CollapsibleComponent.js";
+import { createCollapsible } from "../helpers.js";
 
-describe("CollapsableComponent initialization", () => {
+describe("CollapsibleComponent initialization", () => {
   describe("constructor", () => {
     it("should bootstrap by default", () => {
-      const spy = vi.spyOn(CollapsableComponent.prototype, "_bootstrap");
+      const spy = vi.spyOn(CollapsibleComponent.prototype, "_bootstrap");
 
-      const component = new CollapsableComponent();
+      const component = new CollapsibleComponent();
 
       expect(spy).toHaveBeenCalledTimes(1);
 
@@ -15,9 +15,9 @@ describe("CollapsableComponent initialization", () => {
     });
 
     it("should skip bootstrapping when bootstrap is false", () => {
-      const spy = vi.spyOn(CollapsableComponent.prototype, "_bootstrap");
+      const spy = vi.spyOn(CollapsibleComponent.prototype, "_bootstrap");
 
-      const component = new CollapsableComponent({ bootstrap: false });
+      const component = new CollapsibleComponent({ bootstrap: false });
 
       expect(spy).not.toHaveBeenCalled();
 
@@ -25,7 +25,7 @@ describe("CollapsableComponent initialization", () => {
     });
 
     it("should configure the default classes", () => {
-      expect(createCollapsable().classes).toEqual({
+      expect(createCollapsible().classes).toEqual({
         initialize: "initializing",
         locked: "locked",
         unlocked: "unlocked",
@@ -36,7 +36,7 @@ describe("CollapsableComponent initialization", () => {
     });
 
     it("should configure the default durations", () => {
-      expect(createCollapsable().durations).toEqual({
+      expect(createCollapsible().durations).toEqual({
         transition: 150,
         expand: -1,
         collapse: -1,
@@ -44,11 +44,11 @@ describe("CollapsableComponent initialization", () => {
     });
 
     it("should configure the default transition delay", () => {
-      expect(createCollapsable().delays).toEqual({ transition: 250 });
+      expect(createCollapsible().delays).toEqual({ transition: 250 });
     });
 
     it("should protect controller and controlled DOM slots", () => {
-      expect(createCollapsable()._protectedDOMElements).toEqual([
+      expect(createCollapsible()._protectedDOMElements).toEqual([
         "controller",
         "controlled",
       ]);
@@ -61,7 +61,7 @@ describe("CollapsableComponent initialization", () => {
       ["collapseClass", "collapseClass"],
       ["transitionClass", "transitionClass"],
     ])("should normalize a null %s option", (option, property) => {
-      const component = createCollapsable({ [option]: null });
+      const component = createCollapsible({ [option]: null });
 
       expect(component[property]).toBe("");
     });
@@ -71,7 +71,7 @@ describe("CollapsableComponent initialization", () => {
     it.each([true, false])(
       "should initialize expansion from aria-expanded=%s",
       (expanded) => {
-        const component = createCollapsable();
+        const component = createCollapsible();
         component.dom.controller.setAttribute(
           "aria-expanded",
           String(expanded)
@@ -90,7 +90,7 @@ describe("CollapsableComponent initialization", () => {
     );
 
     it("should initialize with the configured locked state", () => {
-      const component = createCollapsable({ locked: true });
+      const component = createCollapsible({ locked: true });
 
       component.initialize();
 
@@ -100,7 +100,7 @@ describe("CollapsableComponent initialization", () => {
     });
 
     it("should initialize successfully with default state options", () => {
-      const component = createCollapsable();
+      const component = createCollapsible();
 
       component.initialize();
 
@@ -108,7 +108,7 @@ describe("CollapsableComponent initialization", () => {
     });
 
     it("should initialize collapsed when no expansion is supplied", () => {
-      const component = createCollapsable();
+      const component = createCollapsible();
 
       component.initialize();
 
@@ -116,7 +116,7 @@ describe("CollapsableComponent initialization", () => {
     });
 
     it("should initialize unlocked when no lock state is supplied", () => {
-      const component = createCollapsable();
+      const component = createCollapsible();
 
       component.initialize();
 
@@ -138,7 +138,7 @@ describe("CollapsableComponent initialization", () => {
       "unlockOutsideBreakpoint",
     ])("should reject invalid %s", (option) => {
       const error = vi.spyOn(console, "error").mockImplementation(() => {});
-      const component = createCollapsable({ [option]: "invalid" });
+      const component = createCollapsible({ [option]: "invalid" });
 
       component.initialize();
 

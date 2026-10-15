@@ -1,6 +1,6 @@
 /**
  * @file
- * A generic component class that provides collapsable functionality.
+ * A generic component class that provides collapsible functionality.
  */
 
 import ResponsiveComponent from "./ResponsiveComponent.js";
@@ -9,13 +9,13 @@ import { isValidClassList, isValidType } from "./validate.js";
 import { addClass, removeClass } from "./domHelpers.js";
 
 /**
- * A generic collapsable component class.
+ * A generic collapsible component class.
  *
  * @abstract
  *
  * @extends ResponsiveComponent
  */
-class CollapsableComponent extends ResponsiveComponent {
+class CollapsibleComponent extends ResponsiveComponent {
   /**
    * The component name of the component.
    *
@@ -23,7 +23,7 @@ class CollapsableComponent extends ResponsiveComponent {
    *
    * @type {string}
    */
-  _name = "CollapsableComponent";
+  _name = "CollapsibleComponent";
 
   /**
    * Whether the component is expanded or collapsed.
@@ -116,7 +116,7 @@ class CollapsableComponent extends ResponsiveComponent {
   _unlockOutsideBreakpoint = false;
 
   /**
-   * Constructs a collapsable component.
+   * Constructs a collapsible component.
    *
    * @param {object}             [options = {}]                              - The options for generating the component.
    * @param {HTMLElement}        options.controllerElement                   - The element controlling expansion.
@@ -1122,4 +1122,4 @@ class CollapsableComponent extends ResponsiveComponent {
   }
 }
 
-export default CollapsableComponent;
+export default CollapsibleComponent;
