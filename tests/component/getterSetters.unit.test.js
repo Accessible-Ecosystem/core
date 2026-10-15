@@ -45,6 +45,40 @@ describe("Component getter/setters", () => {
       });
     });
 
+  describe("eventPrefix", () => {
+    it("should combine the scope and name by default", () => {
+      const component = createComponent();
+
+      expect(component.eventPrefix).toBe("accessibleEcosystemComponent");
+    });
+
+    it("should combine a custom scope and name when the event prefix is empty", () => {
+      const component = createComponent();
+      component._scope = "CustomScope";
+      component._name = "Widget";
+
+      expect(component.eventPrefix).toBe("customScopeWidget");
+    });
+
+    it.each(["customEvents", "CustomEvents"])(
+      "should return the configured prefix %s unchanged",
+      (prefix) => {
+        const component = createComponent();
+        component._eventPrefix = prefix;
+
+        expect(component.eventPrefix).toBe(prefix);
+      }
+    );
+
+    it("should throw when set manually", () => {
+      const component = createComponent();
+
+      expect(() => {
+        component.eventPrefix = "replacement";
+      }).toThrow(TypeError);
+    });
+  });
+
   describe("rootDOMElement", () => {
     it("should return the configured root", () => {
       const component = createComponent();

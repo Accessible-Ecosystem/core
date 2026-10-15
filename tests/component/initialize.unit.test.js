@@ -8,6 +8,24 @@ import { createComponent } from "../helpers.js";
 
 describe("Component initialization", () => {
   describe("constructor", () => {
+    it("should default the protected event prefix to an empty string", () => {
+      const component = createComponent();
+
+      expect(component._eventPrefix).toBe("");
+    });
+
+    it("should use a subclass event prefix during bootstrapping", () => {
+      class PrefixedComponent extends Component {
+        _eventPrefix = "customEvents";
+      }
+
+      const component = createComponent({}, PrefixedComponent);
+
+      expect(component.getEventName("initialize")).toBe(
+        "customEventsInitialize"
+      );
+    });
+
     it("should bootstrap by default", () => {
       const spy = vi.spyOn(Component.prototype, "_bootstrap");
 

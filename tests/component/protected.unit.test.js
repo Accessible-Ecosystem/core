@@ -52,6 +52,7 @@ describe("Component protected methods", () => {
       ["_delays", { transition: "slow" }],
       ["_name", 123],
       ["_scope", 123],
+      ["_eventPrefix", 123],
       ["_storageKey", 123],
       ["_key", 123],
       ["_prefix", 123],
@@ -365,6 +366,15 @@ describe("Component protected methods", () => {
   }
 
   describe("_registerEvent", () => {
+    it("should use the eventPrefix getter when naming events", () => {
+      const component = createComponent();
+      vi.spyOn(component, "eventPrefix", "get").mockReturnValue("customEvents");
+
+      component._registerEvent("ready");
+
+      expect(component.getEventName("ready")).toBe("customEventsReady");
+    });
+
     it("should register a CustomEvent with the generated name", () => {
       const component = createComponent();
 

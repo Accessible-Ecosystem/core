@@ -191,6 +191,17 @@ class Component {
   _scope = "AccessibleEcosystem";
 
   /**
+   * The prefix used for event names instead of the scope and component name.
+   *
+   * An empty string uses the scope and component name.
+   *
+   * @protected
+   *
+   * @type {string}
+   */
+  _eventPrefix = "";
+
+  /**
    * The key used for storage.
    *
    * @protected
@@ -621,6 +632,24 @@ class Component {
   }
 
   /**
+   * The prefix used for event names.
+   *
+   * Combines the scope and component name when _eventPrefix is an empty string.
+   * Subclasses can override _eventPrefix before bootstrapping.
+   *
+   * @readonly
+   *
+   * @type {string}
+   *
+   * @see _eventPrefix
+   */
+  get eventPrefix() {
+    return this._eventPrefix !== ""
+      ? this._eventPrefix
+      : `${firstCharacterToLowerCase(this.scope)}${firstCharacterToUpperCase(this.name)}`;
+  }
+
+  /**
    * The main ID of the component.
    *
    * @readonly
@@ -815,6 +844,7 @@ class Component {
     const strings = {
       _name: this._name,
       _scope: this._scope,
+      _eventPrefix: this._eventPrefix,
       _storageKey: this._storageKey,
       key: this._key,
       prefix: this._prefix,
@@ -1204,6 +1234,9 @@ class Component {
   /**
    * Registers a new event type within the component.
    *
+   * Uses eventPrefix as the prefix for the event name.
+   * Appends the event type with its first character upper case.
+   *
    * @protected
    *
    * @param {string}  name                     - The name of the new event type.
@@ -1216,7 +1249,7 @@ class Component {
     isValidType("boolean", { bubbles });
     isValidType("object", { detail });
 
-    const eventName = `${firstCharacterToLowerCase(this.scope)}${firstCharacterToUpperCase(this.name)}${firstCharacterToUpperCase(name)}`;
+    const eventName = `${this.eventPrefix}${firstCharacterToUpperCase(name)}`;
 
     this._events[name] = new CustomEvent(eventName, {
       bubbles,
