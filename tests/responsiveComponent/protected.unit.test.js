@@ -122,3 +122,19 @@ describe("ResponsiveComponent protected methods", () => {
     });
   });
 });
+
+describe("ResponsiveComponent animation frames", () => {
+  it("should cancel the initial media callback on disposal", () => {
+    vi.useFakeTimers();
+    setupMatchMedia();
+    const component = createResponsive({ breakpoint: "768px" });
+    const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
+
+    component._handleMediaMatch();
+    component.dispose();
+    vi.advanceTimersByTime(32);
+
+    expect(callback).not.toHaveBeenCalled();
+    expect(component.frames).toEqual({});
+  });
+});

@@ -774,19 +774,19 @@ class CollapsibleComponent extends ResponsiveComponent {
     if (transition && this.transitionClass !== "") {
       addClass(this.transitionClass, this.dom.controlled);
 
-      requestAnimationFrame(() => {
+      this._requestAnimationFrame(() => {
         removeClass(this.collapseClass, this.dom.controlled);
 
-        requestAnimationFrame(() => {
+        this._requestAnimationFrame(() => {
           addClass(this.expandClass, this.dom.controlled);
 
-          requestAnimationFrame(() => {
+          this._requestAnimationFrame(() => {
             setTimeout(() => {
               removeClass(this.transitionClass, this.dom.controlled);
             }, this.expandDuration);
-          });
-        });
-      });
+          }, "expandTransition");
+        }, "expandTransition");
+      }, "expandTransition");
     } else {
       // Add the expand class.
       addClass(this.expandClass, this.dom.controlled);
@@ -834,19 +834,19 @@ class CollapsibleComponent extends ResponsiveComponent {
     if (transition && this.transitionClass !== "") {
       addClass(this.transitionClass, this.dom.controlled);
 
-      requestAnimationFrame(() => {
+      this._requestAnimationFrame(() => {
         removeClass(this.expandClass, this.dom.controlled);
 
-        requestAnimationFrame(() => {
+        this._requestAnimationFrame(() => {
           addClass(this.collapseClass, this.dom.controlled);
 
-          requestAnimationFrame(() => {
+          this._requestAnimationFrame(() => {
             setTimeout(() => {
               removeClass(this.transitionClass, this.dom.controlled);
             }, this.collapseDuration);
-          });
-        });
-      });
+          }, "collapseTransition");
+        }, "collapseTransition");
+      }, "collapseTransition");
     } else {
       // Add the collapse class.
       addClass(this.collapseClass, this.dom.controlled);

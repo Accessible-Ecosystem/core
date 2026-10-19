@@ -137,6 +137,15 @@ class Component {
   _timeouts = {};
 
   /**
+   * Pending animation frame IDs, stored by scope, throughout the component.
+   *
+   * @protected
+   *
+   * @type {Object<string, number>}
+   */
+  _frames = {};
+
+  /**
    * Event listeners throughout the component.
    *
    * @protected
@@ -475,6 +484,21 @@ class Component {
    */
   get timeouts() {
     return this._timeouts;
+  }
+
+  /**
+   * Pending animation frame IDs, stored by scope, throughout the component.
+   *
+   * Completed and cancelled frames are removed from this object.
+   *
+   * @readonly
+   *
+   * @type {Object<string, number>}
+   *
+   * @see _frames
+   */
+  get frames() {
+    return this._frames;
   }
 
   /**
@@ -1232,6 +1256,61 @@ class Component {
   }
 
   /**
+   * Requests an animation frame within the component.
+   *
+   * Replaces any pending frame in the same scope. Removes the frame from storage
+   * before calling the callback, so the callback can request another frame.
+   *
+   * @protected
+   *
+   * @param {Function} callback           - The callback, which receives the browser's frame timestamp.
+   * @param {string}   [scope = _default] - The scope used to store the pending frame.
+   * @return {number} The browser's animation frame ID.
+   */
+  _requestAnimationFrame(callback, scope = "_default") {
+    this._cancelAnimationFrame(scope);
+
+    let completed = false;
+    const frame = requestAnimationFrame((timestamp) => {
+      completed = true;
+      delete this._frames[scope];
+      callback(timestamp);
+    });
+
+    // Test environments can run the callback before requestAnimationFrame returns.
+    if (!completed) this._frames[scope] = frame;
+
+    return frame;
+  }
+
+  /**
+   * Cancels a pending animation frame and removes it from storage.
+   *
+   * Does nothing if the scope has no pending frame.
+   *
+   * @protected
+   *
+   * @param {string} [scope = _default] - The scope of the frame to cancel.
+   */
+  _cancelAnimationFrame(scope = "_default") {
+    if (!Object.hasOwn(this._frames, scope)) return;
+
+    cancelAnimationFrame(this._frames[scope]);
+    delete this._frames[scope];
+  }
+
+  /**
+   * Cancels all pending animation frames within the component.
+   *
+   * @protected
+   */
+  _cancelAnimationFrames() {
+    for (const scope of Object.keys(this._frames)) {
+      this._cancelAnimationFrame(scope);
+    }
+  }
+
+  /**
    * Registers a new event type within the component.
    *
    * Uses eventPrefix as the prefix for the event name.
@@ -1401,12 +1480,13 @@ class Component {
   /**
    * Disposes of the current instantiated component.
    *
-   * Removes all intervals, timeouts, and event listeners, and removes the component
+   * Removes all intervals, timeouts, animation frames, and event listeners, and removes the component
    * from the global storage.
    */
   dispose() {
     this._clearIntervals();
     this._clearTimeouts();
+    this._cancelAnimationFrames();
     this._removeEventListeners();
     this._unstore();
 

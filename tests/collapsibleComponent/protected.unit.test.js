@@ -327,3 +327,28 @@ describe("CollapsibleComponent protected methods", () => {
     );
   });
 });
+
+describe("CollapsibleComponent animation frames", () => {
+  it.each(["expand", "collapse"])(
+    "should cancel pending %s transition frames on disposal",
+    (action) => {
+      vi.useFakeTimers();
+      const component = createCollapsible({
+        expandClass: "show",
+        collapseClass: "hide",
+        transitionClass: "transitioning",
+      });
+      const initialClass = action === "expand" ? "hide" : "show";
+      component.dom.controlled.classList.add(initialClass);
+
+      component[`_${action}`]({ emit: false, transition: true });
+      component.dispose();
+      vi.advanceTimersByTime(64);
+
+      expect(component.dom.controlled.classList.contains(initialClass)).toBe(
+        true
+      );
+      expect(component.frames).toEqual({});
+    }
+  );
+});

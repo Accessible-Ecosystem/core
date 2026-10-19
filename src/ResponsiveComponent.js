@@ -197,9 +197,9 @@ class ResponsiveComponent extends Component {
       this._mediaQueryListEventCallback(event)
     );
 
-    requestAnimationFrame(() => {
+    this._requestAnimationFrame(() => {
       this._mediaQueryListEventCallback(this._mediaQueryList);
-    });
+    }, "mediaMatch");
   }
 }
 

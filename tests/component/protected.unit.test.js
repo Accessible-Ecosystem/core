@@ -681,3 +681,129 @@ describe("Component protected methods", () => {
     });
   });
 });
+
+describe("Component animation frames", () => {
+  it("should pass the timestamp and remove a completed frame before its callback", () => {
+    const component = createComponent();
+    let runFrame;
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      runFrame = callback;
+      return 0;
+    });
+    const callback = vi.fn(() => {
+      expect(component.frames).toEqual({});
+    });
+
+    const id = component._requestAnimationFrame(callback);
+
+    expect(id).toBe(0);
+    expect(component.frames).toEqual({ _default: 0 });
+
+    runFrame(123);
+
+    expect(callback).toHaveBeenCalledWith(123);
+    expect(component.frames).toEqual({});
+  });
+
+  it("should replace a pending frame in the same scope without cancelling other scopes", () => {
+    const component = createComponent();
+    vi.spyOn(window, "requestAnimationFrame")
+      .mockReturnValueOnce(1)
+      .mockReturnValueOnce(2)
+      .mockReturnValueOnce(3);
+    const cancel = vi.spyOn(window, "cancelAnimationFrame");
+
+    component._requestAnimationFrame(vi.fn(), "focus");
+    component._requestAnimationFrame(vi.fn(), "blur");
+    component._requestAnimationFrame(vi.fn(), "focus");
+
+    expect(cancel).toHaveBeenCalledExactlyOnceWith(1);
+    expect(component.frames).toEqual({ focus: 3, blur: 2 });
+  });
+
+  it("should cancel a scoped frame and allow repeated cancellation", () => {
+    const component = createComponent();
+    vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
+    const cancel = vi.spyOn(window, "cancelAnimationFrame");
+    component._requestAnimationFrame(vi.fn(), "focus");
+
+    component._cancelAnimationFrame("focus");
+    component._cancelAnimationFrame("focus");
+    component._cancelAnimationFrame("missing");
+
+    expect(cancel).toHaveBeenCalledExactlyOnceWith(0);
+    expect(component.frames).toEqual({});
+  });
+
+  it("should preserve a new frame requested from inside a callback", () => {
+    const component = createComponent();
+    let runFrame;
+    vi.spyOn(window, "requestAnimationFrame")
+      .mockImplementationOnce((callback) => {
+        runFrame = callback;
+        return 1;
+      })
+      .mockReturnValueOnce(2);
+    component._requestAnimationFrame(() => {
+      component._requestAnimationFrame(vi.fn());
+    });
+
+    runFrame(0);
+
+    expect(component.frames).toEqual({ _default: 2 });
+  });
+
+  it("should remove frames even when their callbacks throw", () => {
+    const component = createComponent();
+    let runFrame;
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      runFrame = callback;
+      return 1;
+    });
+    component._requestAnimationFrame(() => {
+      throw new Error("frame failed");
+    });
+
+    expect(() => runFrame(0)).toThrow("frame failed");
+    expect(component.frames).toEqual({});
+  });
+
+  it("should cancel all pending frames on disposal", () => {
+    const component = createComponent();
+    vi.spyOn(window, "requestAnimationFrame")
+      .mockReturnValueOnce(1)
+      .mockReturnValueOnce(2);
+    const cancel = vi.spyOn(window, "cancelAnimationFrame");
+    component._requestAnimationFrame(vi.fn());
+    component._requestAnimationFrame(vi.fn(), "focus");
+
+    component.dispose();
+
+    expect(cancel).toHaveBeenCalledWith(1);
+    expect(cancel).toHaveBeenCalledWith(2);
+    expect(component.frames).toEqual({});
+  });
+
+  it("should keep frame storage separate for each component", () => {
+    const first = createComponent();
+    const second = createComponent();
+    vi.spyOn(window, "requestAnimationFrame").mockReturnValue(1);
+
+    first._requestAnimationFrame(vi.fn());
+
+    expect(first.frames).toEqual({ _default: 1 });
+    expect(second.frames).toEqual({});
+  });
+
+  it("should not store frames whose callbacks run synchronously", () => {
+    const component = createComponent();
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      callback(0);
+      return 1;
+    });
+
+    component._requestAnimationFrame(vi.fn());
+
+    expect(component.frames).toEqual({});
+  });
+});
