@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.0-beta.6](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2026-10-19)
+
+
+### Features
+
+* add ability to track and cancel animation frames ([0f84abc](https://github.com/Accessible-Ecosystem/core/commit/0f84abc94db6171fb80d469d56f75a04bde510c4))
+
 ## [1.0.0-beta.5](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2026-10-15)
 
 
