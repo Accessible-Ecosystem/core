@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.0-beta.8](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2026-10-21)
+
+
+### Features
+
+* add ability to split controller and trigger elements ([f0ce00e](https://github.com/Accessible-Ecosystem/core/commit/f0ce00eae7fbf931254a60a2eff0393f428861d3))
+
 ## [1.0.0-beta.7](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2026-10-21)
 
 
