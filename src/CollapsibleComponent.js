@@ -114,6 +114,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @param {object}             [options = {}]                              - The options for generating the component.
    * @param {HTMLElement}        options.controllerElement                   - The element controlling expansion.
    * @param {HTMLElement}        options.controlledElement                   - The element to expand or collapse.
+   * @param {?HTMLElement}       [options.triggerElement = null]             - The element receiving expansion clicks. If null, the controller element is used.
    * @param {?(string|string[])} [options.lockClass = locked]                - The class(es) to apply when the component is in the locked state.
    * @param {?(string|string[])} [options.unlockClass = unlocked]            - The class(es) to apply when the component is in the unlocked state.
    * @param {?(string|string[])} [options.expandClass = show]                - The class(es) to apply when the component is in the expanded state.
@@ -142,6 +143,7 @@ class CollapsibleComponent extends ResponsiveComponent {
   constructor({
     controllerElement,
     controlledElement,
+    triggerElement = null,
     lockClass = "locked",
     unlockClass = "unlocked",
     expandClass = "show",
@@ -178,10 +180,11 @@ class CollapsibleComponent extends ResponsiveComponent {
 
     // Set the DOM elements.
     this._dom.controller = controllerElement;
+    this._dom.trigger = triggerElement ?? controllerElement;
     this._dom.controlled = controlledElement;
 
     // Set the protected elements.
-    this._protectedDOMElements.push("controller", "controlled");
+    this._protectedDOMElements.push("controller", "trigger", "controlled");
 
     // Set the classes for the component.
     this._classes.locked = lockClass || "";

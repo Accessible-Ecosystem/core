@@ -785,8 +785,11 @@ class Component {
 
       // Loop through and add "Selector" to the end of each key in _selectors.
       for (const querySelector of Object.keys(this._selectors)) {
-        querySelectors[`${querySelector}Selector`] =
-          this._selectors[querySelector];
+        // An empty selector leaves that element type unused.
+        if (this._selectors[querySelector] !== "") {
+          querySelectors[`${querySelector}Selector`] =
+            this._selectors[querySelector];
+        }
       }
 
       // Check the query selectors.

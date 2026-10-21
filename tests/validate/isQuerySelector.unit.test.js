@@ -45,11 +45,18 @@ describe("isQuerySelector", () => {
   });
 
   // Test non-string query selector.
-  it("should return false when checking if a non-string query selector is a valid query selector", () => {
-    const selector = 1;
+  it.each([1, true, false])(
+    "should reject the non-string query selector %s",
+    (selector) => {
+      expect(() => {
+        isQuerySelector({ selector });
+      }).toThrow(TypeError);
+    }
+  );
 
+  it("should reject an empty string as a query selector", () => {
     expect(() => {
-      isQuerySelector({ selector });
+      isQuerySelector({ selector: "" });
     }).toThrow(TypeError);
   });
 

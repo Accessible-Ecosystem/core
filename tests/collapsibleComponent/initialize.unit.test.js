@@ -28,6 +28,23 @@ describe("CollapsibleComponent initialization", () => {
       component.dispose();
     });
 
+    it.each([undefined, null])(
+      "should use the controller when triggerElement is %s",
+      (triggerElement) => {
+        const component = createCollapsible({ triggerElement });
+
+        expect(component.dom.trigger).toBe(component.dom.controller);
+      }
+    );
+
+    it("should retain a separate trigger without changing the controller", () => {
+      const trigger = document.createElement("span");
+      const component = createCollapsible({ triggerElement: trigger });
+
+      expect(component.dom.trigger).toBe(trigger);
+      expect(component.dom.controller).not.toBe(trigger);
+    });
+
     it("should configure the default classes", () => {
       expect(createCollapsible().classes).toEqual({
         initialize: "initializing",
@@ -51,9 +68,10 @@ describe("CollapsibleComponent initialization", () => {
       expect(createCollapsible().delays).toEqual({ transition: 250 });
     });
 
-    it("should protect controller and controlled DOM slots", () => {
+    it("should protect controller, trigger, and controlled DOM slots", () => {
       expect(createCollapsible()._protectedDOMElements).toEqual([
         "controller",
+        "trigger",
         "controlled",
       ]);
     });
@@ -128,6 +146,38 @@ describe("CollapsibleComponent initialization", () => {
       expect(component.dom.controlled.classList.contains("unlocked")).toBe(
         true
       );
+    });
+
+    it("should report an invalid trigger element", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      const component = createCollapsible({ triggerElement: "invalid" });
+
+      component.initialize();
+
+      expect(component.isInitialized).toBe(false);
+      expect(component.isValid).toBe(false);
+      expect(error).toHaveBeenCalledWith(expect.any(Error));
+    });
+
+    it("should keep ARIA attributes and lifecycle events on the controller", () => {
+      const trigger = document.createElement("span");
+      const component = createCollapsible({ triggerElement: trigger });
+      component.dom.controller.appendChild(trigger);
+      component.initialize();
+      const expanded = vi.fn();
+      component.dom.controller.addEventListener(
+        component.getEventName("expand"),
+        expanded
+      );
+
+      component.expand({ transition: false });
+
+      expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
+        "true"
+      );
+      expect(trigger.hasAttribute("aria-expanded")).toBe(false);
+      expect(expanded).toHaveBeenCalledOnce();
+      expect(expanded.mock.calls[0][0].target).toBe(component.dom.controller);
     });
 
     it.each([

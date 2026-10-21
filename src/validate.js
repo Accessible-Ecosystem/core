@@ -153,7 +153,7 @@ export function isQuerySelector(values, { shouldThrow = true } = {}) {
     for (const key in values) {
       try {
         try {
-          if (values[key] === null) {
+          if (typeof values[key] !== "string") {
             throw new Error();
           }
 

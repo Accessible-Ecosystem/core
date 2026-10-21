@@ -68,6 +68,23 @@ describe("Component protected methods", () => {
       expect(component.errors.length).toBeGreaterThan(0);
     });
 
+    it("should accept an empty selector alongside a valid selector", () => {
+      const component = createComponent();
+      component._selectors = { optional: "", child: "span" };
+
+      expect(component._validate()).toBe(true);
+      expect(component.errors).toEqual([]);
+    });
+
+    it("should still report an invalid selector alongside an empty selector", () => {
+      const component = createComponent();
+      component._selectors = { optional: "", child: "[" };
+
+      expect(component._validate()).toBe(false);
+      expect(component.errors).toHaveLength(1);
+      expect(component.errors[0].message).toContain("childSelector");
+    });
+
     it("should collect all validation errors", () => {
       const component = createComponent();
       component._prefix = 123;
