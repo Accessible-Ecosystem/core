@@ -121,6 +121,9 @@ class ResponsiveComponent extends Component {
   /**
    * The breakpoint used to generate the component's media query.
    *
+   * Changing this value after initialization replaces the media query listener.
+   * An explicit mediaQuery still takes priority over the breakpoint.
+   *
    * @type {string}
    *
    * @see _breakpoint
@@ -134,11 +137,16 @@ class ResponsiveComponent extends Component {
 
     if (this._breakpoint !== value) {
       this._breakpoint = value;
+
+      if (this.isInitialized) this._handleMediaMatch();
     }
   }
 
   /**
    * The media query to use to trigger media query list events.
+   *
+   * Changing this value after initialization replaces the media query listener.
+   * An empty string uses the breakpoint, or removes the listener if neither is set.
    *
    * @type {string}
    *
@@ -161,6 +169,8 @@ class ResponsiveComponent extends Component {
 
     if (this._mediaQueryString !== value) {
       this._mediaQueryString = value;
+
+      if (this.isInitialized) this._handleMediaMatch();
     }
   }
 
@@ -185,9 +195,22 @@ class ResponsiveComponent extends Component {
   /**
    * Handles media match events throughout the component.
    *
+   * Removes the old listener and cancels its pending callback first.
+   * If the query is empty, leaves the component without a media query listener.
+   *
    * @protected
    */
   _handleMediaMatch() {
+    this._cancelAnimationFrame("mediaMatch");
+
+    if (this._mediaQueryList) {
+      this._removeEventListeners({
+        type: "change",
+        element: this._mediaQueryList,
+      });
+      this._mediaQueryList = null;
+    }
+
     if (this.mediaQuery === "") {
       return;
     }
