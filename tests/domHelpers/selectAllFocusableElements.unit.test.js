@@ -12,7 +12,6 @@ afterEach(() => {
 describe("selectAllFocusableElements", () => {
   it.each([
     '<a href="#one">One</a>',
-    '<area href="#two" />',
     "<input />",
     "<select></select>",
     "<textarea></textarea>",
@@ -24,6 +23,20 @@ describe("selectAllFocusableElements", () => {
 
     expect(selectAllFocusableElements(context)).toEqual([
       context.firstElementChild,
+    ]);
+  });
+
+  it("should select an area within an image map", () => {
+    const context = document.createElement("div");
+    context.innerHTML = `
+      <img src="example.png" alt="Example image map" usemap="#example-map" />
+      <map name="example-map">
+        <area shape="default" href="#two" alt="Two" />
+      </map>
+    `;
+
+    expect(selectAllFocusableElements(context)).toEqual([
+      context.querySelector("area"),
     ]);
   });
 

@@ -7,7 +7,9 @@ import { createCollapsible } from "../helpers.js";
 
 describe("CollapsibleComponent initialization and validation events", () => {
   it("should ignore a child component's initialize event", () => {
-    const parent = createCollapsible();
+    const parent = createCollapsible({
+      controllerElement: document.createElement("div"),
+    });
     const child = createCollapsible();
     parent.rootDOMElement.append(child.rootDOMElement);
     const collapse = vi.spyOn(parent, "collapse");
@@ -18,7 +20,9 @@ describe("CollapsibleComponent initialization and validation events", () => {
   });
 
   it("should ignore a child component's validate event", () => {
-    const parent = createCollapsible();
+    const parent = createCollapsible({
+      controllerElement: document.createElement("div"),
+    });
     const child = createCollapsible();
     parent.rootDOMElement.append(child.rootDOMElement);
     parent._expandInsideBreakpoint = "invalid";
