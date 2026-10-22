@@ -1,6 +1,6 @@
-## [1.0.0-beta.8](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2026-10-21)
+## [1.0.0-beta.9](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2026-10-22)
 
 
-### Features
+### Continuous Integration
 
-* add ability to split controller and trigger elements ([f0ce00e](https://github.com/Accessible-Ecosystem/core/commit/f0ce00eae7fbf931254a60a2eff0393f428861d3))
+* add action to check other packages against changes to core ([f13866a](https://github.com/Accessible-Ecosystem/core/commit/f13866ad6c5154224b7cb5d18af161e4cb6661bb))

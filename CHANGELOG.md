@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.0-beta.9](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2026-10-22)
+
+
+### Continuous Integration
+
+* add action to check other packages against changes to core ([f13866a](https://github.com/Accessible-Ecosystem/core/commit/f13866ad6c5154224b7cb5d18af161e4cb6661bb))
+
 ## [1.0.0-beta.8](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2026-10-21)
 
 
