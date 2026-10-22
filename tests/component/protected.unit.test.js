@@ -301,11 +301,30 @@ describe("Component protected methods", () => {
       }
     );
   });
-  for (const [set, clear, all] of [
-    ["_setTimeout", "_clearTimeout", "_clearTimeouts"],
-    ["_setInterval", "_clearInterval", "_clearIntervals"],
+  for (const [set, clear, all, callsAfterThreeDelays] of [
+    ["_setTimeout", "_clearTimeout", "_clearTimeouts", 1],
+    ["_setInterval", "_clearInterval", "_clearIntervals", 3],
   ]) {
     describe(set, () => {
+      it("should run the callback at the scheduled frequency", () => {
+        vi.useFakeTimers();
+        const component = createComponent();
+        const callback = vi.fn();
+
+        component[set](callback, 10);
+        vi.advanceTimersByTime(9);
+
+        expect(callback).not.toHaveBeenCalled();
+
+        vi.advanceTimersByTime(1);
+
+        expect(callback).toHaveBeenCalledTimes(1);
+
+        vi.advanceTimersByTime(20);
+
+        expect(callback).toHaveBeenCalledTimes(callsAfterThreeDelays);
+      });
+
       it("should replace the previous timer in the same scope", () => {
         vi.useFakeTimers();
         const component = createComponent(),
