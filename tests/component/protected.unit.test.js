@@ -90,15 +90,25 @@ describe("Component protected methods", () => {
       ["_prefix", 123],
       ["_protectedDOMElements", [123]],
       ["_shouldStore", "yes"],
-      ["_dom", { children: [{}] }],
     ])("should report invalid %s", (field, value) => {
       component = new Component({ bootstrap: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
       component._bootstrap();
-      component[field] =
-        field === "_dom" ? { root: component.rootDOMElement, ...value } : value;
+      component[field] = value;
+
+      expect(component._validate()).toBe(false);
+      expect(component.errors.length).toBeGreaterThan(0);
+    });
+
+    it("should report invalid _dom", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component._dom.children = [{}];
 
       expect(component._validate()).toBe(false);
       expect(component.errors.length).toBeGreaterThan(0);
@@ -242,26 +252,40 @@ describe("Component protected methods", () => {
   });
 
   describe("_setDOMElementType", () => {
-    it.each([false, true])(
-      "should select descendants with strict=%s",
-      (strict) => {
-        component = new Component({ bootstrap: false });
-        component._dom.root = document.createElement("button");
-        component._rootDOMElement = "root";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        const context = document.createElement("div");
-        context.innerHTML = "<span></span><div><span></span></div>";
-        component._selectors.child = "span";
-        component._dom.child = [];
+    it("should select all matching descendants", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const context = document.createElement("div");
+      context.innerHTML = "<span></span><div><span></span></div>";
+      component._selectors.child = "span";
+      component._dom.child = [];
 
-        component._setDOMElementType("child", { context, strict });
+      component._setDOMElementType("child", { context, strict: false });
 
-        expect(component.dom.child).toEqual(
-          Array.from(context.querySelectorAll("span")).slice(0, strict ? 1 : 2)
-        );
-      }
-    );
+      expect(component.dom.child).toEqual([
+        context.children[0],
+        context.children[1].firstElementChild,
+      ]);
+    });
+
+    it("should select only matching direct children", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const context = document.createElement("div");
+      context.innerHTML = "<span></span><div><span></span></div>";
+      component._selectors.child = "span";
+      component._dom.child = [];
+
+      component._setDOMElementType("child", { context, strict: true });
+
+      expect(component.dom.child).toEqual([context.firstElementChild]);
+    });
 
     it("should append matches when overwrite is false", () => {
       component = new Component({ bootstrap: false });
@@ -417,6 +441,7 @@ describe("Component protected methods", () => {
       }
     );
   });
+
   for (const [set, clear, all, callsAfterThreeDelays] of [
     ["_setTimeout", "_clearTimeout", "_clearTimeouts", 1],
     ["_setInterval", "_clearInterval", "_clearIntervals", 3],
@@ -790,44 +815,110 @@ describe("Component protected methods", () => {
   });
 
   describe("_removeEventListeners", () => {
-    it.each(["all", "type", "element", "both"])(
-      "should filter by %s",
-      (filter) => {
-        component = new Component({ bootstrap: false });
-        component._dom.root = document.createElement("button");
-        component._rootDOMElement = "root";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        const root = component.rootDOMElement,
-          other = document.createElement("button");
-        const callbacks = [vi.fn(), vi.fn(), vi.fn()];
-        component._addEventListener("click", root, callbacks[0]);
-        component._addEventListener("keyup", root, callbacks[1]);
-        component._addEventListener("click", other, callbacks[2]);
+    it("should remove all listeners", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const root = component.rootDOMElement,
+        other = document.createElement("button");
+      const callbacks = [vi.fn(), vi.fn(), vi.fn()];
+      component._addEventListener("click", root, callbacks[0]);
+      component._addEventListener("keyup", root, callbacks[1]);
+      component._addEventListener("click", other, callbacks[2]);
 
-        component._removeEventListeners({
-          type: ["type", "both"].includes(filter) ? "click" : null,
-          element: ["element", "both"].includes(filter) ? root : null,
-        });
-        root.click();
-        root.dispatchEvent(new Event("keyup"));
-        other.click();
+      component._removeEventListeners({});
+      root.click();
 
-        expect(callbacks[0]).not.toHaveBeenCalled();
-        expect(callbacks[1]).toHaveBeenCalledTimes(
-          ["type", "both"].includes(filter) ? 1 : 0
-        );
-        expect(callbacks[2]).toHaveBeenCalledTimes(
-          ["element", "both"].includes(filter) ? 1 : 0
-        );
-      }
-    );
+      root.dispatchEvent(new Event("keyup"));
+      other.click();
+
+      expect(callbacks[0]).not.toHaveBeenCalled();
+      expect(callbacks[1]).toHaveBeenCalledTimes(0);
+      expect(callbacks[2]).toHaveBeenCalledTimes(0);
+    });
+
+    it("should remove listeners of the requested type", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const root = component.rootDOMElement,
+        other = document.createElement("button");
+      const callbacks = [vi.fn(), vi.fn(), vi.fn()];
+      component._addEventListener("click", root, callbacks[0]);
+      component._addEventListener("keyup", root, callbacks[1]);
+      component._addEventListener("click", other, callbacks[2]);
+
+      component._removeEventListeners({ type: "click" });
+      root.click();
+
+      root.dispatchEvent(new Event("keyup"));
+      other.click();
+
+      expect(callbacks[0]).not.toHaveBeenCalled();
+      expect(callbacks[1]).toHaveBeenCalledTimes(1);
+      expect(callbacks[2]).toHaveBeenCalledTimes(0);
+    });
+
+    it("should remove listeners on the requested element", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const root = component.rootDOMElement,
+        other = document.createElement("button");
+      const callbacks = [vi.fn(), vi.fn(), vi.fn()];
+      component._addEventListener("click", root, callbacks[0]);
+      component._addEventListener("keyup", root, callbacks[1]);
+      component._addEventListener("click", other, callbacks[2]);
+
+      component._removeEventListeners({ element: root });
+      root.click();
+
+      root.dispatchEvent(new Event("keyup"));
+      other.click();
+
+      expect(callbacks[0]).not.toHaveBeenCalled();
+      expect(callbacks[1]).toHaveBeenCalledTimes(0);
+      expect(callbacks[2]).toHaveBeenCalledTimes(1);
+    });
+
+    it("should remove listeners matching both type and element", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const root = component.rootDOMElement,
+        other = document.createElement("button");
+      const callbacks = [vi.fn(), vi.fn(), vi.fn()];
+      component._addEventListener("click", root, callbacks[0]);
+      component._addEventListener("keyup", root, callbacks[1]);
+      component._addEventListener("click", other, callbacks[2]);
+
+      component._removeEventListeners({ type: "click", element: root });
+      root.click();
+
+      root.dispatchEvent(new Event("keyup"));
+      other.click();
+
+      expect(callbacks[0]).not.toHaveBeenCalled();
+      expect(callbacks[1]).toHaveBeenCalledTimes(1);
+      expect(callbacks[2]).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("_store", () => {
-    it.each(["", "explicit-id"])(
+    it.each([
+      ["", "key"],
+      ["explicit-id", "explicit-id"],
+    ])(
       "should store using id=%j or fall back to the key",
-      (id) => {
+      (id, expectedKey) => {
         component = new Component({ key: "key", bootstrap: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
@@ -840,7 +931,7 @@ describe("Component protected methods", () => {
         expect(
           window.AccessibleEcosystemStorage.get({
             type: "components",
-            key: id || "key",
+            key: expectedKey,
           })
         ).toBe(component);
       }
@@ -879,9 +970,12 @@ describe("Component protected methods", () => {
   });
 
   describe("_unstore", () => {
-    it.each(["", "explicit-id"])(
+    it.each([
+      ["", "key"],
+      ["explicit-id", "explicit-id"],
+    ])(
       "should remove the component using id=%j or the key",
-      (id) => {
+      (id, expectedKey) => {
         component = new Component({ key: "key", bootstrap: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
@@ -895,7 +989,7 @@ describe("Component protected methods", () => {
         expect(
           window.AccessibleEcosystemStorage.get({
             type: "components",
-            key: id || "key",
+            key: expectedKey,
           })
         ).toBeUndefined();
       }
@@ -960,166 +1054,156 @@ describe("Component protected methods", () => {
       expect(window.AccessibleEcosystemStorage).toBe(incompatible);
     });
   });
-});
 
-describe("Component animation frames", () => {
-  it("should pass the timestamp and remove a completed frame before its callback", () => {
-    component = new Component({ bootstrap: false });
-    component._dom.root = document.createElement("button");
-    component._rootDOMElement = "root";
-    document.body.appendChild(component.rootDOMElement);
-    component._bootstrap();
-    let runFrame;
-    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
-      runFrame = callback;
-      return 0;
-    });
-    const callback = vi.fn(() => {
+  describe("_requestAnimationFrame", () => {
+    it("should pass the timestamp and remove a completed frame before its callback", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      let runFrame;
+      vi.spyOn(window, "requestAnimationFrame").mockImplementation(
+        (callback) => {
+          runFrame = callback;
+          return 0;
+        }
+      );
+      const callback = vi.fn(() => {
+        expect(component.frames).toEqual({});
+      });
+
+      const id = component._requestAnimationFrame(callback);
+
+      expect(id).toBe(0);
+      expect(component.frames).toEqual({ _default: 0 });
+
+      runFrame(123);
+
+      expect(callback).toHaveBeenCalledWith(123);
       expect(component.frames).toEqual({});
     });
 
-    const id = component._requestAnimationFrame(callback);
+    it("should replace a pending frame in the same scope without cancelling other scopes", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      vi.spyOn(window, "requestAnimationFrame")
+        .mockReturnValueOnce(1)
+        .mockReturnValueOnce(2)
+        .mockReturnValueOnce(3);
+      const cancel = vi.spyOn(window, "cancelAnimationFrame");
 
-    expect(id).toBe(0);
-    expect(component.frames).toEqual({ _default: 0 });
+      component._requestAnimationFrame(vi.fn(), "focus");
+      component._requestAnimationFrame(vi.fn(), "blur");
+      component._requestAnimationFrame(vi.fn(), "focus");
 
-    runFrame(123);
+      expect(cancel).toHaveBeenCalledExactlyOnceWith(1);
+      expect(component.frames).toEqual({ focus: 3, blur: 2 });
+    });
 
-    expect(callback).toHaveBeenCalledWith(123);
-    expect(component.frames).toEqual({});
-  });
+    it("should preserve a new frame requested from inside a callback", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      let runFrame;
+      vi.spyOn(window, "requestAnimationFrame")
+        .mockImplementationOnce((callback) => {
+          runFrame = callback;
+          return 1;
+        })
+        .mockReturnValueOnce(2);
 
-  it("should replace a pending frame in the same scope without cancelling other scopes", () => {
-    component = new Component({ bootstrap: false });
-    component._dom.root = document.createElement("button");
-    component._rootDOMElement = "root";
-    document.body.appendChild(component.rootDOMElement);
-    component._bootstrap();
-    vi.spyOn(window, "requestAnimationFrame")
-      .mockReturnValueOnce(1)
-      .mockReturnValueOnce(2)
-      .mockReturnValueOnce(3);
-    const cancel = vi.spyOn(window, "cancelAnimationFrame");
+      component._requestAnimationFrame(() => {
+        component._requestAnimationFrame(vi.fn());
+      });
 
-    component._requestAnimationFrame(vi.fn(), "focus");
-    component._requestAnimationFrame(vi.fn(), "blur");
-    component._requestAnimationFrame(vi.fn(), "focus");
+      runFrame(0);
 
-    expect(cancel).toHaveBeenCalledExactlyOnceWith(1);
-    expect(component.frames).toEqual({ focus: 3, blur: 2 });
-  });
+      expect(component.frames).toEqual({ _default: 2 });
+    });
 
-  it("should cancel a scoped frame and allow repeated cancellation", () => {
-    component = new Component({ bootstrap: false });
-    component._dom.root = document.createElement("button");
-    component._rootDOMElement = "root";
-    document.body.appendChild(component.rootDOMElement);
-    component._bootstrap();
-    vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
-    const cancel = vi.spyOn(window, "cancelAnimationFrame");
-    component._requestAnimationFrame(vi.fn(), "focus");
+    it("should remove frames even when their callbacks throw", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      let runFrame;
+      vi.spyOn(window, "requestAnimationFrame").mockImplementation(
+        (callback) => {
+          runFrame = callback;
+          return 1;
+        }
+      );
 
-    component._cancelAnimationFrame("focus");
-    component._cancelAnimationFrame("focus");
-    component._cancelAnimationFrame("missing");
+      component._requestAnimationFrame(() => {
+        throw new Error("frame failed");
+      });
 
-    expect(cancel).toHaveBeenCalledExactlyOnceWith(0);
-    expect(component.frames).toEqual({});
-  });
+      expect(() => runFrame(0)).toThrow("frame failed");
+      expect(component.frames).toEqual({});
+    });
 
-  it("should preserve a new frame requested from inside a callback", () => {
-    component = new Component({ bootstrap: false });
-    component._dom.root = document.createElement("button");
-    component._rootDOMElement = "root";
-    document.body.appendChild(component.rootDOMElement);
-    component._bootstrap();
-    let runFrame;
-    vi.spyOn(window, "requestAnimationFrame")
-      .mockImplementationOnce((callback) => {
-        runFrame = callback;
-        return 1;
-      })
-      .mockReturnValueOnce(2);
-    component._requestAnimationFrame(() => {
+    it("should keep frame storage separate for each component", () => {
+      first = new Component({ bootstrap: false });
+      first._dom.root = document.createElement("button");
+      first._rootDOMElement = "root";
+      document.body.appendChild(first.rootDOMElement);
+      first._bootstrap();
+      second = new Component({ bootstrap: false });
+      second._dom.root = document.createElement("button");
+      second._rootDOMElement = "root";
+      document.body.appendChild(second.rootDOMElement);
+      second._bootstrap();
+      vi.spyOn(window, "requestAnimationFrame").mockReturnValue(1);
+
+      first._requestAnimationFrame(vi.fn());
+
+      expect(first.frames).toEqual({ _default: 1 });
+      expect(second.frames).toEqual({});
+    });
+
+    it("should not store frames whose callbacks run synchronously", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      vi.spyOn(window, "requestAnimationFrame").mockImplementation(
+        (callback) => {
+          callback(0);
+          return 1;
+        }
+      );
+
       component._requestAnimationFrame(vi.fn());
+
+      expect(component.frames).toEqual({});
     });
-
-    runFrame(0);
-
-    expect(component.frames).toEqual({ _default: 2 });
   });
 
-  it("should remove frames even when their callbacks throw", () => {
-    component = new Component({ bootstrap: false });
-    component._dom.root = document.createElement("button");
-    component._rootDOMElement = "root";
-    document.body.appendChild(component.rootDOMElement);
-    component._bootstrap();
-    let runFrame;
-    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
-      runFrame = callback;
-      return 1;
+  describe("_cancelAnimationFrame", () => {
+    it("should cancel a scoped frame and allow repeated cancellation", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
+      const cancel = vi.spyOn(window, "cancelAnimationFrame");
+      component._requestAnimationFrame(vi.fn(), "focus");
+
+      component._cancelAnimationFrame("focus");
+      component._cancelAnimationFrame("focus");
+      component._cancelAnimationFrame("missing");
+
+      expect(cancel).toHaveBeenCalledExactlyOnceWith(0);
+      expect(component.frames).toEqual({});
     });
-    component._requestAnimationFrame(() => {
-      throw new Error("frame failed");
-    });
-
-    expect(() => runFrame(0)).toThrow("frame failed");
-    expect(component.frames).toEqual({});
-  });
-
-  it("should cancel all pending frames on disposal", () => {
-    component = new Component({ bootstrap: false });
-    component._dom.root = document.createElement("button");
-    component._rootDOMElement = "root";
-    document.body.appendChild(component.rootDOMElement);
-    component._bootstrap();
-    vi.spyOn(window, "requestAnimationFrame")
-      .mockReturnValueOnce(1)
-      .mockReturnValueOnce(2);
-    const cancel = vi.spyOn(window, "cancelAnimationFrame");
-    component._requestAnimationFrame(vi.fn());
-    component._requestAnimationFrame(vi.fn(), "focus");
-
-    component.dispose();
-
-    expect(cancel).toHaveBeenCalledWith(1);
-    expect(cancel).toHaveBeenCalledWith(2);
-    expect(component.frames).toEqual({});
-  });
-
-  it("should keep frame storage separate for each component", () => {
-    first = new Component({ bootstrap: false });
-    first._dom.root = document.createElement("button");
-    first._rootDOMElement = "root";
-    document.body.appendChild(first.rootDOMElement);
-    first._bootstrap();
-    second = new Component({ bootstrap: false });
-    second._dom.root = document.createElement("button");
-    second._rootDOMElement = "root";
-    document.body.appendChild(second.rootDOMElement);
-    second._bootstrap();
-    vi.spyOn(window, "requestAnimationFrame").mockReturnValue(1);
-
-    first._requestAnimationFrame(vi.fn());
-
-    expect(first.frames).toEqual({ _default: 1 });
-    expect(second.frames).toEqual({});
-  });
-
-  it("should not store frames whose callbacks run synchronously", () => {
-    component = new Component({ bootstrap: false });
-    component._dom.root = document.createElement("button");
-    component._rootDOMElement = "root";
-    document.body.appendChild(component.rootDOMElement);
-    component._bootstrap();
-    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
-      callback(0);
-      return 1;
-    });
-
-    component._requestAnimationFrame(vi.fn());
-
-    expect(component.frames).toEqual({});
   });
 });

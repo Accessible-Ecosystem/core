@@ -55,49 +55,91 @@ describe("Component public methods", () => {
       expect(component.getEventName("missing")).toBeNull();
     });
   });
-  for (const method of ["focus", "blur"])
-    describe(method, () => {
-      it.each(["none", "mouse", "keyboard", "character"])(
-        "should update the focus state for the %s event",
-        (currentEvent) => {
-          component = new Component({ bootstrap: false });
-          component._dom.root = document.createElement("button");
-          component._rootDOMElement = "root";
-          document.body.appendChild(component.rootDOMElement);
-          component._bootstrap();
-          component.currentEvent = currentEvent;
 
-          component[method]();
+  describe("focus", () => {
+    it.each(["none", "mouse", "keyboard", "character"])(
+      "should update the focus state for the %s event",
+      (currentEvent) => {
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.currentEvent = currentEvent;
 
-          expect(component.focusState).toBe(
-            method === "focus" ? "self" : "none"
-          );
-        }
-      );
+        component.focus();
 
-      it.each(["none", "mouse", "keyboard", "character"])(
-        "should respect DOM focus eligibility for the %s event",
-        (currentEvent) => {
-          component = new Component({ bootstrap: false });
-          component._dom.root = document.createElement("button");
-          component._rootDOMElement = "root";
-          document.body.appendChild(component.rootDOMElement);
-          component._bootstrap();
-          const root = component.rootDOMElement;
-          root.focus();
-          if (method === "focus") root.blur();
-          component.currentEvent = currentEvent;
+        expect(component.focusState).toBe("self");
+      }
+    );
 
-          component[method]();
+    it.each([
+      ["none", false],
+      ["mouse", false],
+      ["keyboard", true],
+      ["character", false],
+    ])(
+      "should respect DOM focus eligibility for the %s event",
+      (currentEvent, expectedFocus) => {
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const root = component.rootDOMElement;
 
-          expect(document.activeElement === root).toBe(
-            method === "focus"
-              ? currentEvent === "keyboard"
-              : currentEvent !== "keyboard"
-          );
-        }
-      );
-    });
+        root.focus();
+        root.blur();
+        component.currentEvent = currentEvent;
+
+        component.focus();
+
+        expect(document.activeElement === root).toBe(expectedFocus);
+      }
+    );
+  });
+
+  describe("blur", () => {
+    it.each(["none", "mouse", "keyboard", "character"])(
+      "should update the focus state for the %s event",
+      (currentEvent) => {
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.currentEvent = currentEvent;
+
+        component.blur();
+
+        expect(component.focusState).toBe("none");
+      }
+    );
+
+    it.each([
+      ["none", true],
+      ["mouse", true],
+      ["keyboard", false],
+      ["character", true],
+    ])(
+      "should respect DOM focus eligibility for the %s event",
+      (currentEvent, expectedFocus) => {
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const root = component.rootDOMElement;
+        root.focus();
+
+        component.currentEvent = currentEvent;
+
+        component.blur();
+
+        expect(document.activeElement === root).toBe(expectedFocus);
+      }
+    );
+  });
 
   describe("dispose", () => {
     it("should cancel pending timeouts", () => {
@@ -164,6 +206,26 @@ describe("Component public methods", () => {
           key: "dispose",
         })
       ).toBeUndefined();
+    });
+
+    it("should cancel all pending frames on disposal", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      vi.spyOn(window, "requestAnimationFrame")
+        .mockReturnValueOnce(1)
+        .mockReturnValueOnce(2);
+      const cancel = vi.spyOn(window, "cancelAnimationFrame");
+      component._requestAnimationFrame(vi.fn());
+      component._requestAnimationFrame(vi.fn(), "focus");
+
+      component.dispose();
+
+      expect(cancel).toHaveBeenCalledWith(1);
+      expect(cancel).toHaveBeenCalledWith(2);
+      expect(component.frames).toEqual({});
     });
   });
 });

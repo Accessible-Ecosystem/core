@@ -83,126 +83,305 @@ describe("CollapsibleComponent getter/setters", () => {
         }
       );
     });
-  for (const name of [
-    "transitionDuration",
-    "expandDuration",
-    "collapseDuration",
-  ])
-    describe(name, () => {
-      it("should update the duration", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
 
-        component[name] = 300;
-
-        expect(component[name]).toBe(300);
+  describe("transitionDuration", () => {
+    it("should update the duration", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
       });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
-      it("should refresh custom properties when the duration changes", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        const props = vi.spyOn(component, "_setCustomProps");
+      component.transitionDuration = 300;
 
-        component[name] = 300;
-
-        expect(props).toHaveBeenCalledTimes(1);
-      });
-
-      it("should not refresh custom properties when the duration is unchanged", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-
-        component[name] = 300;
-        const props = vi.spyOn(component, "_setCustomProps");
-        component[name] = 300;
-
-        expect(props).not.toHaveBeenCalled();
-      });
-
-      it("should reject non-numeric durations without changing the duration", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        const original = component[name];
-
-        expect(() => {
-          component[name] = "slow";
-        }).toThrow(TypeError);
-        expect(component[name]).toBe(original);
-      });
+      expect(component.transitionDuration).toBe(300);
     });
-  for (const name of ["expandDuration", "collapseDuration"])
-    describe(name, () => {
-      it("should fall back to the transition duration by default", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionDuration: 321,
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
 
-        expect(component[name]).toBe(321);
+    it("should refresh custom properties when the duration changes", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
       });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const props = vi.spyOn(component, "_setCustomProps");
 
-      it("should use an explicit action duration", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionDuration: 321,
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
+      component.transitionDuration = 300;
 
-        component[name] = 50;
-
-        expect(component[name]).toBe(50);
-      });
-
-      it("should use transitionDuration when set to -1", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionDuration: 321,
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-
-        component[name] = 50;
-        component[name] = -1;
-
-        expect(component[name]).toBe(321);
-      });
+      expect(props).toHaveBeenCalledTimes(1);
     });
+
+    it("should not refresh custom properties when the duration is unchanged", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component.transitionDuration = 300;
+      const props = vi.spyOn(component, "_setCustomProps");
+
+      component.transitionDuration = 300;
+
+      expect(props).not.toHaveBeenCalled();
+    });
+
+    it("should reject non-numeric durations without changing the duration", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const original = component.transitionDuration;
+
+      expect(() => {
+        component.transitionDuration = "slow";
+      }).toThrow(TypeError);
+      expect(component.transitionDuration).toBe(original);
+    });
+  });
+
+  describe("expandDuration", () => {
+    it("should update the duration", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component.expandDuration = 300;
+
+      expect(component.expandDuration).toBe(300);
+    });
+
+    it("should refresh custom properties when the duration changes", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const props = vi.spyOn(component, "_setCustomProps");
+
+      component.expandDuration = 300;
+
+      expect(props).toHaveBeenCalledTimes(1);
+    });
+
+    it("should not refresh custom properties when the duration is unchanged", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component.expandDuration = 300;
+      const props = vi.spyOn(component, "_setCustomProps");
+
+      component.expandDuration = 300;
+
+      expect(props).not.toHaveBeenCalled();
+    });
+
+    it("should reject non-numeric durations without changing the duration", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const original = component.expandDuration;
+
+      expect(() => {
+        component.expandDuration = "slow";
+      }).toThrow(TypeError);
+      expect(component.expandDuration).toBe(original);
+    });
+
+    it("should fall back to the transition duration by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionDuration: 321,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      expect(component.expandDuration).toBe(321);
+    });
+
+    it("should use an explicit action duration", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionDuration: 321,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component.expandDuration = 50;
+
+      expect(component.expandDuration).toBe(50);
+    });
+
+    it("should use transitionDuration when set to -1", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionDuration: 321,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component.expandDuration = 50;
+      component.expandDuration = -1;
+
+      expect(component.expandDuration).toBe(321);
+    });
+  });
+
+  describe("collapseDuration", () => {
+    it("should update the duration", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component.collapseDuration = 300;
+
+      expect(component.collapseDuration).toBe(300);
+    });
+
+    it("should refresh custom properties when the duration changes", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const props = vi.spyOn(component, "_setCustomProps");
+
+      component.collapseDuration = 300;
+
+      expect(props).toHaveBeenCalledTimes(1);
+    });
+
+    it("should not refresh custom properties when the duration is unchanged", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component.collapseDuration = 300;
+      const props = vi.spyOn(component, "_setCustomProps");
+
+      component.collapseDuration = 300;
+
+      expect(props).not.toHaveBeenCalled();
+    });
+
+    it("should reject non-numeric durations without changing the duration", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const original = component.collapseDuration;
+
+      expect(() => {
+        component.collapseDuration = "slow";
+      }).toThrow(TypeError);
+      expect(component.collapseDuration).toBe(original);
+    });
+
+    it("should fall back to the transition duration by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionDuration: 321,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      expect(component.collapseDuration).toBe(321);
+    });
+
+    it("should use an explicit action duration", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionDuration: 321,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component.collapseDuration = 50;
+
+      expect(component.collapseDuration).toBe(50);
+    });
+
+    it("should use transitionDuration when set to -1", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionDuration: 321,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component.collapseDuration = 50;
+      component.collapseDuration = -1;
+
+      expect(component.collapseDuration).toBe(321);
+    });
+  });
+
   for (const name of [
     "expandOnFocus",
     "collapseOnBlur",
@@ -265,11 +444,12 @@ describe("CollapsibleComponent getter/setters", () => {
         expect(component[name]).toBe(original);
       });
     });
-  for (const [name, field, committed] of [
-    ["isExpanded", "_expanded", false],
-    ["shouldBeExpanded", "_expanded", true],
-    ["isLocked", "_locked", false],
-    ["shouldBeLocked", "_locked", true],
+
+  for (const [name, field, expectedValue] of [
+    ["isExpanded", "_expanded", true],
+    ["shouldBeExpanded", "_expanded", false],
+    ["isLocked", "_locked", true],
+    ["shouldBeLocked", "_locked", false],
   ])
     describe(name, () => {
       it("should return the initial state", () => {
@@ -285,7 +465,7 @@ describe("CollapsibleComponent getter/setters", () => {
         expect(component[name]).toBe(false);
       });
 
-      it("should get the current state before committing", () => {
+      it("should return the expected state before committing", () => {
         component = new CollapsibleComponent({
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
@@ -296,10 +476,10 @@ describe("CollapsibleComponent getter/setters", () => {
         component._bootstrap();
         component[field].value = true;
 
-        expect(component[name]).toBe(!committed);
+        expect(component[name]).toBe(expectedValue);
       });
 
-      it("should get the committed state after committing", () => {
+      it("should return the updated state after committing", () => {
         component = new CollapsibleComponent({
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),

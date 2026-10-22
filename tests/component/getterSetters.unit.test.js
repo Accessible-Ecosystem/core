@@ -160,6 +160,7 @@ describe("Component getter/setters", () => {
       }).toThrow(TypeError);
     });
   });
+
   for (const [name, values, invalid] of [
     ["initializeClass", ["custom", ["one", "two"], "", []], 123],
     ["focusState", ["none", "self", "child"], "invalid"],
@@ -219,9 +220,14 @@ describe("Component getter/setters", () => {
       }).toThrow(TypeError);
     });
 
-    it.each(["none", "mouse", "keyboard", "character"])(
+    it.each([
+      ["none", false],
+      ["mouse", false],
+      ["keyboard", true],
+      ["character", false],
+    ])(
       "should derive focus eligibility from %s",
-      (currentEvent) => {
+      (currentEvent, expectedFocus) => {
         component = new Component({ bootstrap: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
@@ -229,7 +235,7 @@ describe("Component getter/setters", () => {
         component._bootstrap();
         component.currentEvent = currentEvent;
 
-        expect(component.shouldFocus).toBe(currentEvent === "keyboard");
+        expect(component.shouldFocus).toBe(expectedFocus);
       }
     );
   });

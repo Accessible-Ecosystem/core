@@ -7,8 +7,9 @@ import { isValidInstance } from "../../src/validate.js";
 
 describe("isValidInstance", () => {
   // Test checking for an HTMLElement.
-  it("should return true when checking if a DOM element is an HTMLElement", () => {
+  it("should accept an HTMLElement instance", () => {
     const element = document.createElement("div");
+
     const result = isValidInstance(HTMLElement, { element });
 
     expect(result.status).toBeTruthy();
@@ -16,9 +17,10 @@ describe("isValidInstance", () => {
   });
 
   // Test checking for multiple HTMLElements.
-  it("should return true when checking if multiple DOM elements are HTMLElements", () => {
+  it("should accept multiple HTMLElement instances", () => {
     const element1 = document.createElement("div");
     const element2 = document.createElement("div");
+
     const result = isValidInstance(HTMLElement, { element1, element2 });
 
     expect(result.status).toBeTruthy();
@@ -26,7 +28,7 @@ describe("isValidInstance", () => {
   });
 
   // Test checking for a non-HTMLElement.
-  it("should return false when checking if a non-DOM element is an HTMLElement", () => {
+  it("should throw when a value is not an HTMLElement instance", () => {
     const element = "string";
 
     expect(() => {
@@ -35,7 +37,7 @@ describe("isValidInstance", () => {
   });
 
   // Test checking for multiple non-HTMLElements.
-  it("should return false when checking if multiple non-DOM elements are HTMLElements", () => {
+  it("should throw when multiple values are not HTMLElement instances", () => {
     const element1 = "string";
     const element2 = "string";
 
@@ -45,7 +47,7 @@ describe("isValidInstance", () => {
   });
 
   // Test checking for a mixed HTMLElement and non-HTMLElement.
-  it("should return false when checking if a mixed DOM element and non-DOM element are HTMLElements", () => {
+  it("should throw when an invalid instance appears alongside a valid instance", () => {
     const element1 = document.createElement("div");
     const element2 = "string";
 
@@ -54,8 +56,8 @@ describe("isValidInstance", () => {
     }).toThrow(TypeError);
   });
 
-  // Test passing a non-valid constructor.
-  it("should return false when checking for a non-valid constructor", () => {
+  // Test passing an invalid constructor.
+  it("should throw when the constructor argument is not a function", () => {
     const element = document.createElement("div");
 
     expect(() => {
@@ -64,7 +66,7 @@ describe("isValidInstance", () => {
   });
 
   // Test passing a non-object as the elements parameter.
-  it("should return false when passing a non-object as the elements parameter", () => {
+  it("should throw when the elements argument is not an object", () => {
     const element = document.createElement("div");
 
     expect(() => {
@@ -73,7 +75,7 @@ describe("isValidInstance", () => {
   });
 
   // Test that shouldThrow will throw on invalid values.
-  it("should throw the first error when shouldThrow is true", () => {
+  it("should throw when shouldThrow is true", () => {
     expect(() => {
       isValidInstance(
         HTMLElement,
@@ -84,7 +86,7 @@ describe("isValidInstance", () => {
   });
 
   // Test that shouldThrow can be disabled.
-  it("should not throw when shouldThrow is false", () => {
+  it("should report validation errors without throwing when shouldThrow is false", () => {
     const result = isValidInstance(
       HTMLElement,
       { element: "string" },
@@ -94,9 +96,7 @@ describe("isValidInstance", () => {
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
-});
 
-describe("isValidInstance error aggregation", () => {
   it("should return errors for all invalid values", () => {
     const result = isValidInstance(
       HTMLElement,

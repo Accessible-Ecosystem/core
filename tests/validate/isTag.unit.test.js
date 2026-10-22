@@ -7,7 +7,7 @@ import { isTag } from "../../src/validate.js";
 
 describe("isTag", () => {
   // Test that a paragraph element is a 'p' tag.
-  it("should return true when checking if a paragraph element is a 'p' tag", () => {
+  it("should accept a paragraph element when the required tag is p", () => {
     const element = document.createElement("p");
 
     const result = isTag("p", { element });
@@ -17,7 +17,7 @@ describe("isTag", () => {
   });
 
   // Test that multiple paragraph elements are 'p' tags.
-  it("should return true when checking if multiple paragraph elements are 'p' tags", () => {
+  it("should accept multiple paragraph elements when the required tag is p", () => {
     const element1 = document.createElement("p");
     const element2 = document.createElement("p");
 
@@ -28,7 +28,7 @@ describe("isTag", () => {
   });
 
   // Test that a div element is not a 'p' tag.
-  it("should return false when checking if a div element is a 'p' tag", () => {
+  it("should throw when an element has the wrong tag", () => {
     const element = document.createElement("div");
 
     expect(() => {
@@ -37,7 +37,7 @@ describe("isTag", () => {
   });
 
   // Test that multiple div elements are not 'p' tags.
-  it("should return false when checking if multiple div elements are 'p' tags", () => {
+  it("should throw when multiple elements have the wrong tag", () => {
     const element1 = document.createElement("div");
     const element2 = document.createElement("div");
 
@@ -47,7 +47,7 @@ describe("isTag", () => {
   });
 
   // Test that a mixed div and paragraph element are not 'p' tags.
-  it("should return false when checking if a mixed div and paragraph element are 'p' tags", () => {
+  it("should throw when an element has the wrong tag alongside a matching element", () => {
     const element1 = document.createElement("div");
     const element2 = document.createElement("p");
 
@@ -57,7 +57,7 @@ describe("isTag", () => {
   });
 
   // Test passing an invalid tag.
-  it("should return false when checking for an invalid tag", () => {
+  it("should throw when the tag argument is not a string", () => {
     const element = document.createElement("p");
 
     expect(() => {
@@ -66,7 +66,7 @@ describe("isTag", () => {
   });
 
   // Test passing an invalid element.
-  it("should return false when checking for an invalid element", () => {
+  it("should throw when a value is not an HTMLElement", () => {
     const element = "string";
 
     expect(() => {
@@ -75,7 +75,7 @@ describe("isTag", () => {
   });
 
   // Test passing both an invalid tag and element.
-  it("should return false when checking for an invalid tag and element", () => {
+  it("should throw when both the tag and element are invalid", () => {
     const element = "string";
 
     expect(() => {
@@ -84,7 +84,7 @@ describe("isTag", () => {
   });
 
   // Test passing a non-object.
-  it("should return false when checking for a non-object", () => {
+  it("should throw when the elements argument is not an object", () => {
     const element = document.createElement("p");
 
     expect(() => {
@@ -93,7 +93,7 @@ describe("isTag", () => {
   });
 
   // Test that shouldThrow will throw on invalid values.
-  it("should throw the first error when shouldThrow is true", () => {
+  it("should throw when shouldThrow is true", () => {
     expect(() => {
       isTag(
         "p",
@@ -104,7 +104,7 @@ describe("isTag", () => {
   });
 
   // Test that shouldThrow can be disabled.
-  it("should not throw when shouldThrow is false", () => {
+  it("should report validation errors without throwing when shouldThrow is false", () => {
     const result = isTag(
       "p",
       { element: document.createElement("div") },
@@ -114,9 +114,7 @@ describe("isTag", () => {
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
-});
 
-describe("isTag error aggregation", () => {
   it("should return errors for all invalid values", () => {
     const result = isTag(
       "p",
@@ -145,9 +143,7 @@ describe("isTag error aggregation", () => {
       })
     ).toThrow(/^first\b/);
   });
-});
 
-describe("isTag casing", () => {
   it("should match tags without case sensitivity", () => {
     expect(
       isTag("BUTTON", { element: document.createElement("button") })

@@ -13,15 +13,16 @@ describe("hasValidRootDOMElement", () => {
     }
   }
 
-  it("should return true when the root DOM element exists in _dom", () => {
+  it("should accept a configured root DOM slot", () => {
     const component = new TestComponent();
+
     const result = hasValidRootDOMElement(component);
 
     expect(result.status).toBeTruthy();
     expect(result.errors).toHaveLength(0);
   });
 
-  it("should return false when the root DOM element does not exist in _dom", () => {
+  it("should throw when the configured root DOM slot is missing", () => {
     const component = new TestComponent();
     component._rootDOMElement = "missing";
 
@@ -30,7 +31,7 @@ describe("hasValidRootDOMElement", () => {
     }).toThrow(Error);
   });
 
-  it("should throw the first error when shouldThrow is true", () => {
+  it("should throw when shouldThrow is true", () => {
     const component = new TestComponent();
     component._rootDOMElement = "missing";
 
@@ -39,7 +40,7 @@ describe("hasValidRootDOMElement", () => {
     }).toThrow(Error);
   });
 
-  it("should not throw when shouldThrow is false", () => {
+  it("should report validation errors without throwing when shouldThrow is false", () => {
     const component = new TestComponent();
     component._rootDOMElement = "missing";
 
@@ -48,9 +49,7 @@ describe("hasValidRootDOMElement", () => {
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(Error);
   });
-});
 
-describe("hasValidRootDOMElement own properties", () => {
   it("should reject inherited DOM slots", () => {
     const component = {
       _dom: Object.create({ root: document.createElement("div") }),

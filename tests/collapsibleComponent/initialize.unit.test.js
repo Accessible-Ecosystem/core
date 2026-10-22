@@ -6,10 +6,16 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import CollapsibleComponent from "../../src/CollapsibleComponent.js";
 
 let component;
+let parent;
+let child;
 
 afterEach(() => {
   component?.dispose();
   component = null;
+  parent?.dispose();
+  parent = null;
+  child?.dispose();
+  child = null;
   document.body.innerHTML = "";
   delete window.AccessibleEcosystemStorage;
   vi.restoreAllMocks();
@@ -157,9 +163,12 @@ describe("CollapsibleComponent initialization", () => {
   });
 
   describe("initialize", () => {
-    it.each([true, false])(
+    it.each([
+      [true, "show"],
+      [false, "hide"],
+    ])(
       "should initialize expansion from aria-expanded=%s",
-      (expanded) => {
+      (expanded, expectedClass) => {
         component = new CollapsibleComponent({
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
@@ -177,11 +186,9 @@ describe("CollapsibleComponent initialization", () => {
 
         expect(component.isExpanded).toBe(expanded);
         expect(component.shouldBeExpanded).toBe(expanded);
-        expect(
-          component.dom.controlled.classList.contains(
-            expanded ? "show" : "hide"
-          )
-        ).toBe(true);
+        expect(component.dom.controlled.classList.contains(expectedClass)).toBe(
+          true
+        );
       }
     );
 
@@ -282,6 +289,7 @@ describe("CollapsibleComponent initialization", () => {
       document.body.appendChild(component.rootDOMElement);
       component._bootstrap();
       component.dom.controller.appendChild(trigger);
+
       component.initialize();
       const expanded = vi.fn();
       component.dom.controller.addEventListener(
@@ -309,7 +317,7 @@ describe("CollapsibleComponent initialization", () => {
       "lockOutsideBreakpoint",
       "unlockInsideBreakpoint",
       "unlockOutsideBreakpoint",
-    ])("should reject invalid %s", (option) => {
+    ])("should report validation failures for invalid %s", (option) => {
       const error = vi.spyOn(console, "error").mockImplementation(() => {});
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
@@ -326,6 +334,56 @@ describe("CollapsibleComponent initialization", () => {
       expect(component.isInitialized).toBe(false);
       expect(component.isValid).toBe(false);
       expect(error).toHaveBeenCalledWith(expect.any(Error));
+    });
+
+    it("should ignore a child component's initialize event", () => {
+      parent = new CollapsibleComponent({
+        controlledElement: document.createElement("div"),
+        controllerElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      parent._rootDOMElement = "controller";
+      document.body.appendChild(parent.rootDOMElement);
+      parent._bootstrap();
+      child = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      child._rootDOMElement = "controller";
+      document.body.appendChild(child.rootDOMElement);
+      child._bootstrap();
+      parent.rootDOMElement.append(child.rootDOMElement);
+      const collapse = vi.spyOn(parent, "collapse");
+
+      child._dispatchEvent("initialize");
+
+      expect(collapse).not.toHaveBeenCalled();
+    });
+
+    it("should ignore a child component's validate event", () => {
+      parent = new CollapsibleComponent({
+        controlledElement: document.createElement("div"),
+        controllerElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      parent._rootDOMElement = "controller";
+      document.body.appendChild(parent.rootDOMElement);
+      parent._bootstrap();
+      child = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      child._rootDOMElement = "controller";
+      document.body.appendChild(child.rootDOMElement);
+      child._bootstrap();
+      parent.rootDOMElement.append(child.rootDOMElement);
+      parent._expandInsideBreakpoint = "invalid";
+
+      child._dispatchEvent("validate");
+
+      expect(parent.isValid).toBe(true);
     });
   });
 });

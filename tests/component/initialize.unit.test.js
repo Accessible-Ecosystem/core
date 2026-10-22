@@ -104,7 +104,7 @@ describe("Component initialization", () => {
       expect(component.errors.length).toBeGreaterThan(0);
     });
 
-    it("should reject a missing root", () => {
+    it("should report a validation failure when the root is missing", () => {
       const error = vi.spyOn(console, "error").mockImplementation(() => {});
       component = new Component();
 
@@ -185,9 +185,13 @@ describe("Component initialization", () => {
       }
     );
 
-    it.each(["preinitialize", "initialize", "postinitialize"])(
+    it.each([
+      ["preinitialize", false],
+      ["initialize", false],
+      ["postinitialize", true],
+    ])(
       "should expose the expected initialized state during %s",
-      (name) => {
+      (name, expectedState) => {
         component = new Component({ bootstrap: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
@@ -202,13 +206,17 @@ describe("Component initialization", () => {
 
         component.initialize();
 
-        expect(states).toEqual([name === "postinitialize"]);
+        expect(states).toEqual([expectedState]);
       }
     );
 
-    it.each(["preinitialize", "initialize", "postinitialize"])(
+    it.each([
+      ["preinitialize", true],
+      ["initialize", true],
+      ["postinitialize", false],
+    ])(
       "should expose the initialization class during %s",
-      (name) => {
+      (name, expectedState) => {
         component = new Component({ bootstrap: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
@@ -226,7 +234,7 @@ describe("Component initialization", () => {
 
         component.initialize();
 
-        expect(states).toEqual([name !== "postinitialize"]);
+        expect(states).toEqual([expectedState]);
       }
     );
 
@@ -248,20 +256,21 @@ describe("Component initialization", () => {
       expect(component.isInitialized).toBe(false);
       expect(component.isValid).toBe(false);
     });
-  });
-  it("should collect invalid-root validation errors before initialization", () => {
-    component = new Component({ bootstrap: false });
-    component._dom.root = document.createElement("button");
-    component._rootDOMElement = "root";
-    document.body.appendChild(component.rootDOMElement);
-    component._bootstrap();
-    component._dom.root = 12;
-    vi.spyOn(console, "error").mockImplementation(() => {});
 
-    component.initialize();
+    it("should collect invalid-root validation errors before initialization", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component._dom.root = 12;
+      vi.spyOn(console, "error").mockImplementation(() => {});
 
-    expect(
-      component.errors.some((error) => error.message.includes("rootElement"))
-    ).toBe(true);
+      component.initialize();
+
+      expect(
+        component.errors.some((error) => error.message.includes("rootElement"))
+      ).toBe(true);
+    });
   });
 });

@@ -61,6 +61,176 @@ describe("CollapsibleComponent public methods", () => {
         false
       );
     });
+
+    it("should preserve committed expansion before initialization when requested", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component.expand({
+        force: true,
+        emit: false,
+        transition: false,
+        preserveState: true,
+      });
+
+      expect(component.isExpanded).toBe(true);
+      expect(component.shouldBeExpanded).toBe(false);
+    });
+
+    it("should update the current state", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.expand();
+
+      expect(component.isExpanded).toBe(true);
+    });
+
+    it("should commit the state by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.expand();
+
+      expect(component.shouldBeExpanded).toBe(true);
+    });
+
+    it("should preserve the committed state when requested", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.expand({ preserveState: true });
+
+      expect(component.shouldBeExpanded).toBe(false);
+      expect(component.isExpanded).toBe(true);
+    });
+
+    it("should skip repeated actions by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.expand({ force: true });
+      const spy = vi.spyOn(component, "_expand");
+
+      component.expand();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it("should repeat an action when forced", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.expand({ force: true });
+      const spy = vi.spyOn(component, "_expand");
+
+      component.expand({ force: true });
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it("should set the focus state", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.expand();
+
+      expect(component.focusState).toBe("self");
+    });
+
+    it("should block state changes while locked", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock();
+      const spy = vi.spyOn(component, "_expand");
+
+      component.expand();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it("should change state while locked when forced", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock();
+      const spy = vi.spyOn(component, "_expand");
+
+      component.expand({ force: true });
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("collapse", () => {
@@ -107,6 +277,163 @@ describe("CollapsibleComponent public methods", () => {
         false
       );
     });
+
+    it("should update the current state", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expand();
+
+      component.collapse();
+
+      expect(component.isExpanded).toBe(false);
+    });
+
+    it("should commit the state by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expand();
+
+      component.collapse();
+
+      expect(component.shouldBeExpanded).toBe(false);
+    });
+
+    it("should preserve the committed state when requested", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expand();
+
+      component.collapse({ preserveState: true });
+
+      expect(component.shouldBeExpanded).toBe(true);
+      expect(component.isExpanded).toBe(false);
+    });
+
+    it("should skip repeated actions by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expand();
+
+      component.collapse({ force: true });
+      const spy = vi.spyOn(component, "_collapse");
+
+      component.collapse();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it("should repeat an action when forced", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expand();
+
+      component.collapse({ force: true });
+      const spy = vi.spyOn(component, "_collapse");
+
+      component.collapse({ force: true });
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it("should set the focus state", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expand();
+
+      component.collapse();
+
+      expect(component.focusState).toBe("none");
+    });
+
+    it("should block state changes while locked", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expand();
+
+      component.lock();
+      const spy = vi.spyOn(component, "_collapse");
+
+      component.collapse();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it("should change state while locked when forced", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expand();
+
+      component.lock();
+      const spy = vi.spyOn(component, "_collapse");
+
+      component.collapse({ force: true });
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("lock", () => {
@@ -144,6 +471,98 @@ describe("CollapsibleComponent public methods", () => {
       component.lock();
 
       expect(component.dom.controller.hasAttribute("disabled")).toBe(true);
+    });
+
+    it("should update the current state", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock();
+
+      expect(component.isLocked).toBe(true);
+    });
+
+    it("should commit the state by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock();
+
+      expect(component.shouldBeLocked).toBe(true);
+    });
+
+    it("should preserve the committed state when requested", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock({ preserveState: true });
+
+      expect(component.shouldBeLocked).toBe(false);
+      expect(component.isLocked).toBe(true);
+    });
+
+    it("should skip repeated actions by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock({ force: true });
+      const spy = vi.spyOn(component, "_lock");
+
+      component.lock();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it("should repeat an action when forced", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock({ force: true });
+      const spy = vi.spyOn(component, "_lock");
+
+      component.lock({ force: true });
+
+      expect(spy).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -184,222 +603,260 @@ describe("CollapsibleComponent public methods", () => {
 
       expect(component.dom.controller.hasAttribute("disabled")).toBe(false);
     });
-  });
 
-  describe("expand", () => {
-    it("should preserve committed expansion before initialization when requested", () => {
+    it("should update the current state", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
+        transitionClass: "",
         bootstrap: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
       component._bootstrap();
+      component.initialize();
 
-      component.expand({
-        force: true,
-        emit: false,
-        transition: false,
-        preserveState: true,
+      component.lock();
+
+      component.unlock();
+
+      expect(component.isLocked).toBe(false);
+    });
+
+    it("should commit the state by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
       });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
 
-      expect(component.isExpanded).toBe(true);
-      expect(component.shouldBeExpanded).toBe(false);
+      component.lock();
+
+      component.unlock();
+
+      expect(component.shouldBeLocked).toBe(false);
+    });
+
+    it("should preserve the committed state when requested", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock();
+
+      component.unlock({ preserveState: true });
+
+      expect(component.shouldBeLocked).toBe(true);
+      expect(component.isLocked).toBe(false);
+    });
+
+    it("should skip repeated actions by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock();
+
+      component.unlock({ force: true });
+      const spy = vi.spyOn(component, "_unlock");
+
+      component.unlock();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it("should repeat an action when forced", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock();
+
+      component.unlock({ force: true });
+      const spy = vi.spyOn(component, "_unlock");
+
+      component.unlock({ force: true });
+
+      expect(spy).toHaveBeenCalledTimes(1);
     });
   });
-  for (const action of ["expand", "preview", "collapse", "lock", "unlock"])
-    describe(action, () => {
-      it("should update the current state", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionClass: "",
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        component.initialize();
-        if (action === "collapse") component.expand();
-        if (action === "unlock") component.lock();
-        const lockedAction = ["lock", "unlock"].includes(action);
 
-        component[action]();
-
-        expect(component[lockedAction ? "isLocked" : "isExpanded"]).toBe(
-          ["expand", "preview", "lock"].includes(action)
-        );
+  describe("preview", () => {
+    it("should update the current state", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
       });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
 
-      it("should commit the state by default", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionClass: "",
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        component.initialize();
-        if (action === "collapse") component.expand();
-        if (action === "unlock") component.lock();
-        const lockedAction = ["lock", "unlock"].includes(action);
+      component.preview();
 
-        component[action]();
-
-        expect(
-          component[lockedAction ? "shouldBeLocked" : "shouldBeExpanded"]
-        ).toBe(["expand", "preview", "lock"].includes(action));
-      });
-
-      it("should preserve the committed state when requested", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionClass: "",
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        component.initialize();
-        if (action === "collapse") component.expand();
-        if (action === "unlock") component.lock();
-        const lockedAction = ["lock", "unlock"].includes(action);
-        const committed =
-          component[lockedAction ? "shouldBeLocked" : "shouldBeExpanded"];
-
-        component[action]({ preserveState: true });
-
-        expect(
-          component[lockedAction ? "shouldBeLocked" : "shouldBeExpanded"]
-        ).toBe(committed);
-        expect(component[lockedAction ? "isLocked" : "isExpanded"]).toBe(
-          !committed
-        );
-      });
-
-      it("should skip repeated actions by default", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionClass: "",
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        component.initialize();
-        if (action === "collapse") component.expand();
-        if (action === "unlock") component.lock();
-
-        component[action]({ force: true });
-        const spy = vi.spyOn(
-          component,
-          action === "preview" ? "_expand" : `_${action}`
-        );
-        component[action]();
-
-        expect(spy).not.toHaveBeenCalled();
-      });
-
-      it("should repeat an action when forced", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionClass: "",
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        component.initialize();
-        if (action === "collapse") component.expand();
-        if (action === "unlock") component.lock();
-
-        component[action]({ force: true });
-        const spy = vi.spyOn(
-          component,
-          action === "preview" ? "_expand" : `_${action}`
-        );
-        component[action]({ force: true });
-
-        expect(spy).toHaveBeenCalledTimes(1);
-      });
+      expect(component.isExpanded).toBe(true);
     });
-  for (const action of ["expand", "preview", "collapse"])
-    describe(action, () => {
-      it("should set the focus state", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionClass: "",
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        component.initialize();
-        if (action === "collapse") component.expand();
-        if (action === "unlock") component.lock();
 
-        component[action]();
-
-        expect(component.focusState).toBe(
-          action === "expand" ? "self" : "none"
-        );
+    it("should commit the state by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
       });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
 
-      it("should block state changes while locked", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionClass: "",
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        component.initialize();
-        if (action === "collapse") component.expand();
-        if (action === "unlock") component.lock();
-        component.lock();
-        const spy = vi.spyOn(
-          component,
-          action === "preview" ? "_expand" : `_${action}`
-        );
+      component.preview();
 
-        component[action]();
-
-        expect(spy).not.toHaveBeenCalled();
-      });
-
-      it("should change state while locked when forced", () => {
-        component = new CollapsibleComponent({
-          controllerElement: document.createElement("button"),
-          controlledElement: document.createElement("div"),
-          transitionClass: "",
-          bootstrap: false,
-        });
-        component._rootDOMElement = "controller";
-        document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
-        component.initialize();
-        if (action === "collapse") component.expand();
-        if (action === "unlock") component.lock();
-        component.lock();
-        const spy = vi.spyOn(
-          component,
-          action === "preview" ? "_expand" : `_${action}`
-        );
-
-        component[action]({ force: true });
-
-        expect(spy).toHaveBeenCalledTimes(1);
-      });
+      expect(component.shouldBeExpanded).toBe(true);
     });
+
+    it("should preserve the committed state when requested", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.preview({ preserveState: true });
+
+      expect(component.shouldBeExpanded).toBe(false);
+      expect(component.isExpanded).toBe(true);
+    });
+
+    it("should skip repeated actions by default", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.preview({ force: true });
+      const spy = vi.spyOn(component, "_expand");
+
+      component.preview();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it("should repeat an action when forced", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.preview({ force: true });
+      const spy = vi.spyOn(component, "_expand");
+
+      component.preview({ force: true });
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it("should set the focus state", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.preview();
+
+      expect(component.focusState).toBe("none");
+    });
+
+    it("should block state changes while locked", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock();
+      const spy = vi.spyOn(component, "_expand");
+
+      component.preview();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it("should change state while locked when forced", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+
+      component.lock();
+      const spy = vi.spyOn(component, "_expand");
+
+      component.preview({ force: true });
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+  });
 
   describe("toggle", () => {
     it("should expand when currently collapsed", () => {

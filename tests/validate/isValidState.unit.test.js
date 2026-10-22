@@ -9,18 +9,15 @@ describe("isValidState", () => {
   // Test for all valid states.
   const states = ["none", "self", "child"];
 
-  it.each(states)(
-    "should return true when checking if %p is a valid state",
-    (state) => {
-      const result = isValidState({ state });
+  it.each(states)("should accept %p as a focus state", (state) => {
+    const result = isValidState({ state });
 
-      expect(result.status).toBeTruthy();
-      expect(result.errors).toHaveLength(0);
-    }
-  );
+    expect(result.status).toBeTruthy();
+    expect(result.errors).toHaveLength(0);
+  });
 
   // Test for an invalid state.
-  it("should return false when checking if an invalid state is a valid state", () => {
+  it("should throw for an invalid focus state", () => {
     const state = "invalid";
 
     expect(() => {
@@ -29,7 +26,7 @@ describe("isValidState", () => {
   });
 
   // Test passing a non-object.
-  it("should return false when checking for a non-object", () => {
+  it("should throw when the values argument is not an object", () => {
     const state = "none";
 
     expect(() => {
@@ -38,22 +35,20 @@ describe("isValidState", () => {
   });
 
   // Test that shouldThrow will throw on invalid values.
-  it("should throw the first error when shouldThrow is true", () => {
+  it("should throw when shouldThrow is true", () => {
     expect(() => {
       isValidState({ state: "invalid" }, { shouldThrow: true });
     }).toThrow(TypeError);
   });
 
   // Test that shouldThrow can be disabled.
-  it("should not throw when shouldThrow is false", () => {
+  it("should report validation errors without throwing when shouldThrow is false", () => {
     const result = isValidState({ state: "invalid" }, { shouldThrow: false });
 
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
-});
 
-describe("isValidState error aggregation", () => {
   it("should return errors for all invalid values", () => {
     const result = isValidState(
       { valid: "self", first: "invalid", second: "invalid" },

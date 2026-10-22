@@ -203,9 +203,7 @@ describe("keyPress", () => {
 
     expect(keyPress(event)).toBe("");
   });
-});
 
-describe("keyPress fallback behavior", () => {
   it.each([
     null,
     undefined,

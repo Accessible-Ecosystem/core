@@ -22,9 +22,7 @@ describe("preventEvent", () => {
 
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
   });
-});
 
-describe("preventEvent DOM behavior", () => {
   it("should cancel default behavior for a real event", () => {
     const child = document.createElement("button");
     child.addEventListener("click", preventEvent);
@@ -41,6 +39,7 @@ describe("preventEvent DOM behavior", () => {
     const listener = vi.fn();
     parent.addEventListener("click", listener);
     child.addEventListener("click", preventEvent);
+
     child.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(listener).not.toHaveBeenCalled();

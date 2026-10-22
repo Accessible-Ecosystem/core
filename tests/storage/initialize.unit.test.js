@@ -24,7 +24,7 @@ describe("StorageManager initialization", () => {
     expect(window[scope]).toBe(storage);
   });
 
-  // Test that storage can be initialized manually.
+  // Test that automatic initialization can be disabled.
   it("should not register on the window when initialize is false", () => {
     new StorageManager({ scope, initialize: false });
 
@@ -33,6 +33,7 @@ describe("StorageManager initialization", () => {
 
   it("should register on the window when manually initialized", () => {
     const storage = new StorageManager({ scope, initialize: false });
+
     storage.initialize();
 
     expect(window[scope]).toBe(storage);
@@ -52,8 +53,8 @@ describe("StorageManager initialization", () => {
     expect(storage.type).toBe("menus");
   });
 
-  // Test that an existing scoped storage is reused instead of being replaced.
-  it("should reuse an existing scoped storage when crush is disabled", () => {
+  // Test that existing storage data is preserved when crush is disabled.
+  it("should preserve existing storage data when crush is disabled", () => {
     const existing = new StorageManager({ scope, initialize: false });
     existing.set({ type: "menus", key: "main", data: { id: 1 } });
     window[scope] = existing;
@@ -64,8 +65,8 @@ describe("StorageManager initialization", () => {
     expect(storage.storage).toEqual(existing.storage);
   });
 
-  // Test that an existing scoped storage can be replaced when crush mode is enabled.
-  it("should replace the existing scoped storage when crush is true", () => {
+  // Test that existing storage data is replaced when crush is enabled.
+  it("should replace existing storage data when crush is true", () => {
     const existing = new StorageManager({ scope, initialize: false });
     existing.set({ type: "menus", key: "main", data: { id: 1 } });
     window[scope] = existing;
@@ -75,9 +76,7 @@ describe("StorageManager initialization", () => {
     expect(window[scope]).toBe(storage);
     expect(storage.storage).not.toEqual(existing.storage);
   });
-});
 
-describe("StorageManager existing scope initialization", () => {
   it("should reuse the existing storage object", () => {
     const existing = new StorageManager({ scope });
     const storage = new StorageManager({ scope });

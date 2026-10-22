@@ -160,6 +160,7 @@ describe("ResponsiveComponent protected methods", () => {
         const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
         const event = new Event("change");
         Object.assign(event, { matches });
+
         list.dispatchEvent(event);
 
         expect(callback).toHaveBeenCalledExactlyOnceWith(event);
@@ -182,32 +183,31 @@ describe("ResponsiveComponent protected methods", () => {
       vi.advanceTimersToNextFrame();
       const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
       component.dispose();
+
       list.dispatchEvent(new Event("change"));
 
       expect(callback).not.toHaveBeenCalled();
     });
-  });
-});
 
-describe("ResponsiveComponent animation frames", () => {
-  it("should cancel the initial media callback on disposal", () => {
-    vi.useFakeTimers();
-    setupMatchMedia();
-    component = new ResponsiveComponent({
-      breakpoint: "768px",
-      bootstrap: false,
+    it("should cancel the initial media callback on disposal", () => {
+      vi.useFakeTimers();
+      setupMatchMedia();
+      component = new ResponsiveComponent({
+        breakpoint: "768px",
+        bootstrap: false,
+      });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
+
+      component._handleMediaMatch();
+      component.dispose();
+      vi.advanceTimersByTime(32);
+
+      expect(callback).not.toHaveBeenCalled();
+      expect(component.frames).toEqual({});
     });
-    component._dom.root = document.createElement("button");
-    component._rootDOMElement = "root";
-    document.body.appendChild(component.rootDOMElement);
-    component._bootstrap();
-    const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
-
-    component._handleMediaMatch();
-    component.dispose();
-    vi.advanceTimersByTime(32);
-
-    expect(callback).not.toHaveBeenCalled();
-    expect(component.frames).toEqual({});
   });
 });
