@@ -2,15 +2,32 @@
  * Protected method tests for the ResponsiveComponent class.
  */
 
-import { describe, it, expect, vi } from "vitest";
-import { createResponsive, setupMatchMedia } from "../helpers.js";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import ResponsiveComponent from "../../src/ResponsiveComponent.js";
+import { setupMatchMedia } from "../helpers.js";
+
+let component;
+
+afterEach(() => {
+  component?.dispose();
+  component = null;
+  document.body.innerHTML = "";
+  delete window.AccessibleEcosystemStorage;
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe("ResponsiveComponent protected methods", () => {
   describe("_bootstrap", () => {
     it.each(["validate", "initialize"])(
       "should track the %s lifecycle listener",
       (name) => {
-        const component = createResponsive();
+        component = new ResponsiveComponent({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         expect(component.listeners.map((listener) => listener.type)).toContain(
           component.getEventName(name)
@@ -19,8 +36,12 @@ describe("ResponsiveComponent protected methods", () => {
     );
 
     it("should log listener registration failures", () => {
-      const component = createResponsive(),
-        failure = new Error("listener failure");
+      component = new ResponsiveComponent({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const failure = new Error("listener failure");
       vi.spyOn(component, "_addEventListener").mockImplementation(() => {
         throw failure;
       });
@@ -32,7 +53,11 @@ describe("ResponsiveComponent protected methods", () => {
     });
 
     it("should invalidate the component when listener registration fails", () => {
-      const component = createResponsive();
+      component = new ResponsiveComponent({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       vi.spyOn(component, "_addEventListener").mockImplementation(() => {
         throw new Error("listener failure");
       });
@@ -48,7 +73,13 @@ describe("ResponsiveComponent protected methods", () => {
     it("should skip an empty query", () => {
       const { matchMedia } = setupMatchMedia();
 
-      createResponsive()._handleMediaMatch();
+      component = new ResponsiveComponent({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      component._handleMediaMatch();
 
       expect(matchMedia).not.toHaveBeenCalled();
     });
@@ -56,7 +87,14 @@ describe("ResponsiveComponent protected methods", () => {
     it("should request the configured media query", () => {
       vi.useFakeTimers();
       const { matchMedia } = setupMatchMedia();
-      const component = createResponsive({ breakpoint: "768px" });
+      component = new ResponsiveComponent({
+        breakpoint: "768px",
+        bootstrap: false,
+      });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component._handleMediaMatch();
 
@@ -66,7 +104,14 @@ describe("ResponsiveComponent protected methods", () => {
     it("should defer the initial callback until an animation frame", () => {
       vi.useFakeTimers();
       setupMatchMedia();
-      const component = createResponsive({ breakpoint: "768px" });
+      component = new ResponsiveComponent({
+        breakpoint: "768px",
+        bootstrap: false,
+      });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
 
       component._handleMediaMatch();
@@ -79,7 +124,14 @@ describe("ResponsiveComponent protected methods", () => {
       (matches) => {
         vi.useFakeTimers();
         const { list } = setupMatchMedia(matches);
-        const component = createResponsive({ breakpoint: "768px" });
+        component = new ResponsiveComponent({
+          breakpoint: "768px",
+          bootstrap: false,
+        });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
 
         component._handleMediaMatch();
@@ -94,7 +146,14 @@ describe("ResponsiveComponent protected methods", () => {
       (matches) => {
         vi.useFakeTimers();
         const { list } = setupMatchMedia(!matches);
-        const component = createResponsive({ breakpoint: "768px" });
+        component = new ResponsiveComponent({
+          breakpoint: "768px",
+          bootstrap: false,
+        });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component._handleMediaMatch();
         vi.advanceTimersToNextFrame();
@@ -110,7 +169,14 @@ describe("ResponsiveComponent protected methods", () => {
     it("should detach the media query change listener on disposal", () => {
       vi.useFakeTimers();
       const { list } = setupMatchMedia();
-      const component = createResponsive({ breakpoint: "768px" });
+      component = new ResponsiveComponent({
+        breakpoint: "768px",
+        bootstrap: false,
+      });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component._handleMediaMatch();
       vi.advanceTimersToNextFrame();
@@ -127,7 +193,14 @@ describe("ResponsiveComponent animation frames", () => {
   it("should cancel the initial media callback on disposal", () => {
     vi.useFakeTimers();
     setupMatchMedia();
-    const component = createResponsive({ breakpoint: "768px" });
+    component = new ResponsiveComponent({
+      breakpoint: "768px",
+      bootstrap: false,
+    });
+    component._dom.root = document.createElement("button");
+    component._rootDOMElement = "root";
+    document.body.appendChild(component.rootDOMElement);
+    component._bootstrap();
     const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
 
     component._handleMediaMatch();

@@ -2,18 +2,36 @@
  * Initialization and validation event tests for the ResponsiveComponent class.
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import ResponsiveComponent from "../../src/ResponsiveComponent.js";
-import { createResponsive } from "../helpers.js";
+
+let parent;
+let child;
+
+afterEach(() => {
+  parent?.dispose();
+  parent = null;
+  child?.dispose();
+  child = null;
+  document.body.innerHTML = "";
+  delete window.AccessibleEcosystemStorage;
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe("ResponsiveComponent initialization and validation events", () => {
   it("should ignore a child component's initialize event", () => {
-    const parent = new ResponsiveComponent({ bootstrap: false });
+    parent = new ResponsiveComponent({ bootstrap: false });
     parent._dom.root = document.createElement("div");
     parent._rootDOMElement = "root";
     document.body.appendChild(parent.rootDOMElement);
     parent._bootstrap();
-    const child = createResponsive();
+    child = new ResponsiveComponent({ bootstrap: false });
+    child._dom.root = document.createElement("button");
+    child._rootDOMElement = "root";
+    document.body.appendChild(child.rootDOMElement);
+    child._bootstrap();
     parent.rootDOMElement.appendChild(child.rootDOMElement);
     const handleMediaMatch = vi.spyOn(parent, "_handleMediaMatch");
     const initialize = vi.fn();
@@ -29,17 +47,19 @@ describe("ResponsiveComponent initialization and validation events", () => {
       expect.objectContaining({ target: child.rootDOMElement })
     );
     expect(handleMediaMatch).not.toHaveBeenCalled();
-
-    parent.dispose();
   });
 
   it("should ignore a child component's validate event", () => {
-    const parent = new ResponsiveComponent({ bootstrap: false });
+    parent = new ResponsiveComponent({ bootstrap: false });
     parent._dom.root = document.createElement("div");
     parent._rootDOMElement = "root";
     document.body.appendChild(parent.rootDOMElement);
     parent._bootstrap();
-    const child = createResponsive();
+    child = new ResponsiveComponent({ bootstrap: false });
+    child._dom.root = document.createElement("button");
+    child._rootDOMElement = "root";
+    document.body.appendChild(child.rootDOMElement);
+    child._bootstrap();
     parent.rootDOMElement.appendChild(child.rootDOMElement);
     parent._breakpoint = 12;
     const validate = vi.fn();
@@ -55,7 +75,5 @@ describe("ResponsiveComponent initialization and validation events", () => {
       expect.objectContaining({ target: child.rootDOMElement })
     );
     expect(parent.isValid).toBe(true);
-
-    parent.dispose();
   });
 });

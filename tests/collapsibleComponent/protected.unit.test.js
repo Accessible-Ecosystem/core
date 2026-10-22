@@ -2,15 +2,34 @@
  * Protected method tests for the CollapsibleComponent class.
  */
 
-import { describe, it, expect, vi } from "vitest";
-import { createCollapsible } from "../helpers.js";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import CollapsibleComponent from "../../src/CollapsibleComponent.js";
+
+let component;
+
+afterEach(() => {
+  component?.dispose();
+  component = null;
+  document.body.innerHTML = "";
+  delete window.AccessibleEcosystemStorage;
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe("CollapsibleComponent protected methods", () => {
   describe("_bootstrap", () => {
     it.each(["expand", "collapse", "lock", "unlock"])(
       "should register the %s action events",
       (action) => {
-        const component = createCollapsible();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         for (const prefix of ["pre", "", "post"])
           expect(component.events[`${prefix}${action}`]).toBeInstanceOf(
@@ -20,14 +39,30 @@ describe("CollapsibleComponent protected methods", () => {
     );
 
     it("should register lifecycle listeners", () => {
-      expect(createCollapsible().listeners).toHaveLength(4);
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      expect(component.listeners).toHaveLength(4);
     });
   });
   for (const action of ["expand", "collapse", "lock", "unlock"])
     describe(`_${action}`, () => {
       it("should emit lifecycle events in order", () => {
-        const component = createCollapsible(),
-          events = [];
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const events = [];
         for (const prefix of ["pre", "", "post"]) {
           const name = `${prefix}${action}`;
           component._addEventListener(
@@ -43,8 +78,15 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it("should include the component in event detail", () => {
-        const component = createCollapsible(),
-          listener = vi.fn();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const listener = vi.fn();
         component._addEventListener(
           component.getEventName(action),
           component.rootDOMElement,
@@ -59,8 +101,15 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it("should suppress lifecycle events when emit is false", () => {
-        const component = createCollapsible(),
-          listener = vi.fn();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const listener = vi.fn();
         for (const prefix of ["pre", "", "post"])
           component._addEventListener(
             component.getEventName(`${prefix}${action}`),
@@ -74,7 +123,14 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it("should apply the action attribute", () => {
-        const component = createCollapsible();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component[`_${action}`]({ emit: false, transition: false });
 
@@ -86,7 +142,14 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it("should apply the action class", () => {
-        const component = createCollapsible();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component[`_${action}`]({ emit: false, transition: false });
         const className = {
@@ -105,8 +168,15 @@ describe("CollapsibleComponent protected methods", () => {
     describe(`_${action} transitions`, () => {
       it("should sequence state class changes over animation frames", () => {
         vi.useFakeTimers();
-        const component = createCollapsible(),
-          element = component.dom.controlled;
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const element = component.dom.controlled;
         const from = action === "expand" ? "hide" : "show",
           to = action === "expand" ? "show" : "hide";
         element.classList.add(from);
@@ -127,7 +197,14 @@ describe("CollapsibleComponent protected methods", () => {
 
       it("should add the transition class immediately", () => {
         vi.useFakeTimers();
-        const component = createCollapsible();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component[`_${action}`]({ emit: false, transition: true });
 
@@ -138,10 +215,16 @@ describe("CollapsibleComponent protected methods", () => {
 
       it("should remove the transition class after the action duration", () => {
         vi.useFakeTimers();
-        const component = createCollapsible({
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
           expandDuration: 80,
           collapseDuration: 120,
+          bootstrap: false,
         });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component[`_${action}`]({ emit: false, transition: true });
         vi.advanceTimersToNextFrame();
@@ -161,7 +244,15 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it("should apply classes synchronously when no transition class is configured", () => {
-        const component = createCollapsible({ transitionClass: "" });
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component[`_${action}`]({ emit: false, transition: true });
 
@@ -174,7 +265,15 @@ describe("CollapsibleComponent protected methods", () => {
 
       it("should not schedule timers when no transition class is configured", () => {
         vi.useFakeTimers();
-        const component = createCollapsible({ transitionClass: "" });
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component[`_${action}`]({ emit: false, transition: true });
 
@@ -184,11 +283,17 @@ describe("CollapsibleComponent protected methods", () => {
 
   describe("_mediaQueryListEventCallback", () => {
     it("should prefer collapsing an expanded component when both breakpoint actions are enabled", () => {
-      const component = createCollapsible({
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
         expandOutsideBreakpoint: true,
         collapseOutsideBreakpoint: true,
         transitionClass: "",
+        bootstrap: false,
       });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.expand({ force: true, emit: false, transition: false });
 
       component._mediaQueryListEventCallback({ matches: false });
@@ -204,10 +309,16 @@ describe("CollapsibleComponent protected methods", () => {
       ["Outside", false],
     ]) {
       it(`should expand ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsible({
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
           [`expand${side}Breakpoint`]: true,
           transitionClass: "",
+          bootstrap: false,
         });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
 
         component._mediaQueryListEventCallback({ matches });
@@ -216,9 +327,15 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it(`should lock ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsible({
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
           [`lock${side}Breakpoint`]: true,
+          bootstrap: false,
         });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
 
         component._mediaQueryListEventCallback({ matches });
@@ -227,11 +344,17 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it(`should lock after expansion ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsible({
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
           [`expand${side}Breakpoint`]: true,
           [`lock${side}Breakpoint`]: true,
           transitionClass: "",
+          bootstrap: false,
         });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
         const order = [];
         vi.spyOn(component, "expand").mockImplementation(() =>
@@ -247,10 +370,16 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it(`should unlock before collapsing ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsible({
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
           [`collapse${side}Breakpoint`]: true,
           transitionClass: "",
+          bootstrap: false,
         });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
         component.expand();
         component.lock();
@@ -268,10 +397,16 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it(`should preserve committed expansion when collapsing ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsible({
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
           [`collapse${side}Breakpoint`]: true,
           transitionClass: "",
+          bootstrap: false,
         });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
         component.expand();
 
@@ -282,10 +417,16 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it(`should honor explicit unlock ${side.toLowerCase()}`, () => {
-        const component = createCollapsible({
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
           [`unlock${side}Breakpoint`]: true,
           locked: true,
+          bootstrap: false,
         });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
 
         component._mediaQueryListEventCallback({ matches });
@@ -294,11 +435,17 @@ describe("CollapsibleComponent protected methods", () => {
       });
 
       it(`should unlock before expanding ${side.toLowerCase()} the breakpoint`, () => {
-        const component = createCollapsible({
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
           [`expand${side}Breakpoint`]: true,
           locked: true,
           transitionClass: "",
+          bootstrap: false,
         });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
         const order = [];
         vi.spyOn(component, "unlock").mockImplementation(() =>
@@ -317,7 +464,14 @@ describe("CollapsibleComponent protected methods", () => {
     it.each([true, false])(
       "should leave state alone for matches=%s when no actions are configured",
       (matches) => {
-        const component = createCollapsible();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component._mediaQueryListEventCallback({ matches });
 
@@ -333,11 +487,17 @@ describe("CollapsibleComponent animation frames", () => {
     "should cancel pending %s transition frames on disposal",
     (action) => {
       vi.useFakeTimers();
-      const component = createCollapsible({
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
         expandClass: "show",
         collapseClass: "hide",
         transitionClass: "transitioning",
+        bootstrap: false,
       });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       const initialClass = action === "expand" ? "hide" : "show";
       component.dom.controlled.classList.add(initialClass);
 

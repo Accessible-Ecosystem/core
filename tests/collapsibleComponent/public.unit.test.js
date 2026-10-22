@@ -2,21 +2,34 @@
  * Public method tests for the CollapsibleComponent class.
  */
 
-import { describe, it, expect, vi } from "vitest";
-import { createCollapsible } from "../helpers.js";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import CollapsibleComponent from "../../src/CollapsibleComponent.js";
 
-const prepareAction = (action) => {
-  const component = createCollapsible({ transitionClass: "" });
-  component.initialize();
-  if (action === "collapse") component.expand();
-  if (action === "unlock") component.lock();
-  return component;
-};
+let component;
+
+afterEach(() => {
+  component?.dispose();
+  component = null;
+  document.body.innerHTML = "";
+  delete window.AccessibleEcosystemStorage;
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe("CollapsibleComponent public methods", () => {
   describe("expand", () => {
     it("should set aria-expanded to true", () => {
-      const component = prepareAction("expand");
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
 
       component.expand();
 
@@ -26,11 +39,17 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should replace the collapse class with the expand class", () => {
-      const component = createCollapsible({
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
         expandClass: "expanded",
         collapseClass: "collapsed",
         transitionClass: "",
+        bootstrap: false,
       });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.dom.controlled.classList.add("collapsed");
 
       component.expand({ force: true, emit: false, transition: false });
@@ -46,7 +65,17 @@ describe("CollapsibleComponent public methods", () => {
 
   describe("collapse", () => {
     it("should set aria-expanded to false", () => {
-      const component = prepareAction("collapse");
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expand();
 
       component.collapse();
 
@@ -56,11 +85,17 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should replace the expand class with the collapse class", () => {
-      const component = createCollapsible({
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
         expandClass: "expanded",
         collapseClass: "collapsed",
         transitionClass: "",
+        bootstrap: false,
       });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.dom.controlled.classList.add("expanded");
 
       component.collapse({ force: true, emit: false, transition: false });
@@ -76,7 +111,14 @@ describe("CollapsibleComponent public methods", () => {
 
   describe("lock", () => {
     it("should replace the unlocked class with the locked class", () => {
-      const component = createCollapsible();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.dom.controlled.classList.add("unlocked");
 
       component.lock({ force: true, emit: false });
@@ -88,7 +130,16 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should set the disabled attribute", () => {
-      const component = prepareAction("lock");
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
 
       component.lock();
 
@@ -98,7 +149,14 @@ describe("CollapsibleComponent public methods", () => {
 
   describe("unlock", () => {
     it("should replace the locked class with the unlocked class", () => {
-      const component = createCollapsible();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.dom.controlled.classList.add("locked");
 
       component.unlock({ force: true, emit: false });
@@ -110,7 +168,17 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should remove the disabled attribute", () => {
-      const component = prepareAction("unlock");
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.lock();
 
       component.unlock();
 
@@ -120,7 +188,14 @@ describe("CollapsibleComponent public methods", () => {
 
   describe("expand", () => {
     it("should preserve committed expansion before initialization when requested", () => {
-      const component = createCollapsible();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component.expand({
         force: true,
@@ -136,7 +211,18 @@ describe("CollapsibleComponent public methods", () => {
   for (const action of ["expand", "preview", "collapse", "lock", "unlock"])
     describe(action, () => {
       it("should update the current state", () => {
-        const component = prepareAction(action);
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        if (action === "collapse") component.expand();
+        if (action === "unlock") component.lock();
         const lockedAction = ["lock", "unlock"].includes(action);
 
         component[action]();
@@ -147,7 +233,18 @@ describe("CollapsibleComponent public methods", () => {
       });
 
       it("should commit the state by default", () => {
-        const component = prepareAction(action);
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        if (action === "collapse") component.expand();
+        if (action === "unlock") component.lock();
         const lockedAction = ["lock", "unlock"].includes(action);
 
         component[action]();
@@ -158,7 +255,18 @@ describe("CollapsibleComponent public methods", () => {
       });
 
       it("should preserve the committed state when requested", () => {
-        const component = prepareAction(action);
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        if (action === "collapse") component.expand();
+        if (action === "unlock") component.lock();
         const lockedAction = ["lock", "unlock"].includes(action);
         const committed =
           component[lockedAction ? "shouldBeLocked" : "shouldBeExpanded"];
@@ -174,7 +282,18 @@ describe("CollapsibleComponent public methods", () => {
       });
 
       it("should skip repeated actions by default", () => {
-        const component = prepareAction(action);
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        if (action === "collapse") component.expand();
+        if (action === "unlock") component.lock();
 
         component[action]({ force: true });
         const spy = vi.spyOn(
@@ -187,7 +306,18 @@ describe("CollapsibleComponent public methods", () => {
       });
 
       it("should repeat an action when forced", () => {
-        const component = prepareAction(action);
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        if (action === "collapse") component.expand();
+        if (action === "unlock") component.lock();
 
         component[action]({ force: true });
         const spy = vi.spyOn(
@@ -202,7 +332,18 @@ describe("CollapsibleComponent public methods", () => {
   for (const action of ["expand", "preview", "collapse"])
     describe(action, () => {
       it("should set the focus state", () => {
-        const component = prepareAction(action);
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        if (action === "collapse") component.expand();
+        if (action === "unlock") component.lock();
 
         component[action]();
 
@@ -212,7 +353,18 @@ describe("CollapsibleComponent public methods", () => {
       });
 
       it("should block state changes while locked", () => {
-        const component = prepareAction(action);
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        if (action === "collapse") component.expand();
+        if (action === "unlock") component.lock();
         component.lock();
         const spy = vi.spyOn(
           component,
@@ -225,7 +377,18 @@ describe("CollapsibleComponent public methods", () => {
       });
 
       it("should change state while locked when forced", () => {
-        const component = prepareAction(action);
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        if (action === "collapse") component.expand();
+        if (action === "unlock") component.lock();
         component.lock();
         const spy = vi.spyOn(
           component,
@@ -240,7 +403,15 @@ describe("CollapsibleComponent public methods", () => {
 
   describe("toggle", () => {
     it("should expand when currently collapsed", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
 
       component.toggle();
@@ -249,7 +420,15 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should forward explicit options to expand", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
       const spy = vi.spyOn(component, "expand");
       const options = {
@@ -265,7 +444,15 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should forward default options to expand", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
       const spy = vi.spyOn(component, "expand");
 
@@ -280,7 +467,15 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should collapse when currently expanded", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
       component.expand();
 
@@ -290,7 +485,15 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should forward explicit options to collapse", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
       component.expand();
       const spy = vi.spyOn(component, "collapse");
@@ -307,7 +510,15 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should forward default options to collapse", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
       component.expand();
       const spy = vi.spyOn(component, "collapse");
@@ -325,7 +536,15 @@ describe("CollapsibleComponent public methods", () => {
 
   describe("toggleLock", () => {
     it("should lock when currently unlocked", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
 
       component.toggleLock();
@@ -334,7 +553,15 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should forward explicit options to lock", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
       const spy = vi.spyOn(component, "lock");
       const options = { force: true, emit: false, preserveState: true };
@@ -345,7 +572,15 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should forward default options to lock", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
       const spy = vi.spyOn(component, "lock");
 
@@ -359,7 +594,15 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should unlock when currently locked", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
       component.lock();
 
@@ -369,7 +612,15 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should forward explicit options to unlock", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
       component.lock();
       const spy = vi.spyOn(component, "unlock");
@@ -381,7 +632,15 @@ describe("CollapsibleComponent public methods", () => {
     });
 
     it("should forward default options to unlock", () => {
-      const component = createCollapsible({ transitionClass: "" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
       component.lock();
       const spy = vi.spyOn(component, "unlock");

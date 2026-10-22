@@ -2,36 +2,51 @@
  * Initialization tests for the CollapsibleComponent class.
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import CollapsibleComponent from "../../src/CollapsibleComponent.js";
-import { createCollapsible } from "../helpers.js";
+
+let component;
+
+afterEach(() => {
+  component?.dispose();
+  component = null;
+  document.body.innerHTML = "";
+  delete window.AccessibleEcosystemStorage;
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe("CollapsibleComponent initialization", () => {
   describe("constructor", () => {
     it("should bootstrap by default", () => {
       const spy = vi.spyOn(CollapsibleComponent.prototype, "_bootstrap");
 
-      const component = new CollapsibleComponent();
+      component = new CollapsibleComponent();
 
       expect(spy).toHaveBeenCalledTimes(1);
-
-      component.dispose();
     });
 
     it("should skip bootstrapping when bootstrap is false", () => {
       const spy = vi.spyOn(CollapsibleComponent.prototype, "_bootstrap");
 
-      const component = new CollapsibleComponent({ bootstrap: false });
+      component = new CollapsibleComponent({ bootstrap: false });
 
       expect(spy).not.toHaveBeenCalled();
-
-      component.dispose();
     });
 
     it.each([undefined, null])(
       "should use the controller when triggerElement is %s",
       (triggerElement) => {
-        const component = createCollapsible({ triggerElement });
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          triggerElement,
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         expect(component.dom.trigger).toBe(component.dom.controller);
       }
@@ -39,14 +54,31 @@ describe("CollapsibleComponent initialization", () => {
 
     it("should retain a separate trigger without changing the controller", () => {
       const trigger = document.createElement("span");
-      const component = createCollapsible({ triggerElement: trigger });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        triggerElement: trigger,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(component.dom.trigger).toBe(trigger);
       expect(component.dom.controller).not.toBe(trigger);
     });
 
     it("should configure the default classes", () => {
-      expect(createCollapsible().classes).toEqual({
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      expect(component.classes).toEqual({
         initialize: "initializing",
         locked: "locked",
         unlocked: "unlocked",
@@ -57,7 +89,16 @@ describe("CollapsibleComponent initialization", () => {
     });
 
     it("should configure the default durations", () => {
-      expect(createCollapsible().durations).toEqual({
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      expect(component.durations).toEqual({
         transition: 150,
         expand: -1,
         collapse: -1,
@@ -65,11 +106,29 @@ describe("CollapsibleComponent initialization", () => {
     });
 
     it("should configure the default transition delay", () => {
-      expect(createCollapsible().delays).toEqual({ transition: 250 });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      expect(component.delays).toEqual({ transition: 250 });
     });
 
     it("should protect controller, trigger, and controlled DOM slots", () => {
-      expect(createCollapsible()._protectedDOMElements).toEqual([
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      expect(component._protectedDOMElements).toEqual([
         "controller",
         "trigger",
         "controlled",
@@ -83,7 +142,15 @@ describe("CollapsibleComponent initialization", () => {
       ["collapseClass", "collapseClass"],
       ["transitionClass", "transitionClass"],
     ])("should use an empty string when %s is null", (option, property) => {
-      const component = createCollapsible({ [option]: null });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        [option]: null,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(component[property]).toBe("");
     });
@@ -93,7 +160,14 @@ describe("CollapsibleComponent initialization", () => {
     it.each([true, false])(
       "should initialize expansion from aria-expanded=%s",
       (expanded) => {
-        const component = createCollapsible();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.dom.controller.setAttribute(
           "aria-expanded",
           String(expanded)
@@ -112,7 +186,15 @@ describe("CollapsibleComponent initialization", () => {
     );
 
     it("should initialize with the configured locked state", () => {
-      const component = createCollapsible({ locked: true });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        locked: true,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component.initialize();
 
@@ -122,7 +204,14 @@ describe("CollapsibleComponent initialization", () => {
     });
 
     it("should initialize successfully with default state options", () => {
-      const component = createCollapsible();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component.initialize();
 
@@ -130,7 +219,14 @@ describe("CollapsibleComponent initialization", () => {
     });
 
     it("should initialize collapsed when no expansion is supplied", () => {
-      const component = createCollapsible();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component.initialize();
 
@@ -138,7 +234,14 @@ describe("CollapsibleComponent initialization", () => {
     });
 
     it("should initialize unlocked when no lock state is supplied", () => {
-      const component = createCollapsible();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component.initialize();
 
@@ -150,7 +253,15 @@ describe("CollapsibleComponent initialization", () => {
 
     it("should report an invalid trigger element", () => {
       const error = vi.spyOn(console, "error").mockImplementation(() => {});
-      const component = createCollapsible({ triggerElement: "invalid" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        triggerElement: "invalid",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component.initialize();
 
@@ -161,7 +272,15 @@ describe("CollapsibleComponent initialization", () => {
 
     it("should keep ARIA attributes and lifecycle events on the controller", () => {
       const trigger = document.createElement("span");
-      const component = createCollapsible({ triggerElement: trigger });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        triggerElement: trigger,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.dom.controller.appendChild(trigger);
       component.initialize();
       const expanded = vi.fn();
@@ -192,7 +311,15 @@ describe("CollapsibleComponent initialization", () => {
       "unlockOutsideBreakpoint",
     ])("should reject invalid %s", (option) => {
       const error = vi.spyOn(console, "error").mockImplementation(() => {});
-      const component = createCollapsible({ [option]: "invalid" });
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        [option]: "invalid",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component.initialize();
 

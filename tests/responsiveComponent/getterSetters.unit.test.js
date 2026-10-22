@@ -2,8 +2,21 @@
  * Getter/Setter tests for the ResponsiveComponent class.
  */
 
-import { describe, it, expect, vi } from "vitest";
-import { createResponsive, setupMatchMedia } from "../helpers.js";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import ResponsiveComponent from "../../src/ResponsiveComponent.js";
+import { setupMatchMedia } from "../helpers.js";
+
+let component;
+
+afterEach(() => {
+  component?.dispose();
+  component = null;
+  document.body.innerHTML = "";
+  delete window.AccessibleEcosystemStorage;
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe("ResponsiveComponent getter/setters", () => {
   describe("breakpoint", () => {
@@ -19,7 +32,11 @@ describe("ResponsiveComponent getter/setters", () => {
       (options, value, query) => {
         vi.useFakeTimers();
         const { list: oldList } = setupMatchMedia();
-        const component = createResponsive(options);
+        component = new ResponsiveComponent({ ...options, bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
         const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
         const { list, matchMedia } = setupMatchMedia(true);
@@ -45,13 +62,27 @@ describe("ResponsiveComponent getter/setters", () => {
     );
 
     it("should return the configured breakpoint", () => {
-      const component = createResponsive({ breakpoint: "768px" });
+      component = new ResponsiveComponent({
+        breakpoint: "768px",
+        bootstrap: false,
+      });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(component.breakpoint).toBe("768px");
     });
 
     it("should update the breakpoint", () => {
-      const component = createResponsive({ breakpoint: "768px" });
+      component = new ResponsiveComponent({
+        breakpoint: "768px",
+        bootstrap: false,
+      });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component.breakpoint = "1024px";
 
@@ -76,7 +107,11 @@ describe("ResponsiveComponent getter/setters", () => {
       (options, value, query) => {
         vi.useFakeTimers();
         const { list: oldList } = setupMatchMedia();
-        const component = createResponsive(options);
+        component = new ResponsiveComponent({ ...options, bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
         const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
         const { list, matchMedia } = setupMatchMedia(true);
@@ -102,29 +137,52 @@ describe("ResponsiveComponent getter/setters", () => {
     );
 
     it("should derive the query from the configured breakpoint", () => {
-      const component = createResponsive({ breakpoint: "768px" });
+      component = new ResponsiveComponent({
+        breakpoint: "768px",
+        bootstrap: false,
+      });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(component.mediaQuery).toBe("(width <= 768px)");
     });
 
     it("should derive the query from an updated breakpoint", () => {
-      const component = createResponsive({ breakpoint: "768px" });
+      component = new ResponsiveComponent({
+        breakpoint: "768px",
+        bootstrap: false,
+      });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.breakpoint = "1024px";
 
       expect(component.mediaQuery).toBe("(width <= 1024px)");
     });
 
     it("should prefer an explicit query over the breakpoint", () => {
-      const component = createResponsive({
+      component = new ResponsiveComponent({
         breakpoint: "768px",
         mediaQuery: "(min-width: 1024px)",
+        bootstrap: false,
       });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(component.mediaQuery).toBe("(min-width: 1024px)");
     });
 
     it("should update an explicit query", () => {
-      const component = createResponsive();
+      component = new ResponsiveComponent({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component.mediaQuery = "(orientation: portrait)";
 
@@ -132,10 +190,15 @@ describe("ResponsiveComponent getter/setters", () => {
     });
 
     it("should fall back to the breakpoint when the explicit query is cleared", () => {
-      const component = createResponsive({
+      component = new ResponsiveComponent({
         breakpoint: "768px",
         mediaQuery: "(orientation: portrait)",
+        bootstrap: false,
       });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       component.mediaQuery = "";
 
@@ -143,14 +206,24 @@ describe("ResponsiveComponent getter/setters", () => {
     });
 
     it("should return an empty query when no breakpoint or query is configured", () => {
-      expect(createResponsive().mediaQuery).toBe("");
+      component = new ResponsiveComponent({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+
+      expect(component.mediaQuery).toBe("");
     });
   });
   for (const name of ["breakpoint", "mediaQuery"])
     describe(name, () => {
       it("should wait for initialization before registering a listener", () => {
         const { matchMedia } = setupMatchMedia();
-        const component = createResponsive();
+        component = new ResponsiveComponent({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component[name] = "768px";
 
@@ -160,7 +233,14 @@ describe("ResponsiveComponent getter/setters", () => {
       it("should keep the current listener when assigned the same value", () => {
         vi.useFakeTimers();
         const { list, matchMedia } = setupMatchMedia();
-        const component = createResponsive({ [name]: "768px" });
+        component = new ResponsiveComponent({
+          [name]: "768px",
+          bootstrap: false,
+        });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
         const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
         matchMedia.mockClear();
@@ -180,7 +260,14 @@ describe("ResponsiveComponent getter/setters", () => {
       it("should remove the listener and pending callback when the query is cleared", () => {
         vi.useFakeTimers();
         const { list, matchMedia } = setupMatchMedia();
-        const component = createResponsive({ [name]: "768px" });
+        component = new ResponsiveComponent({
+          [name]: "768px",
+          bootstrap: false,
+        });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.initialize();
         const callback = vi.spyOn(component, "_mediaQueryListEventCallback");
         matchMedia.mockClear();
@@ -198,7 +285,11 @@ describe("ResponsiveComponent getter/setters", () => {
       });
 
       it("should retain its value when assigned again", () => {
-        const component = createResponsive();
+        component = new ResponsiveComponent({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component[name] = "768px";
         const original = component[name];
@@ -210,7 +301,14 @@ describe("ResponsiveComponent getter/setters", () => {
       it.each([123, null, {}, []])(
         "should reject %j without changing its value",
         (value) => {
-          const component = createResponsive({ breakpoint: "768px" });
+          component = new ResponsiveComponent({
+            breakpoint: "768px",
+            bootstrap: false,
+          });
+          component._dom.root = document.createElement("button");
+          component._rootDOMElement = "root";
+          document.body.appendChild(component.rootDOMElement);
+          component._bootstrap();
           const original = component[name];
 
           expect(() => {
