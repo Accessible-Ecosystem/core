@@ -61,6 +61,16 @@ npm run lint
 
 Code that does not follow the linting standards _will not_ be merged.
 
+## Test projects that depend on Core
+
+The `Dependent project tests` workflow runs on pushes and pull requests to `*.x` branches. You can also run it manually from GitHub Actions.
+
+The workflow packs the checked-out Core changes with `npm pack`, installs each dependent project's locked dependencies with `npm ci`, and replaces its Core dependency with that tarball before running its tests. This checks the files Core would publish without publishing a release or changing the dependent project's package files.
+
+To add a project, add an entry to `strategy.matrix.project` in `.github/workflows/dependents.yml` with its GitHub `repository`, branch or tag in `ref`, and npm `test-script`. Choose a ref that depends on Core and a test script that exits after running. Each project must have a committed `package-lock.json`.
+
+Each project runs in a separate job, and a failure does not cancel the other projects. The workflow supports public repositories with read-only repository permissions. Private repositories need a separate checkout credential with access to that repository.
+
 ## Commit Guidelines
 
 This project uses the conventional commit standard, which means your commits should follow a basic template of:
