@@ -1,0 +1,65 @@
+name: Dependent project tests
+
+on:
+  push:
+    branches: [ '*.x' ]
+  pull_request:
+    branches: [ '*.x' ]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test ${{ matrix.project.repository }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - repository: NickDJM/accessible-menu
+            ref: 5.x
+            test-script: test:run
+
+    steps:
+      - name: Checkout Core
+        uses: actions/checkout@v4
+        with:
+          path: core
+          persist-credentials: false
+
+      - name: Checkout dependent project
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.project.repository }}
+          ref: ${{ matrix.project.ref }}
+          path: dependent
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+
+      - name: Pack Core changes
+        working-directory: core
+        run: |
+          mkdir -p "$RUNNER_TEMP/core-package"
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/core-package"
+
+      - name: Install dependent project modules
+        working-directory: dependent
+        run: npm ci
+
+      - name: Install Core changes
+        working-directory: dependent
+        run: npm install --no-save --package-lock=false "$RUNNER_TEMP"/core-package/*.tgz
+
+      - name: Run dependent project tests
+        working-directory: dependent
+        env:
+          TEST_SCRIPT: ${{ matrix.project.test-script }}
+        run: npm run "$TEST_SCRIPT"
