@@ -20,7 +20,7 @@ describe("removeClass", () => {
   });
 
   // Test removing a single class.
-  it("should remove a single class to an element", () => {
+  it("should remove a single class from an element", () => {
     const element = document.createElement("div");
     element.classList.add("test");
 
@@ -30,7 +30,7 @@ describe("removeClass", () => {
   });
 
   // Test removing multiple classes.
-  it("should remove multiple classes to an element", () => {
+  it("should remove multiple classes from an element", () => {
     const element = document.createElement("div");
     element.classList.add("test", "test2");
 
@@ -41,38 +41,38 @@ describe("removeClass", () => {
   });
 
   // Test not passing a class.
-  it("should error if no class is passed", () => {
+  it("should throw if no class is passed", () => {
     const element = document.createElement("div");
 
     expect(() => removeClass(undefined, element)).toThrow();
   });
 
   // Test not passing an element.
-  it("should error if no element is passed", () => {
+  it("should throw if no element is passed", () => {
     expect(() => removeClass("test", undefined)).toThrow();
   });
 
   // Test not passing a class or element.
-  it("should error if no class or element is passed", () => {
+  it("should throw if no class or element is passed", () => {
     expect(() => removeClass(undefined, undefined)).toThrow();
   });
 
   // Test passing an element that doesn't have a classList.
-  it("should error if the element doesn't have a classList", () => {
+  it("should throw if the element doesn't have a classList", () => {
     const element = {};
 
     expect(() => removeClass("test", element)).toThrow();
   });
 
-  // Test passing a non-string class.
-  it("should error if the class isn't a string", () => {
+  // Test passing a number as the class value.
+  it("should throw if the class is a number", () => {
     const element = document.createElement("div");
 
     expect(() => removeClass(1, element)).toThrow();
   });
 
-  // Test passing multiple non-string classes.
-  it("should error if the classes aren't strings", () => {
+  // Test passing a class array containing an object.
+  it("should throw if the class array contains an object", () => {
     const element = document.createElement("div");
 
     expect(() => removeClass([{}, "test"], element)).toThrow();
@@ -92,7 +92,7 @@ describe("removeClass", () => {
   });
 
   // Test passing an empty array.
-  it("should do nothing if the class array empty", () => {
+  it("should do nothing if the class array is empty", () => {
     const element = {
       classList: {
         remove: vi.fn(),

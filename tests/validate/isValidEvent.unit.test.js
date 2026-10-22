@@ -9,18 +9,15 @@ describe("isValidEvent", () => {
   // Test for all valid events.
   const events = ["none", "mouse", "keyboard", "character"];
 
-  it.each(events)(
-    "should return true when checking if %p is a valid event",
-    (event) => {
-      const result = isValidEvent({ event });
+  it.each(events)("should accept %p as an interaction event", (event) => {
+    const result = isValidEvent({ event });
 
-      expect(result.status).toBeTruthy();
-      expect(result.errors).toHaveLength(0);
-    }
-  );
+    expect(result.status).toBeTruthy();
+    expect(result.errors).toHaveLength(0);
+  });
 
   // Test for an invalid event.
-  it("should return false when checking if an invalid event is a valid event", () => {
+  it("should throw for an invalid interaction event", () => {
     const event = "invalid";
 
     expect(() => {
@@ -29,7 +26,7 @@ describe("isValidEvent", () => {
   });
 
   // Test passing a non-object.
-  it("should return false when checking for a non-object", () => {
+  it("should throw when the values argument is not an object", () => {
     const event = "none";
 
     expect(() => {
@@ -38,22 +35,20 @@ describe("isValidEvent", () => {
   });
 
   // Test that shouldThrow will throw on invalid values.
-  it("should throw the first error when shouldThrow is true", () => {
+  it("should throw when shouldThrow is true", () => {
     expect(() => {
       isValidEvent({ event: "invalid" }, { shouldThrow: true });
     }).toThrow(TypeError);
   });
 
   // Test that shouldThrow can be disabled.
-  it("should not throw when shouldThrow is false", () => {
+  it("should report validation errors without throwing when shouldThrow is false", () => {
     const result = isValidEvent({ event: "invalid" }, { shouldThrow: false });
 
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
-});
 
-describe("isValidEvent error aggregation", () => {
   it("should return errors for all invalid values", () => {
     const result = isValidEvent(
       { valid: "keyboard", first: "invalid", second: "invalid" },

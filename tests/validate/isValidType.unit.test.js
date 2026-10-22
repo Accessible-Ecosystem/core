@@ -7,8 +7,9 @@ import { isValidType } from "../../src/validate.js";
 
 describe("isValidType", () => {
   // Test checking for a string.
-  it("should return true when checking if a string is a string", () => {
+  it("should accept a string when the required type is string", () => {
     const string = "string";
+
     const result = isValidType("string", { string });
 
     expect(result.status).toBeTruthy();
@@ -16,9 +17,10 @@ describe("isValidType", () => {
   });
 
   // Test checking for multiple strings.
-  it("should return true when checking if multiple strings are strings", () => {
+  it("should accept multiple strings when the required type is string", () => {
     const string1 = "string";
     const string2 = "string";
+
     const result = isValidType("string", { string1, string2 });
 
     expect(result.status).toBeTruthy();
@@ -26,7 +28,7 @@ describe("isValidType", () => {
   });
 
   // Test checking for a non-string.
-  it("should return false when checking if a non-string is a string", () => {
+  it("should throw when a value does not match the required type", () => {
     const string = 1;
 
     expect(() => {
@@ -35,7 +37,7 @@ describe("isValidType", () => {
   });
 
   // Test checking for multiple non-strings.
-  it("should return false when checking if multiple non-strings are strings", () => {
+  it("should throw when multiple values do not match the required type", () => {
     const string1 = 1;
     const string2 = 1;
 
@@ -45,7 +47,7 @@ describe("isValidType", () => {
   });
 
   // Test checking for a mixed string and non-string.
-  it("should return false when checking if a mixed string and non-string are strings", () => {
+  it("should throw when a value has the wrong type alongside a valid value", () => {
     const string1 = "string";
     const string2 = 1;
 
@@ -54,8 +56,8 @@ describe("isValidType", () => {
     }).toThrow(TypeError);
   });
 
-  // Test passing a non-valid type.
-  it("should return false when checking for a non-valid type", () => {
+  // Test passing an invalid type argument.
+  it("should throw when the type argument is not a string", () => {
     const string = "string";
 
     expect(() => {
@@ -64,7 +66,7 @@ describe("isValidType", () => {
   });
 
   // Test passing a non-object as the values argument.
-  it("should return false when passing a non-object as the values argument", () => {
+  it("should throw when the values argument is not an object", () => {
     const string = "string";
 
     expect(() => {
@@ -73,14 +75,14 @@ describe("isValidType", () => {
   });
 
   // Test that shouldThrow will throw on invalid values.
-  it("should throw the first error when shouldThrow is true", () => {
+  it("should throw when shouldThrow is true", () => {
     expect(() => {
       isValidType("string", { value: 1 }, { shouldThrow: true });
     }).toThrow(TypeError);
   });
 
   // Test that shouldThrow can be disabled.
-  it("should not throw when shouldThrow is false", () => {
+  it("should report validation errors without throwing when shouldThrow is false", () => {
     const result = isValidType("string", { value: 1 }, { shouldThrow: false });
 
     expect(result.status).toBeFalsy();
@@ -96,9 +98,7 @@ describe("isValidType", () => {
     expect(result.errors[0]).toBeInstanceOf(TypeError);
     expect(result.errors[0].message).toContain("must be a string");
   });
-});
 
-describe("isValidType error aggregation", () => {
   it("should return errors for all invalid values", () => {
     const result = isValidType(
       "string",

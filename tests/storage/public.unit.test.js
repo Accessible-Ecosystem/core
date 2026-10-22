@@ -38,6 +38,7 @@ describe("StorageManager public methods", () => {
         "The storage type must be a string."
       );
     });
+
     // Test that get returns a type's data.
     it("should return the storage for a given type", () => {
       const storage = new StorageManager({ scope, type: "menus" });
@@ -65,6 +66,42 @@ describe("StorageManager public methods", () => {
       }).toThrowError(
         'StorageManager (TestStorage): Type "menus" is not initialized.'
       );
+    });
+
+    it.each([{ type: 123 }, { type: null }, { key: 123 }, { key: {} }])(
+      "should reject invalid options %j without modifying data",
+      (options) => {
+        const storage = new StorageManager({ scope });
+        storage.set({ key: "main", data: { id: 1 } });
+
+        expect(() => storage.get(options)).toThrow(TypeError);
+        expect(storage.get()).toEqual({ main: { id: 1 } });
+      }
+    );
+
+    it("should operate on an explicitly requested type", () => {
+      const storage = new StorageManager({ scope });
+      storage.set({ type: "custom", key: "main", data: { id: 1 } });
+
+      expect(storage.get({ type: "custom", key: "main" })).toEqual({
+        id: 1,
+      });
+    });
+
+    it("should leave the default type unchanged when an explicit type is used", () => {
+      const storage = new StorageManager({ scope });
+      storage.set({ type: "custom", key: "main", data: { id: 1 } });
+
+      storage.get({ type: "custom", key: "main" });
+
+      expect(storage.type).toBe("_default");
+    });
+
+    it("should return undefined for a missing key in an initialized type", () => {
+      const storage = new StorageManager({ scope });
+      storage.set();
+
+      expect(storage.get({ key: "missing" })).toBeUndefined();
     });
   });
 
@@ -104,109 +141,41 @@ describe("StorageManager public methods", () => {
         side: sideMenu,
       });
     });
-  });
 
-  // Test StorageManager clear().
-  describe("clear", () => {
-    // Test that clear deletes a specific key's data.
-    it("should clear data for a given key", () => {
-      const storage = new StorageManager({ scope, type: "menus" });
-      storage.set({ key: "main", data: { id: 1 } });
-      storage.set({ key: "side", data: { id: 2 } });
+    it.each([{ type: 123 }, { type: null }, { key: 123 }, { key: {} }])(
+      "should reject invalid options %j without modifying data",
+      (options) => {
+        const storage = new StorageManager({ scope });
 
-      storage.clear({ key: "main" });
+        storage.set({ key: "main", data: { id: 1 } });
 
-      expect(storage.storage.menus.main).toBeUndefined();
-      expect(storage.storage.menus.side).toEqual({ id: 2 });
-    });
+        expect(() => storage.set(options)).toThrow(TypeError);
+        expect(storage.get()).toEqual({ main: { id: 1 } });
+      }
+    );
 
-    // Test that clear deletes a type's data.
-    it("should clear data for a given type", () => {
-      const storage = new StorageManager({ scope, type: "menus" });
-      storage.set({ data: { main: { id: 1 } } });
-
-      storage.clear();
-
-      expect(storage.storage.menus).toBeUndefined();
-    });
-  });
-
-  // Test StorageManager dispose().
-  describe("dispose", () => {
-    // Test that dispose removes the storage object.
-    it("should remove the storage object from the instance", () => {
+    it("should operate on an explicitly requested type", () => {
       const storage = new StorageManager({ scope });
 
-      storage.dispose();
+      storage.set({ type: "custom", key: "main", data: { id: 1 } });
 
-      expect(storage.storage).toBeUndefined();
-    });
+      storage.set({ type: "custom", key: "main", data: { id: 2 } });
 
-    it("should remove the instance from global storage", () => {
-      const storage = new StorageManager({ scope });
-
-      storage.dispose();
-
-      expect(window[scope]).toBeUndefined();
-    });
-  });
-});
-
-describe("StorageManager public validation", () => {
-  for (const method of ["get", "set", "clear"])
-    describe(method, () => {
-      it.each([{ type: 123 }, { type: null }, { key: 123 }, { key: {} }])(
-        "should reject invalid options %j without modifying data",
-        (options) => {
-          const storage = new StorageManager({ scope });
-          storage.set({ key: "main", data: { id: 1 } });
-
-          expect(() => storage[method](options)).toThrow(TypeError);
-          expect(storage.get()).toEqual({ main: { id: 1 } });
-        }
-      );
-
-      it("should operate on an explicitly requested type", () => {
-        const storage = new StorageManager({ scope });
-        storage.set({ type: "custom", key: "main", data: { id: 1 } });
-
-        if (method === "get")
-          expect(storage.get({ type: "custom", key: "main" })).toEqual({
-            id: 1,
-          });
-
-        if (method === "set") {
-          storage.set({ type: "custom", key: "main", data: { id: 2 } });
-          expect(storage.get({ type: "custom", key: "main" })).toEqual({
-            id: 2,
-          });
-        }
-        if (method === "clear") {
-          storage.clear({ type: "custom", key: "main" });
-          expect(storage.get({ type: "custom" })).toEqual({});
-        }
-      });
-
-      it("should leave the default type unchanged when an explicit type is used", () => {
-        const storage = new StorageManager({ scope });
-        storage.set({ type: "custom", key: "main", data: { id: 1 } });
-
-        storage[method]({ type: "custom", key: "main" });
-
-        expect(storage.type).toBe("_default");
+      expect(storage.get({ type: "custom", key: "main" })).toEqual({
+        id: 2,
       });
     });
 
-  describe("get", () => {
-    it("should return undefined for a missing key in an initialized type", () => {
+    it("should leave the default type unchanged when an explicit type is used", () => {
       const storage = new StorageManager({ scope });
-      storage.set();
 
-      expect(storage.get({ key: "missing" })).toBeUndefined();
+      storage.set({ type: "custom", key: "main", data: { id: 1 } });
+
+      storage.set({ type: "custom", key: "main" });
+
+      expect(storage.type).toBe("_default");
     });
-  });
 
-  describe("set", () => {
     it.each([123, "invalid"])("should reject invalid data %j", (data) => {
       const storage = new StorageManager({ scope });
 
@@ -232,7 +201,59 @@ describe("StorageManager public validation", () => {
     });
   });
 
+  // Test StorageManager clear().
   describe("clear", () => {
+    // Test that clear deletes a specific key's data.
+    it("should clear data for a given key", () => {
+      const storage = new StorageManager({ scope, type: "menus" });
+      storage.set({ key: "main", data: { id: 1 } });
+      storage.set({ key: "side", data: { id: 2 } });
+
+      storage.clear({ key: "main" });
+
+      expect(storage.storage.menus.main).toBeUndefined();
+      expect(storage.storage.menus.side).toEqual({ id: 2 });
+    });
+
+    // Test that clear deletes a type's data.
+    it("should clear data for a given type", () => {
+      const storage = new StorageManager({ scope, type: "menus" });
+      storage.set({ data: { main: { id: 1 } } });
+
+      storage.clear();
+
+      expect(storage.storage.menus).toBeUndefined();
+    });
+
+    it.each([{ type: 123 }, { type: null }, { key: 123 }, { key: {} }])(
+      "should reject invalid options %j without modifying data",
+      (options) => {
+        const storage = new StorageManager({ scope });
+        storage.set({ key: "main", data: { id: 1 } });
+
+        expect(() => storage.clear(options)).toThrow(TypeError);
+        expect(storage.get()).toEqual({ main: { id: 1 } });
+      }
+    );
+
+    it("should operate on an explicitly requested type", () => {
+      const storage = new StorageManager({ scope });
+      storage.set({ type: "custom", key: "main", data: { id: 1 } });
+
+      storage.clear({ type: "custom", key: "main" });
+
+      expect(storage.get({ type: "custom" })).toEqual({});
+    });
+
+    it("should leave the default type unchanged when an explicit type is used", () => {
+      const storage = new StorageManager({ scope });
+      storage.set({ type: "custom", key: "main", data: { id: 1 } });
+
+      storage.clear({ type: "custom", key: "main" });
+
+      expect(storage.type).toBe("_default");
+    });
+
     it("should tolerate a missing type when clearing the whole type", () => {
       const storage = new StorageManager({ scope });
 
@@ -241,7 +262,25 @@ describe("StorageManager public validation", () => {
     });
   });
 
+  // Test StorageManager dispose().
   describe("dispose", () => {
+    // Test that dispose removes the storage object.
+    it("should remove the storage object from the instance", () => {
+      const storage = new StorageManager({ scope });
+
+      storage.dispose();
+
+      expect(storage.storage).toBeUndefined();
+    });
+
+    it("should remove the instance from global storage", () => {
+      const storage = new StorageManager({ scope });
+
+      storage.dispose();
+
+      expect(window[scope]).toBeUndefined();
+    });
+
     it("should preserve a newer owner of the global scope", () => {
       const first = new StorageManager({ scope });
       const second = new StorageManager({ scope });

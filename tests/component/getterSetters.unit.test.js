@@ -2,8 +2,20 @@
  * Getter/Setter tests for the Component class.
  */
 
-import { describe, it, expect } from "vitest";
-import { createComponent } from "../helpers.js";
+import { describe, it, expect, afterEach, vi } from "vitest";
+import Component from "../../src/Component.js";
+
+let component;
+
+afterEach(() => {
+  component?.dispose();
+  component = null;
+  document.body.innerHTML = "";
+  delete window.AccessibleEcosystemStorage;
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe("Component getter/setters", () => {
   const readonly = {
@@ -29,13 +41,21 @@ describe("Component getter/setters", () => {
   for (const [name, field] of Object.entries(readonly))
     describe(name, () => {
       it("should get the protected field value", () => {
-        const component = createComponent();
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         expect(component[name]).toBe(component[field]);
       });
 
       it("should throw when set manually", () => {
-        const component = createComponent();
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         const original = component[name];
 
         expect(() => {
@@ -47,13 +67,21 @@ describe("Component getter/setters", () => {
 
   describe("eventPrefix", () => {
     it("should combine the scope and name by default", () => {
-      const component = createComponent();
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(component.eventPrefix).toBe("accessibleEcosystemComponent");
     });
 
     it("should combine a custom scope and name when the event prefix is empty", () => {
-      const component = createComponent();
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component._scope = "CustomScope";
       component._name = "Widget";
 
@@ -63,7 +91,11 @@ describe("Component getter/setters", () => {
     it.each(["customEvents", "CustomEvents"])(
       "should return the configured prefix %s unchanged",
       (prefix) => {
-        const component = createComponent();
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component._eventPrefix = prefix;
 
         expect(component.eventPrefix).toBe(prefix);
@@ -71,7 +103,11 @@ describe("Component getter/setters", () => {
     );
 
     it("should throw when set manually", () => {
-      const component = createComponent();
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(() => {
         component.eventPrefix = "replacement";
@@ -81,33 +117,50 @@ describe("Component getter/setters", () => {
 
   describe("rootDOMElement", () => {
     it("should return the configured root", () => {
-      const component = createComponent();
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(component.rootDOMElement).toBe(component.dom.root);
     });
 
     it("should fall back to the document root when the configured root is invalid", () => {
-      const component = createComponent();
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component._dom.root = 12;
 
       expect(component.rootDOMElement).toBe(document.documentElement);
     });
 
     it("should fall back to the document root when the configured root is missing", () => {
-      const component = createComponent();
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component._rootDOMElement = "missing";
 
       expect(component.rootDOMElement).toBe(document.documentElement);
     });
 
     it("should throw when set manually", () => {
-      const component = createComponent();
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(() => {
         component.rootDOMElement = null;
       }).toThrow(TypeError);
     });
   });
+
   for (const [name, values, invalid] of [
     ["initializeClass", ["custom", ["one", "two"], "", []], 123],
     ["focusState", ["none", "self", "child"], "invalid"],
@@ -115,7 +168,11 @@ describe("Component getter/setters", () => {
   ])
     describe(name, () => {
       it.each(values)("should accept %j", (value) => {
-        const component = createComponent();
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component[name] = value;
 
@@ -123,7 +180,11 @@ describe("Component getter/setters", () => {
       });
 
       it.each(values)("should retain %j when assigned again", (value) => {
-        const component = createComponent();
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
 
         component[name] = value;
         component[name] = value;
@@ -132,7 +193,11 @@ describe("Component getter/setters", () => {
       });
 
       it("should reject invalid values without changing state", () => {
-        const component = createComponent();
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         const original = component[name];
 
         expect(() => {
@@ -144,20 +209,33 @@ describe("Component getter/setters", () => {
 
   describe("shouldFocus", () => {
     it("should throw when set manually", () => {
-      const component = createComponent();
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(() => {
         component.shouldFocus = true;
       }).toThrow(TypeError);
     });
 
-    it.each(["none", "mouse", "keyboard", "character"])(
+    it.each([
+      ["none", false],
+      ["mouse", false],
+      ["keyboard", true],
+      ["character", false],
+    ])(
       "should derive focus eligibility from %s",
-      (currentEvent) => {
-        const component = createComponent();
+      (currentEvent, expectedFocus) => {
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
         component.currentEvent = currentEvent;
 
-        expect(component.shouldFocus).toBe(currentEvent === "keyboard");
+        expect(component.shouldFocus).toBe(expectedFocus);
       }
     );
   });

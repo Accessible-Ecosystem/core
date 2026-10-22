@@ -7,17 +7,19 @@ import { isValidClassList } from "../../src/validate.js";
 
 describe("isValidClassList", () => {
   // Test a valid single class.
-  it("should return true when checking if a valid single class is a valid class list", () => {
+  it("should accept a single class", () => {
     const classList = "class";
+
     const result = isValidClassList({ classList });
 
     expect(result.status).toBeTruthy();
     expect(result.errors).toHaveLength(0);
   });
 
-  // Test a valid multiple classes.
-  it("should return true when checking if valid multiple classes are a valid class list", () => {
+  // Test an array of valid classes.
+  it("should accept an array of classes", () => {
     const classList = ["class1", "class2"];
+
     const result = isValidClassList({ classList });
 
     expect(result.status).toBeTruthy();
@@ -25,7 +27,7 @@ describe("isValidClassList", () => {
   });
 
   // Test an invalid single class.
-  it("should return false when checking if an invalid single class is a valid class list", () => {
+  it("should throw when a class value is a number", () => {
     const classList = 1;
 
     expect(() => {
@@ -33,8 +35,8 @@ describe("isValidClassList", () => {
     }).toThrow(TypeError);
   });
 
-  // Test an invalid multiple classes.
-  it("should return false when checking if invalid multiple classes are a valid class list", () => {
+  // Test an array of invalid classes.
+  it("should throw when a class array contains numbers", () => {
     const classList = [1, 2];
 
     expect(() => {
@@ -42,8 +44,8 @@ describe("isValidClassList", () => {
     }).toThrow(TypeError);
   });
 
-  // Test a mixed valid and invalid classes.
-  it("should return false when checking if a mixed valid and invalid classes are a valid class list", () => {
+  // Test an array of valid and invalid classes.
+  it("should throw when a class array mixes strings and numbers", () => {
     const classList = ["class", 1];
 
     expect(() => {
@@ -61,7 +63,7 @@ describe("isValidClassList", () => {
   });
 
   // Test passing a non-object.
-  it("should return false when checking for a non-object", () => {
+  it("should throw when the values argument is not an object", () => {
     const classList = "class";
 
     expect(() => {
@@ -70,22 +72,20 @@ describe("isValidClassList", () => {
   });
 
   // Test that shouldThrow will throw on invalid values.
-  it("should throw the first error when shouldThrow is true", () => {
+  it("should throw when shouldThrow is true", () => {
     expect(() => {
       isValidClassList({ classList: 1 }, { shouldThrow: true });
     }).toThrow(TypeError);
   });
 
   // Test that shouldThrow can be disabled.
-  it("should not throw when shouldThrow is false", () => {
+  it("should report validation errors without throwing when shouldThrow is false", () => {
     const result = isValidClassList({ classList: 1 }, { shouldThrow: false });
 
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
-});
 
-describe("isValidClassList error aggregation", () => {
   it("should return errors for all invalid values", () => {
     const result = isValidClassList(
       { valid: "valid", first: "invalid token", second: "invalid token" },
@@ -106,9 +106,7 @@ describe("isValidClassList error aggregation", () => {
       isValidClassList({ first: "invalid token", second: "invalid token" })
     ).toThrow(/^first\b/);
   });
-});
 
-describe("isValidClassList optional classes", () => {
   it.each(["", [], ["", "valid"], "colon:token", "123"])(
     "should allow class tokens %j",
     (value) => {

@@ -9,18 +9,15 @@ describe("isValidHoverType", () => {
   // Test for all valid hover types.
   const hoverTypes = ["off", "on", "dynamic"];
 
-  it.each(hoverTypes)(
-    "should return true when checking if %p is a valid hover type",
-    (hoverType) => {
-      const result = isValidHoverType({ hoverType });
+  it.each(hoverTypes)("should accept %p as a hover type", (hoverType) => {
+    const result = isValidHoverType({ hoverType });
 
-      expect(result.status).toBeTruthy();
-      expect(result.errors).toHaveLength(0);
-    }
-  );
+    expect(result.status).toBeTruthy();
+    expect(result.errors).toHaveLength(0);
+  });
 
   // Test for an invalid hover type.
-  it("should return false when checking if an invalid hover type is a valid hover type", () => {
+  it("should throw for an invalid hover type", () => {
     const hoverType = "invalid";
 
     expect(() => {
@@ -29,7 +26,7 @@ describe("isValidHoverType", () => {
   });
 
   // Test passing a non-object.
-  it("should return false when checking for a non-object", () => {
+  it("should throw when the values argument is not an object", () => {
     const hoverType = "off";
 
     expect(() => {
@@ -38,14 +35,14 @@ describe("isValidHoverType", () => {
   });
 
   // Test that shouldThrow will throw on invalid values.
-  it("should throw the first error when shouldThrow is true", () => {
+  it("should throw when shouldThrow is true", () => {
     expect(() => {
       isValidHoverType({ hoverType: "invalid" }, { shouldThrow: true });
     }).toThrow(TypeError);
   });
 
   // Test that shouldThrow can be disabled.
-  it("should not throw when shouldThrow is false", () => {
+  it("should report validation errors without throwing when shouldThrow is false", () => {
     const result = isValidHoverType(
       { hoverType: "invalid" },
       { shouldThrow: false }
@@ -54,9 +51,7 @@ describe("isValidHoverType", () => {
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
-});
 
-describe("isValidHoverType error aggregation", () => {
   it("should return errors for all invalid values", () => {
     const result = isValidHoverType(
       { valid: "on", first: "invalid", second: "invalid" },

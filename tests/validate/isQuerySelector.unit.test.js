@@ -7,8 +7,9 @@ import { isQuerySelector } from "../../src/validate.js";
 
 describe("isQuerySelector", () => {
   // Test a valid query selector.
-  it("should return true when checking if a valid query selector is a valid query selector", () => {
+  it("should accept a valid query selector", () => {
     const selector = "div";
+
     const result = isQuerySelector({ selector });
 
     expect(result.status).toBeTruthy();
@@ -16,9 +17,10 @@ describe("isQuerySelector", () => {
   });
 
   // Test multiple valid query selectors.
-  it("should return true when checking if multiple valid query selectors are valid query selectors", () => {
+  it("should accept multiple valid query selectors", () => {
     const selector1 = "div";
     const selector2 = "div";
+
     const result = isQuerySelector({ selector1, selector2 });
 
     expect(result.status).toBeTruthy();
@@ -26,7 +28,7 @@ describe("isQuerySelector", () => {
   });
 
   // Test an invalid query selector.
-  it("should return false when checking if an invalid query selector is a valid query selector", () => {
+  it("should throw for an invalid query selector", () => {
     const selector = "div[";
 
     expect(() => {
@@ -35,7 +37,7 @@ describe("isQuerySelector", () => {
   });
 
   // Test multiple invalid query selectors.
-  it("should return false when checking if multiple invalid query selectors are valid query selectors", () => {
+  it("should throw for multiple invalid query selectors", () => {
     const selector1 = "div[";
     const selector2 = "a[";
 
@@ -61,7 +63,7 @@ describe("isQuerySelector", () => {
   });
 
   // Test multiple non-string query selectors.
-  it("should return false when checking if multiple non-string query selectors are valid query selectors", () => {
+  it("should throw for multiple non-string query selectors", () => {
     const selector1 = 1;
     const selector2 = 1;
 
@@ -71,7 +73,7 @@ describe("isQuerySelector", () => {
   });
 
   // Test null.
-  it("should return false when checking if null is a valid query selector", () => {
+  it("should throw for a null query selector", () => {
     const selector = null;
 
     expect(() => {
@@ -80,7 +82,7 @@ describe("isQuerySelector", () => {
   });
 
   // Test a mixed valid and invalid query selector.
-  it("should return false when checking if a mixed valid and invalid query selector is a valid query selector", () => {
+  it("should throw when a query selector is invalid alongside a valid selector", () => {
     const selector1 = "div";
     const selector2 = "div[";
 
@@ -90,7 +92,7 @@ describe("isQuerySelector", () => {
   });
 
   // Test a mixed valid and non-string query selector.
-  it("should return false when checking if a mixed valid and non-string query selector is a valid query selector", () => {
+  it("should throw when a query selector is not a string alongside a valid selector", () => {
     const selector1 = "div";
     const selector2 = 1;
 
@@ -100,7 +102,7 @@ describe("isQuerySelector", () => {
   });
 
   // Test passing a non-object.
-  it("should return false when checking for a non-object", () => {
+  it("should throw when the selectors argument is not an object", () => {
     const selector = "div";
 
     expect(() => {
@@ -109,22 +111,20 @@ describe("isQuerySelector", () => {
   });
 
   // Test that shouldThrow will throw on invalid values.
-  it("should throw the first error when shouldThrow is true", () => {
+  it("should throw when shouldThrow is true", () => {
     expect(() => {
       isQuerySelector({ selector: 1 }, { shouldThrow: true });
     }).toThrow(TypeError);
   });
 
   // Test that shouldThrow can be disabled.
-  it("should not throw when shouldThrow is false", () => {
+  it("should report validation errors without throwing when shouldThrow is false", () => {
     const result = isQuerySelector({ selector: 1 }, { shouldThrow: false });
 
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
-});
 
-describe("isQuerySelector error aggregation", () => {
   it("should return errors for all invalid values", () => {
     const result = isQuerySelector(
       { valid: "div", first: "[", second: "[" },

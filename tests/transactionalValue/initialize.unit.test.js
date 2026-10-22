@@ -15,6 +15,7 @@ describe("TransactionalValue", () => {
     expect(value.committed).toBe("Test");
     expect(value.isDirty).toBe(false);
   });
+
   // Test TransactionalValue equals.
   describe("equals", () => {
     // Test that equals is used to determine dirty state.
@@ -31,9 +32,7 @@ describe("TransactionalValue", () => {
       expect(equals).toHaveBeenCalledExactlyOnceWith("test", "Test");
     });
   });
-});
 
-describe("TransactionalValue constructor defaults", () => {
   it("should accept an omitted initial value", () => {
     const value = new TransactionalValue();
 

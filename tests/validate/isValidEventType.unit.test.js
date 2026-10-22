@@ -15,15 +15,16 @@ describe("isValidEventType", () => {
     }
   }
 
-  it("should return true when the event type exists on the component", () => {
+  it("should accept an event type registered on the component", () => {
     const component = new TestComponent();
+
     const result = isValidEventType("expand", component);
 
     expect(result.status).toBeTruthy();
     expect(result.errors).toHaveLength(0);
   });
 
-  it("should return false when the event type does not exist on the component", () => {
+  it("should throw when the event type is not registered on the component", () => {
     const component = new TestComponent();
 
     expect(() => {
@@ -31,7 +32,7 @@ describe("isValidEventType", () => {
     }).toThrow(TypeError);
   });
 
-  it("should throw the first error when shouldThrow is true", () => {
+  it("should throw when shouldThrow is true", () => {
     const component = new TestComponent();
 
     expect(() => {
@@ -39,8 +40,9 @@ describe("isValidEventType", () => {
     }).toThrow(TypeError);
   });
 
-  it("should not throw when shouldThrow is false", () => {
+  it("should report validation errors without throwing when shouldThrow is false", () => {
     const component = new TestComponent();
+
     const result = isValidEventType("invalid", component, {
       shouldThrow: false,
     });
@@ -48,9 +50,7 @@ describe("isValidEventType", () => {
     expect(result.status).toBeFalsy();
     expect(result.errors[0]).toBeInstanceOf(TypeError);
   });
-});
 
-describe("isValidEventType own properties", () => {
   it("should reject inherited event keys", () => {
     const component = { events: Object.create({ inherited: {} }) };
 

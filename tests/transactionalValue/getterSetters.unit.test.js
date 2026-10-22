@@ -64,42 +64,47 @@ describe("TransactionalValue getter/setters", () => {
         value.isDirty = true;
       }).toThrow(TypeError);
     });
-  });
-});
 
-describe("TransactionalValue isDirty equality semantics", () => {
-  it.each([
-    [NaN, NaN, false],
-    [0, -0, true],
-    [undefined, undefined, false],
-    [null, null, false],
-  ])("should compare %j and %j using Object.is", (initial, current, dirty) => {
-    const value = new TransactionalValue(initial);
-    value.value = current;
+    it.each([
+      [NaN, NaN, false],
+      [0, -0, true],
+      [undefined, undefined, false],
+      [null, null, false],
+    ])(
+      "should compare %j and %j using Object.is",
+      (initial, current, dirty) => {
+        const value = new TransactionalValue(initial);
 
-    expect(value.isDirty).toBe(dirty);
-  });
+        value.value = current;
 
-  it("should treat the same object reference as unchanged", () => {
-    const object = { id: 1 };
-    const value = new TransactionalValue(object);
-    value.value = object;
+        expect(value.isDirty).toBe(dirty);
+      }
+    );
 
-    expect(value.isDirty).toBe(false);
-  });
+    it("should treat the same object reference as unchanged", () => {
+      const object = { id: 1 };
+      const value = new TransactionalValue(object);
 
-  it("should treat a different object reference as dirty", () => {
-    const value = new TransactionalValue({ id: 1 });
-    value.value = { id: 1 };
+      value.value = object;
 
-    expect(value.isDirty).toBe(true);
-  });
+      expect(value.isDirty).toBe(false);
+    });
 
-  it("should treat mutation of the original reference as unchanged", () => {
-    const object = { id: 1 };
-    const value = new TransactionalValue(object);
-    object.id = 2;
+    it("should treat a different object reference as dirty", () => {
+      const value = new TransactionalValue({ id: 1 });
 
-    expect(value.isDirty).toBe(false);
+      value.value = { id: 1 };
+
+      expect(value.isDirty).toBe(true);
+    });
+
+    it("should treat mutation of the original reference as unchanged", () => {
+      const object = { id: 1 };
+      const value = new TransactionalValue(object);
+
+      object.id = 2;
+
+      expect(value.isDirty).toBe(false);
+    });
   });
 });

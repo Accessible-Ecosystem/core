@@ -14,6 +14,7 @@ describe("TransactionalValue public methods", () => {
 
       expect(value.commit()).toBe(value);
     });
+
     // Test that commit updates the committed value.
     it("should commit the current value", () => {
       const value = new TransactionalValue(1);
@@ -33,6 +34,7 @@ describe("TransactionalValue public methods", () => {
 
       expect(value.reset()).toBe(value);
     });
+
     // Test that reset restores the committed value.
     it("should reset the current value to the committed value", () => {
       const value = new TransactionalValue("initial");
@@ -41,6 +43,20 @@ describe("TransactionalValue public methods", () => {
       value.reset();
 
       expect(value.value).toBe("initial");
+      expect(value.isDirty).toBe(false);
+    });
+
+    it("should reset to the latest committed value", () => {
+      const value = new TransactionalValue(1);
+      value.value = 2;
+
+      value.commit();
+      value.value = 3;
+
+      value.reset();
+
+      expect(value.value).toBe(2);
+      expect(value.committed).toBe(2);
       expect(value.isDirty).toBe(false);
     });
   });
@@ -52,6 +68,7 @@ describe("TransactionalValue public methods", () => {
 
       expect(value.update((current) => current + 1)).toBe(value);
     });
+
     // Test that update applies a functional update.
     it("should update the current value with a function", () => {
       const value = new TransactionalValue(2);
@@ -62,11 +79,7 @@ describe("TransactionalValue public methods", () => {
       expect(value.committed).toBe(2);
       expect(value.isDirty).toBe(true);
     });
-  });
-});
 
-describe("TransactionalValue public methods", () => {
-  describe("update", () => {
     it("should keep the current and committed values when the update function throws", () => {
       const value = new TransactionalValue(1);
       const failure = new Error("update failed");
@@ -81,20 +94,7 @@ describe("TransactionalValue public methods", () => {
     });
   });
 
-  describe("commit and reset", () => {
-    it("should reset to the latest committed value", () => {
-      const value = new TransactionalValue(1);
-      value.value = 2;
-
-      value.commit();
-      value.value = 3;
-      value.reset();
-
-      expect(value.value).toBe(2);
-      expect(value.committed).toBe(2);
-      expect(value.isDirty).toBe(false);
-    });
-
+  describe("method chaining", () => {
     it("should support chaining public methods", () => {
       const value = new TransactionalValue(1);
 

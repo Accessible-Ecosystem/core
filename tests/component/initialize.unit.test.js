@@ -2,14 +2,29 @@
  * Initialization tests for the Component class.
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import Component from "../../src/Component.js";
-import { createComponent } from "../helpers.js";
+
+let component;
+
+afterEach(() => {
+  component?.dispose();
+  component = null;
+  document.body.innerHTML = "";
+  delete window.AccessibleEcosystemStorage;
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe("Component initialization", () => {
   describe("constructor", () => {
     it("should default the protected event prefix to an empty string", () => {
-      const component = createComponent();
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(component._eventPrefix).toBe("");
     });
@@ -19,7 +34,11 @@ describe("Component initialization", () => {
         _eventPrefix = "customEvents";
       }
 
-      const component = createComponent({}, PrefixedComponent);
+      component = new PrefixedComponent({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(component.getEventName("initialize")).toBe(
         "customEventsInitialize"
@@ -29,21 +48,17 @@ describe("Component initialization", () => {
     it("should bootstrap by default", () => {
       const spy = vi.spyOn(Component.prototype, "_bootstrap");
 
-      const component = new Component();
+      component = new Component();
 
       expect(spy).toHaveBeenCalledTimes(1);
-
-      component.dispose();
     });
 
     it("should skip bootstrapping when bootstrap is false", () => {
       const spy = vi.spyOn(Component.prototype, "_bootstrap");
 
-      const component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false });
 
       expect(spy).not.toHaveBeenCalled();
-
-      component.dispose();
     });
 
     it.each([
@@ -53,7 +68,11 @@ describe("Component initialization", () => {
       { initializeClass: ["one", "two"] },
       { prefix: null, key: null, initializeClass: null },
     ])("should initialize with valid options %j", (options) => {
-      const component = createComponent(options);
+      component = new Component({ ...options, bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       component.initialize();
 
       expect(component.isInitialized).toBe(true);
@@ -72,7 +91,11 @@ describe("Component initialization", () => {
       { initializeClass: ["valid", {}] },
     ])("should log validation failure for %j", (options) => {
       const error = vi.spyOn(console, "error").mockImplementation(() => {});
-      const component = createComponent(options);
+      component = new Component({ ...options, bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
 
       expect(() => component.initialize()).not.toThrow();
       expect(error).toHaveBeenCalledWith(expect.any(Error));
@@ -81,9 +104,9 @@ describe("Component initialization", () => {
       expect(component.errors.length).toBeGreaterThan(0);
     });
 
-    it("should reject a missing root", () => {
+    it("should report a validation failure when the root is missing", () => {
       const error = vi.spyOn(console, "error").mockImplementation(() => {});
-      const component = new Component();
+      component = new Component();
 
       component.initialize();
 
@@ -92,8 +115,12 @@ describe("Component initialization", () => {
     });
 
     it("should call initialization methods in order", () => {
-      const component = createComponent(),
-        order = [];
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const order = [];
       const hooks = [
         "_generateKey",
         "_setDOMElements",
@@ -117,8 +144,12 @@ describe("Component initialization", () => {
     });
 
     it("should dispatch initialization lifecycle events in order", () => {
-      const component = createComponent(),
-        order = [];
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const order = [];
       for (const name of ["preinitialize", "initialize", "postinitialize"])
         component._addEventListener(
           component.getEventName(name),
@@ -134,8 +165,12 @@ describe("Component initialization", () => {
     it.each(["preinitialize", "initialize", "postinitialize"])(
       "should include the component in the %s lifecycle event",
       (name) => {
-        const component = createComponent(),
-          listener = vi.fn();
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const listener = vi.fn();
         component._addEventListener(
           component.getEventName(name),
           component.rootDOMElement,
@@ -150,11 +185,19 @@ describe("Component initialization", () => {
       }
     );
 
-    it.each(["preinitialize", "initialize", "postinitialize"])(
+    it.each([
+      ["preinitialize", false],
+      ["initialize", false],
+      ["postinitialize", true],
+    ])(
       "should expose the expected initialized state during %s",
-      (name) => {
-        const component = createComponent(),
-          states = [];
+      (name, expectedState) => {
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const states = [];
         component._addEventListener(
           component.getEventName(name),
           component.rootDOMElement,
@@ -163,15 +206,23 @@ describe("Component initialization", () => {
 
         component.initialize();
 
-        expect(states).toEqual([name === "postinitialize"]);
+        expect(states).toEqual([expectedState]);
       }
     );
 
-    it.each(["preinitialize", "initialize", "postinitialize"])(
+    it.each([
+      ["preinitialize", true],
+      ["initialize", true],
+      ["postinitialize", false],
+    ])(
       "should expose the initialization class during %s",
-      (name) => {
-        const component = createComponent(),
-          states = [];
+      (name, expectedState) => {
+        component = new Component({ bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const states = [];
         component._addEventListener(
           component.getEventName(name),
           component.rootDOMElement,
@@ -183,12 +234,16 @@ describe("Component initialization", () => {
 
         component.initialize();
 
-        expect(states).toEqual([name !== "postinitialize"]);
+        expect(states).toEqual([expectedState]);
       }
     );
 
     it("should log failures from initialization hooks", () => {
-      const component = createComponent();
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
       const failure = new Error("hook failure");
       vi.spyOn(component, "_setDOMElements").mockImplementation(() => {
         throw failure;
@@ -201,16 +256,21 @@ describe("Component initialization", () => {
       expect(component.isInitialized).toBe(false);
       expect(component.isValid).toBe(false);
     });
-  });
-  it("should collect invalid-root validation errors before initialization", () => {
-    const component = createComponent();
-    component._dom.root = 12;
-    vi.spyOn(console, "error").mockImplementation(() => {});
 
-    component.initialize();
+    it("should collect invalid-root validation errors before initialization", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component._dom.root = 12;
+      vi.spyOn(console, "error").mockImplementation(() => {});
 
-    expect(
-      component.errors.some((error) => error.message.includes("rootElement"))
-    ).toBe(true);
+      component.initialize();
+
+      expect(
+        component.errors.some((error) => error.message.includes("rootElement"))
+      ).toBe(true);
+    });
   });
 });
