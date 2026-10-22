@@ -197,7 +197,7 @@ class CollapsibleComponent extends ResponsiveComponent {
     this._delays.transition = transitionDelay;
 
     // Set the durations for the component.
-    this._durations.transition = transitionDuration;
+    this._durations.transition = 1000;
     this._durations.expand = expandDuration;
     this._durations.collapse = collapseDuration;
 
