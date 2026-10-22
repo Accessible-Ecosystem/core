@@ -512,7 +512,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @see _expand
    */
   get isExpanded() {
-    return this._expanded.value;
+    return false;
   }
 
   /**
