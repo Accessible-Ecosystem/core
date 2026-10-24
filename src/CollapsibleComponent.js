@@ -109,6 +109,24 @@ class CollapsibleComponent extends ResponsiveComponent {
   _unlockOutsideBreakpoint = false;
 
   /**
+   * Whether calling focus should expand the component.
+   *
+   * @protected
+   *
+   * @type {boolean}
+   */
+  _expandOnFocus = false;
+
+  /**
+   * Whether calling blur should collapse the component.
+   *
+   * @protected
+   *
+   * @type {boolean}
+   */
+  _collapseOnBlur = false;
+
+  /**
    * Constructs a collapsible component.
    *
    * @param {object}             [options = {}]                              - The options for generating the component.
@@ -132,6 +150,8 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @param {boolean}            [options.lockOutsideBreakpoint = false]     - Whether to lock outside the breakpoint.
    * @param {boolean}            [options.unlockInsideBreakpoint = false]    - Whether to unlock inside the breakpoint.
    * @param {boolean}            [options.unlockOutsideBreakpoint = false]   - Whether to unlock outside the breakpoint.
+   * @param {boolean}            [options.expandOnFocus = false]             - Whether calling focus should expand the component.
+   * @param {boolean}            [options.collapseOnBlur = false]            - Whether calling blur should collapse the component.
    * @param {boolean}            [options.locked = false]                    - The initial locked state.
    * @param {?string}            [options.breakpoint = ""]                   - The breakpoint used to generate the component's media query.
    * @param {?string}            [options.mediaQuery = ""]                   - An explicit media query to use to trigger media query list events.
@@ -161,6 +181,8 @@ class CollapsibleComponent extends ResponsiveComponent {
     lockOutsideBreakpoint = false,
     unlockInsideBreakpoint = false,
     unlockOutsideBreakpoint = false,
+    expandOnFocus = false,
+    collapseOnBlur = false,
     locked = false,
     breakpoint = "",
     mediaQuery = "",
@@ -211,6 +233,9 @@ class CollapsibleComponent extends ResponsiveComponent {
     this._unlockInsideBreakpoint = unlockInsideBreakpoint;
     this._unlockOutsideBreakpoint = unlockOutsideBreakpoint;
 
+    this._expandOnFocus = expandOnFocus;
+    this._collapseOnBlur = collapseOnBlur;
+
     // Set the initial locked state for the component.
     this._locked.value = locked;
     this._locked.commit();
@@ -251,6 +276,8 @@ class CollapsibleComponent extends ResponsiveComponent {
         // Boolean checks.
         const booleans = {
           locked: this._locked.value,
+          expandOnFocus: this._expandOnFocus,
+          collapseOnBlur: this._collapseOnBlur,
           _expandInsideBreakpoint: this._expandInsideBreakpoint,
           _expandOutsideBreakpoint: this._expandOutsideBreakpoint,
           _collapseInsideBreakpoint: this._collapseInsideBreakpoint,
@@ -465,7 +492,10 @@ class CollapsibleComponent extends ResponsiveComponent {
   }
 
   /**
-   * Whether to expand the component when it gains focus in the DOM.
+   * Whether calling focus expands the component.
+   *
+   * Defaults to false. Applies even when shouldFocus is false and DOM focus
+   * does not move. Native focus events do not call focus automatically.
    *
    * @type {boolean}
    *
@@ -484,7 +514,10 @@ class CollapsibleComponent extends ResponsiveComponent {
   }
 
   /**
-   * Whether to collapse the component when it loses focus in the DOM.
+   * Whether calling blur collapses the component.
+   *
+   * Defaults to false. Applies even when shouldFocus is false and DOM focus
+   * does not move. Native blur events do not call blur automatically.
    *
    * @type {boolean}
    *
@@ -951,6 +984,30 @@ class CollapsibleComponent extends ResponsiveComponent {
       // Commit the expanded state.
       this._expanded.commit();
     }
+  }
+
+  /**
+   * Focuses the component and expands it if expandOnFocus is true.
+   *
+   * Uses the inherited focus behavior, including shouldFocus, then calls expand
+   * when enabled. The expansion follows expand's normal locked-state rules.
+   */
+  focus() {
+    super.focus();
+
+    if (this.expandOnFocus) this.expand();
+  }
+
+  /**
+   * Blurs the component and collapses it if collapseOnBlur is true.
+   *
+   * Uses the inherited blur behavior, including shouldFocus, then calls collapse
+   * when enabled. The collapse follows collapse's normal locked-state rules.
+   */
+  blur() {
+    super.blur();
+
+    if (this.collapseOnBlur) this.collapse();
   }
 
   /**

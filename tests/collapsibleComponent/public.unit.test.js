@@ -18,6 +18,144 @@ afterEach(() => {
 });
 
 describe("CollapsibleComponent public methods", () => {
+  describe("focus", () => {
+    it.each([
+      [undefined, false],
+      [false, false],
+      [true, true],
+    ])("should respect expandOnFocus set to %s", (value, expanded) => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        expandOnFocus: value,
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.currentEvent = "keyboard";
+
+      component.focus();
+
+      expect(component.isExpanded).toBe(expanded);
+      expect(component.focusState).toBe("self");
+      expect(document.activeElement).toBe(component.dom.controller);
+    });
+
+    it("should apply expandOnFocus without moving DOM focus", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expandOnFocus = true;
+
+      component.focus();
+
+      expect(component.isExpanded).toBe(true);
+      expect(component.focusState).toBe("self");
+      expect(document.activeElement).toBe(document.body);
+    });
+
+    it("should respect the locked state when expandOnFocus is true", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        expandOnFocus: true,
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.lock();
+
+      component.focus();
+
+      expect(component.isExpanded).toBe(false);
+      expect(component.focusState).toBe("self");
+    });
+  });
+
+  describe("blur", () => {
+    it.each([
+      [undefined, true],
+      [false, true],
+      [true, false],
+    ])("should respect collapseOnBlur set to %s", (value, expanded) => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        collapseOnBlur: value,
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.currentEvent = "keyboard";
+      component.focus();
+      component.expand();
+
+      component.blur();
+
+      expect(component.isExpanded).toBe(expanded);
+      expect(component.focusState).toBe("none");
+      expect(document.activeElement).toBe(document.body);
+    });
+
+    it("should apply collapseOnBlur without moving DOM focus", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.collapseOnBlur = true;
+      component.expand();
+
+      component.blur();
+
+      expect(component.isExpanded).toBe(false);
+      expect(component.focusState).toBe("none");
+      expect(document.activeElement).toBe(document.body);
+    });
+
+    it("should respect the locked state when collapseOnBlur is true", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        collapseOnBlur: true,
+        transitionClass: "",
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.initialize();
+      component.expand();
+      component.lock();
+
+      component.blur();
+
+      expect(component.isExpanded).toBe(true);
+      expect(component.focusState).toBe("none");
+    });
+  });
+
   describe("expand", () => {
     it("should set aria-expanded to true", () => {
       component = new CollapsibleComponent({

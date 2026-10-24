@@ -25,6 +25,42 @@ afterEach(() => {
 
 describe("CollapsibleComponent initialization", () => {
   describe("constructor", () => {
+    it.each([
+      [undefined, false],
+      [false, false],
+      [true, true],
+    ])("should set focus action flags to %s", (value, expected) => {
+      component = new CollapsibleComponent({
+        expandOnFocus: value,
+        collapseOnBlur: value,
+        bootstrap: false,
+      });
+
+      expect(component.expandOnFocus).toBe(expected);
+      expect(component.collapseOnBlur).toBe(expected);
+    });
+
+    it.each(["expandOnFocus", "collapseOnBlur"])(
+      "should report validation failures when %s is null",
+      (option) => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          [option]: null,
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+
+        component.initialize();
+
+        expect(component.isInitialized).toBe(false);
+        expect(component.isValid).toBe(false);
+      }
+    );
+
     it("should bootstrap by default", () => {
       const spy = vi.spyOn(CollapsibleComponent.prototype, "_bootstrap");
 
@@ -309,6 +345,8 @@ describe("CollapsibleComponent initialization", () => {
 
     it.each([
       "locked",
+      "expandOnFocus",
+      "collapseOnBlur",
       "expandInsideBreakpoint",
       "expandOutsideBreakpoint",
       "collapseInsideBreakpoint",
