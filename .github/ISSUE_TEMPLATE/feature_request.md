@@ -1,20 +1,23 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
-title: 'Feat: [Brief Description]'
+about: Suggest a feature or improvement for Core
+title: "Feat: [Brief description]"
 labels: enhancement
-assignees: ''
-
+assignees: ""
 ---
 
 ## Summary
-<!-- A clear and concise description of what the problem is. Ex. I'm always frustrated when [...] -->
 
-## Solution
-<!-- Describe the solution you'd like to see. -->
+<!-- Describe the problem you want to solve and who it affects. -->
+
+## Suggested solution
+
+<!-- Describe the behavior you would like and give a small usage example if possible. -->
 
 ## Alternatives
-<!-- Describe alternatives you've considered. -->
+
+<!-- Describe any existing options or other approaches you have considered and why they do not meet your needs. -->
 
 ## Additional context
-<!-- Is there anything else that would give context about the problem? -->
+
+<!-- Include any other information that would help maintainers understand the request. -->
