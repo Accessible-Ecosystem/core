@@ -10,7 +10,7 @@ Core provides shared component classes and utilities. Keep those APIs useful to 
 
 ## Follow the contribution guidelines
 
-All agents working on this project must read and follow both the [contribution guidelines](.github/CONTRIBUTING.md) and the [AI contribution policy](.github/AI_CONTRIBUTIONS.md).
+All agents working on this project must read and follow the [contribution guidelines](.github/CONTRIBUTING.md), [AI contribution policy](.github/AI_CONTRIBUTIONS.md), and [accessibility policy](.github/ACCESSIBILITY.md).
 
 ## Follow the ARIA APG
 

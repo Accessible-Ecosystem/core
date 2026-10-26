@@ -18,7 +18,7 @@ Accessibility also includes the people reading our code and documentation. Write
 
 By submitting any contribution, you take responsibility for its contents, whether you wrote it yourself or used assistance. Submit work you understand, have reviewed, and can explain.
 
-Read the [project instructions](../AGENTS.md) before contributing. AI-assisted contributions must also follow the [AI contribution policy](AI_CONTRIBUTIONS.md).
+Read the [project instructions](../AGENTS.md) and [accessibility policy](ACCESSIBILITY.md) before contributing. AI-assisted contributions must also follow the [AI contribution policy](AI_CONTRIBUTIONS.md).
 
 ## Where to contribute
 
