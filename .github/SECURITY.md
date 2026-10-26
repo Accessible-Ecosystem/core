@@ -1,24 +1,21 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+## Supported versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.x     | ✔                  |
+| Version | Supported |
+| ------- | --------- |
+| 1.x     | Yes       |
 
-## Reporting a Vulnerability
+## Report a vulnerability
 
-If you discover a vulnerability within this project, please [open an issue](https://github.com/Accessible-Ecosystem/core/issues/new) and label it with the `security` tag. The issue board is checked at least 2-3 times a week, so you should expect a response to your issue within a few days.
+To report a vulnerability in Core, [open an issue](https://github.com/Accessible-Ecosystem/core/issues/new) with the `security` label.
 
-If a PR is submitted along with the issue to resolve the vulnerability, you can expect it to be reviewed within the same time frame as issue responses. If a PR is not submitted, the time it takes to develop a fix will differ depending on the severity of the vulnerability.
+Maintainers check issues at least two or three times a week. You can expect a response within a few days.
+
+If you submit a pull request with a fix, maintainers will review it within the same time frame. Otherwise, the time needed to develop a fix depends on the severity of the vulnerability.
 
 ## Vulnerabilities in dependencies
 
-Given that accessible-ecosystem does not have any production dependencies, any vulnerable dev dependencies will be updated when/if possible- though a new release of accessible-ecosystem may not be pushed out right away.
+Core has no production dependencies. Maintainers will update vulnerable development dependencies when possible. Maintainers may not publish a Core release immediately after these updates.
 
-A higher priority will be given to dev dependencies that are directly responsible for compiling the project:
-
-- [vite](https://github.com/vitejs/vite), and
-- all related plugins
-
-If a vulnerability is found and resolved within one of these dependencies, a new release will be made.
+Maintainers prioritize vulnerabilities in tools that compile project code, including [Vite](https://github.com/vitejs/vite) and its plugins. When a vulnerability in one of these dependencies is resolved, maintainers will publish a new Core release.
