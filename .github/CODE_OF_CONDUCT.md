@@ -30,7 +30,7 @@ Maintainers have the right and responsibility to remove, edit, or reject comment
 
 ## Scope
 
-This code of conduct applies within project spaces. It also applies in public spaces when someone represents the project or its community.
+This code of conduct applies within project spaces and in public spaces when someone represents the project or its community.
 
 Examples include using an official project email address, posting through an official social media account, or acting as an appointed representative at an online or offline event. Maintainers may further define and clarify what counts as representing the project.
 
