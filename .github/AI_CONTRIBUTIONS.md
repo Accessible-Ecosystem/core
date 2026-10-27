@@ -10,7 +10,7 @@ This policy applies alongside the [contribution guidelines](CONTRIBUTING.md).
 
 All AI-assisted contributions must follow the [project's AGENTS.md instructions](../AGENTS.md), including any instructions that apply to the files being changed.
 
-Read those instructions yourself and provide them to the AI tools you use. You are responsible for checking that the finished contribution follows them.
+Read the instructions yourself and provide them to the AI tools you use. You are responsible for checking that the finished contribution follows them.
 
 ## Review and verify before submitting
 
