@@ -6,6 +6,14 @@ These projects support people who depend on accessible interactions. Every contr
 
 This policy applies alongside the [contribution guidelines](CONTRIBUTING.md).
 
+## Disclose AI use in every pull request
+
+Every pull request must state whether AI tools assisted with or generated any part of the contribution, including code, tests, and documentation. If you did not use AI, say so explicitly.
+
+If you used AI, briefly describe how you used it and which parts of the contribution it assisted with or generated. Keep this disclosure current when adding changes to the pull request.
+
+Disclosure does not replace the human review and verification required by this policy.
+
 ## Follow the project instructions
 
 All AI-assisted contributions must follow the [project's AGENTS.md instructions](../AGENTS.md), including any instructions that apply to the files being changed.
