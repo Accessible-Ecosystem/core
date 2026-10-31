@@ -176,6 +176,91 @@ describe("CollapsibleComponent protected methods", () => {
       expect(component.frames).toEqual({});
     });
 
+    // https://github.com/Accessible-Ecosystem/core/issues/6
+    it.each([true, false])(
+      "should replace pending collapse frames with transition set to %s",
+      (transition) => {
+        vi.useFakeTimers();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+
+        component._collapse({ emit: false, transition: true });
+        component._expand({ emit: false, transition });
+        vi.runAllTimers();
+
+        expect(component.dom.controlled.classList.contains("show")).toBe(true);
+        expect(component.dom.controlled.classList.contains("hide")).toBe(false);
+        expect(
+          component.dom.controlled.classList.contains("transitioning")
+        ).toBe(false);
+      }
+    );
+
+    // https://github.com/Accessible-Ecosystem/core/issues/6
+    it.each(["_expand", "_collapse"])(
+      "should replace the pending %s timer with the new expand duration",
+      (previousAction) => {
+        vi.useFakeTimers();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionDuration: 100,
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component[previousAction]({ emit: false, transition: true });
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersByTime(50);
+
+        component._expand({ emit: false, transition: true });
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersByTime(99);
+
+        expect(
+          component.dom.controlled.classList.contains("transitioning")
+        ).toBe(true);
+
+        vi.advanceTimersByTime(1);
+
+        expect(
+          component.dom.controlled.classList.contains("transitioning")
+        ).toBe(false);
+      }
+    );
+
+    // https://github.com/Accessible-Ecosystem/core/issues/6
+    it("should cancel the pending expand transition timer on disposal", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component._expand({ emit: false, transition: true });
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersToNextFrame();
+
+      component.dispose();
+
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
     it("should sequence state class changes over animation frames", () => {
       vi.useFakeTimers();
       component = new CollapsibleComponent({
@@ -409,6 +494,91 @@ describe("CollapsibleComponent protected methods", () => {
 
       expect(component.dom.controlled.classList.contains("show")).toBe(true);
       expect(component.frames).toEqual({});
+    });
+
+    // https://github.com/Accessible-Ecosystem/core/issues/6
+    it.each([true, false])(
+      "should replace pending expand frames with transition set to %s",
+      (transition) => {
+        vi.useFakeTimers();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+
+        component._expand({ emit: false, transition: true });
+        component._collapse({ emit: false, transition });
+        vi.runAllTimers();
+
+        expect(component.dom.controlled.classList.contains("hide")).toBe(true);
+        expect(component.dom.controlled.classList.contains("show")).toBe(false);
+        expect(
+          component.dom.controlled.classList.contains("transitioning")
+        ).toBe(false);
+      }
+    );
+
+    // https://github.com/Accessible-Ecosystem/core/issues/6
+    it.each(["_expand", "_collapse"])(
+      "should replace the pending %s timer with the new collapse duration",
+      (previousAction) => {
+        vi.useFakeTimers();
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionDuration: 100,
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component[previousAction]({ emit: false, transition: true });
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersByTime(50);
+
+        component._collapse({ emit: false, transition: true });
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersToNextFrame();
+        vi.advanceTimersByTime(99);
+
+        expect(
+          component.dom.controlled.classList.contains("transitioning")
+        ).toBe(true);
+
+        vi.advanceTimersByTime(1);
+
+        expect(
+          component.dom.controlled.classList.contains("transitioning")
+        ).toBe(false);
+      }
+    );
+
+    // https://github.com/Accessible-Ecosystem/core/issues/6
+    it("should cancel the pending collapse transition timer on disposal", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component._collapse({ emit: false, transition: true });
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersToNextFrame();
+
+      component.dispose();
+
+      expect(vi.getTimerCount()).toBe(0);
     });
 
     it("should sequence state class changes over animation frames", () => {

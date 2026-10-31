@@ -803,6 +803,12 @@ class CollapsibleComponent extends ResponsiveComponent {
       this._dispatchEvent("preexpand");
     }
 
+    // Replace pending transition work so only the latest action changes classes.
+    this._cancelAnimationFrame("expandTransition");
+    this._cancelAnimationFrame("collapseTransition");
+    this._clearTimeout("expandTransition");
+    this._clearTimeout("collapseTransition");
+
     this.dom.controller.setAttribute("aria-expanded", "true");
 
     // Use animation frames to remove the collapse class and add the expand class.
@@ -817,13 +823,17 @@ class CollapsibleComponent extends ResponsiveComponent {
           addClass(this.expandClass, this.dom.controlled);
 
           this._requestAnimationFrame(() => {
-            setTimeout(() => {
-              removeClass(this.transitionClass, this.dom.controlled);
-            }, this.expandDuration);
+            this._setTimeout(
+              () => removeClass(this.transitionClass, this.dom.controlled),
+              this.expandDuration,
+              "expandTransition"
+            );
           }, "expandTransition");
         }, "expandTransition");
       }, "expandTransition");
     } else {
+      removeClass(this.transitionClass, this.dom.controlled);
+
       // Add the expand class.
       addClass(this.expandClass, this.dom.controlled);
 
@@ -863,6 +873,12 @@ class CollapsibleComponent extends ResponsiveComponent {
       this._dispatchEvent("precollapse");
     }
 
+    // Replace pending transition work so only the latest action changes classes.
+    this._cancelAnimationFrame("expandTransition");
+    this._cancelAnimationFrame("collapseTransition");
+    this._clearTimeout("expandTransition");
+    this._clearTimeout("collapseTransition");
+
     this.dom.controller.setAttribute("aria-expanded", "false");
 
     // Use animation frames to remove the expand class and add the collapse class.
@@ -877,13 +893,17 @@ class CollapsibleComponent extends ResponsiveComponent {
           addClass(this.collapseClass, this.dom.controlled);
 
           this._requestAnimationFrame(() => {
-            setTimeout(() => {
-              removeClass(this.transitionClass, this.dom.controlled);
-            }, this.collapseDuration);
+            this._setTimeout(
+              () => removeClass(this.transitionClass, this.dom.controlled),
+              this.collapseDuration,
+              "collapseTransition"
+            );
           }, "collapseTransition");
         }, "collapseTransition");
       }, "collapseTransition");
     } else {
+      removeClass(this.transitionClass, this.dom.controlled);
+
       // Add the collapse class.
       addClass(this.collapseClass, this.dom.controlled);
 
