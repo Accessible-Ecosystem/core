@@ -53,7 +53,8 @@ describe("CollapsibleComponent protected methods", () => {
   });
 
   describe("_expand", () => {
-    it("should emit lifecycle events in order", () => {
+    it("should cancel completion when disposed by the expand listener", () => {
+      vi.useFakeTimers();
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
@@ -62,19 +63,171 @@ describe("CollapsibleComponent protected methods", () => {
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
       component._bootstrap();
+      const listener = vi.fn();
+      // Keep observing after disposal removes the component's tracked listeners.
+      component.rootDOMElement.addEventListener(
+        component.getEventName("postexpand"),
+        listener
+      );
+      component._addEventListener(
+        component.getEventName("expand"),
+        component.rootDOMElement,
+        () => component.dispose()
+      );
+
+      component._expand({ emit: true, transition: true });
+      vi.runAllTimers();
+
+      expect(listener).not.toHaveBeenCalled();
+      expect(component.frames).toEqual({});
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("should emit lifecycle events at each transition stage", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        expandDuration: 80,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.dom.controller.setAttribute("aria-expanded", "false");
+      component.dom.controlled.className = "hide";
       const events = [];
       for (const name of ["preexpand", "expand", "postexpand"]) {
         component._addEventListener(
           component.getEventName(name),
           component.rootDOMElement,
-          () => events.push(name)
+          () =>
+            events.push({
+              name,
+              classes: component.dom.controlled.className,
+              expanded: component.dom.controller.getAttribute("aria-expanded"),
+            })
         );
       }
 
-      component._expand({ emit: true, transition: false });
+      component._expand({ emit: true, transition: true });
 
-      expect(events).toEqual(["preexpand", "expand", "postexpand"]);
+      expect(events).toEqual([
+        { name: "preexpand", classes: "hide", expanded: "false" },
+      ]);
+
+      vi.advanceTimersToNextFrame();
+
+      expect(events).toHaveLength(1);
+
+      vi.advanceTimersToNextFrame();
+
+      expect(events).toEqual([
+        { name: "preexpand", classes: "hide", expanded: "false" },
+        { name: "expand", classes: "transitioning show", expanded: "true" },
+      ]);
+
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersByTime(79);
+
+      expect(events).toHaveLength(2);
+
+      vi.advanceTimersByTime(1);
+
+      expect(events).toEqual([
+        { name: "preexpand", classes: "hide", expanded: "false" },
+        { name: "expand", classes: "transitioning show", expanded: "true" },
+        { name: "postexpand", classes: "show", expanded: "true" },
+      ]);
     });
+
+    it("should suppress deferred lifecycle events when emit is false", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const listener = vi.fn();
+      for (const name of ["preexpand", "expand", "postexpand"]) {
+        component._addEventListener(
+          component.getEventName(name),
+          component.rootDOMElement,
+          listener
+        );
+      }
+
+      component._expand({ emit: false, transition: true });
+      vi.runAllTimers();
+
+      expect(listener).not.toHaveBeenCalled();
+      expect(component.dom.controlled.classList.contains("show")).toBe(true);
+    });
+
+    it("should cancel completion when an expand listener reverses the action", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const listener = vi.fn();
+      component._addEventListener(
+        component.getEventName("postexpand"),
+        component.rootDOMElement,
+        listener
+      );
+      component._addEventListener(
+        component.getEventName("expand"),
+        component.rootDOMElement,
+        () => {
+          component._collapse({ emit: false, transition: false });
+        }
+      );
+
+      component._expand({ emit: true, transition: true });
+      vi.runAllTimers();
+
+      expect(listener).not.toHaveBeenCalled();
+      expect(component.dom.controlled.className).toBe("hide");
+      expect(component.frames).toEqual({});
+    });
+
+    it.each([
+      { transition: false, transitionClass: "transitioning" },
+      { transition: true, transitionClass: "" },
+    ])(
+      "should emit immediate lifecycle events with %j",
+      ({ transition, transitionClass }) => {
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass,
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const events = [];
+        for (const name of ["preexpand", "expand", "postexpand"]) {
+          component._addEventListener(
+            component.getEventName(name),
+            component.rootDOMElement,
+            () => events.push(name)
+          );
+        }
+
+        component._expand({ emit: true, transition });
+
+        expect(events).toEqual(["preexpand", "expand", "postexpand"]);
+      }
+    );
 
     it("should include the component in event detail", () => {
       component = new CollapsibleComponent({
@@ -373,7 +526,8 @@ describe("CollapsibleComponent protected methods", () => {
   });
 
   describe("_collapse", () => {
-    it("should emit lifecycle events in order", () => {
+    it("should cancel completion when disposed by the collapse listener", () => {
+      vi.useFakeTimers();
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
@@ -382,19 +536,171 @@ describe("CollapsibleComponent protected methods", () => {
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
       component._bootstrap();
+      const listener = vi.fn();
+      // Keep observing after disposal removes the component's tracked listeners.
+      component.rootDOMElement.addEventListener(
+        component.getEventName("postcollapse"),
+        listener
+      );
+      component._addEventListener(
+        component.getEventName("collapse"),
+        component.rootDOMElement,
+        () => component.dispose()
+      );
+
+      component._collapse({ emit: true, transition: true });
+      vi.runAllTimers();
+
+      expect(listener).not.toHaveBeenCalled();
+      expect(component.frames).toEqual({});
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("should emit lifecycle events at each transition stage", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        collapseDuration: 80,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      component.dom.controller.setAttribute("aria-expanded", "true");
+      component.dom.controlled.className = "show";
       const events = [];
       for (const name of ["precollapse", "collapse", "postcollapse"]) {
         component._addEventListener(
           component.getEventName(name),
           component.rootDOMElement,
-          () => events.push(name)
+          () =>
+            events.push({
+              name,
+              classes: component.dom.controlled.className,
+              expanded: component.dom.controller.getAttribute("aria-expanded"),
+            })
         );
       }
 
-      component._collapse({ emit: true, transition: false });
+      component._collapse({ emit: true, transition: true });
 
-      expect(events).toEqual(["precollapse", "collapse", "postcollapse"]);
+      expect(events).toEqual([
+        { name: "precollapse", classes: "show", expanded: "true" },
+      ]);
+
+      vi.advanceTimersToNextFrame();
+
+      expect(events).toHaveLength(1);
+
+      vi.advanceTimersToNextFrame();
+
+      expect(events).toEqual([
+        { name: "precollapse", classes: "show", expanded: "true" },
+        { name: "collapse", classes: "transitioning hide", expanded: "false" },
+      ]);
+
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersByTime(79);
+
+      expect(events).toHaveLength(2);
+
+      vi.advanceTimersByTime(1);
+
+      expect(events).toEqual([
+        { name: "precollapse", classes: "show", expanded: "true" },
+        { name: "collapse", classes: "transitioning hide", expanded: "false" },
+        { name: "postcollapse", classes: "hide", expanded: "false" },
+      ]);
     });
+
+    it("should suppress deferred lifecycle events when emit is false", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const listener = vi.fn();
+      for (const name of ["precollapse", "collapse", "postcollapse"]) {
+        component._addEventListener(
+          component.getEventName(name),
+          component.rootDOMElement,
+          listener
+        );
+      }
+
+      component._collapse({ emit: false, transition: true });
+      vi.runAllTimers();
+
+      expect(listener).not.toHaveBeenCalled();
+      expect(component.dom.controlled.classList.contains("hide")).toBe(true);
+    });
+
+    it("should cancel completion when a collapse listener reverses the action", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      document.body.appendChild(component.rootDOMElement);
+      component._bootstrap();
+      const listener = vi.fn();
+      component._addEventListener(
+        component.getEventName("postcollapse"),
+        component.rootDOMElement,
+        listener
+      );
+      component._addEventListener(
+        component.getEventName("collapse"),
+        component.rootDOMElement,
+        () => {
+          component._expand({ emit: false, transition: false });
+        }
+      );
+
+      component._collapse({ emit: true, transition: true });
+      vi.runAllTimers();
+
+      expect(listener).not.toHaveBeenCalled();
+      expect(component.dom.controlled.className).toBe("show");
+      expect(component.frames).toEqual({});
+    });
+
+    it.each([
+      { transition: false, transitionClass: "transitioning" },
+      { transition: true, transitionClass: "" },
+    ])(
+      "should emit immediate lifecycle events with %j",
+      ({ transition, transitionClass }) => {
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass,
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        const events = [];
+        for (const name of ["precollapse", "collapse", "postcollapse"]) {
+          component._addEventListener(
+            component.getEventName(name),
+            component.rootDOMElement,
+            () => events.push(name)
+          );
+        }
+
+        component._collapse({ emit: true, transition });
+
+        expect(events).toEqual(["precollapse", "collapse", "postcollapse"]);
+      }
+    );
 
     it("should include the component in event detail", () => {
       component = new CollapsibleComponent({

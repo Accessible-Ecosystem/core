@@ -786,6 +786,11 @@ class CollapsibleComponent extends ResponsiveComponent {
    * Sets the controller's `aria-expanded` to "true", adds the expand class(es) to
    * the controlled element, and removes the collapse class(es) from the controlled element.
    *
+   * Emits preexpand before DOM changes and expand when the expand class is added.
+   * With transitions, emits postexpand after the configured duration and removal
+   * of the transition class. Without transitions, all three events are synchronous.
+   * Replacing the action or disposing cancels its pending transition events.
+   *
    * @protected
    *
    * @fires this._events.preexpand
@@ -822,13 +827,21 @@ class CollapsibleComponent extends ResponsiveComponent {
         this._requestAnimationFrame(() => {
           addClass(this.expandClass, this.dom.controlled);
 
+          // Schedule cleanup before emitting so event listeners can cancel it
+          // by reversing the action or disposing of the component.
           this._requestAnimationFrame(() => {
             this._setTimeout(
-              () => removeClass(this.transitionClass, this.dom.controlled),
+              () => {
+                removeClass(this.transitionClass, this.dom.controlled);
+
+                if (emit) this._dispatchEvent("postexpand");
+              },
               this.expandDuration,
               "expandTransition"
             );
           }, "expandTransition");
+
+          if (emit) this._dispatchEvent("expand");
         }, "expandTransition");
       }, "expandTransition");
     } else {
@@ -839,11 +852,11 @@ class CollapsibleComponent extends ResponsiveComponent {
 
       // Remove the collapse class.
       removeClass(this.collapseClass, this.dom.controlled);
-    }
 
-    if (emit) {
-      this._dispatchEvent("expand");
-      this._dispatchEvent("postexpand");
+      if (emit) {
+        this._dispatchEvent("expand");
+        this._dispatchEvent("postexpand");
+      }
     }
   }
 
@@ -852,6 +865,11 @@ class CollapsibleComponent extends ResponsiveComponent {
    *
    * Sets the controller's `aria-expanded` to "false", adds the collapse class(es) to
    * the controlled element, and removes the expand class(es) from the controlled element.
+   *
+   * Emits precollapse before DOM changes and collapse when the collapse class is added.
+   * With transitions, emits postcollapse after the configured duration and removal
+   * of the transition class. Without transitions, all three events are synchronous.
+   * Replacing the action or disposing cancels its pending transition events.
    *
    * @protected
    *
@@ -892,13 +910,20 @@ class CollapsibleComponent extends ResponsiveComponent {
         this._requestAnimationFrame(() => {
           addClass(this.collapseClass, this.dom.controlled);
 
+          // Schedule cleanup before emitting so event listeners can cancel it.
           this._requestAnimationFrame(() => {
             this._setTimeout(
-              () => removeClass(this.transitionClass, this.dom.controlled),
+              () => {
+                removeClass(this.transitionClass, this.dom.controlled);
+
+                if (emit) this._dispatchEvent("postcollapse");
+              },
               this.collapseDuration,
               "collapseTransition"
             );
           }, "collapseTransition");
+
+          if (emit) this._dispatchEvent("collapse");
         }, "collapseTransition");
       }, "collapseTransition");
     } else {
@@ -909,11 +934,11 @@ class CollapsibleComponent extends ResponsiveComponent {
 
       // Remove the expand class.
       removeClass(this.expandClass, this.dom.controlled);
-    }
 
-    if (emit) {
-      this._dispatchEvent("collapse");
-      this._dispatchEvent("postcollapse");
+      if (emit) {
+        this._dispatchEvent("collapse");
+        this._dispatchEvent("postcollapse");
+      }
     }
   }
 
