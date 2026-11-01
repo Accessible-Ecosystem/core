@@ -1,6 +1,6 @@
-## [1.0.0-beta.11](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2026-10-31)
+## [1.0.0-beta.12](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.11...v1.0.0-beta.12) (2026-11-01)
 
 
-### Bug Fixes
+### Features
 
-* **component:** properly cancel collapse and expand events when an opposite event fires ([1e109bb](https://github.com/Accessible-Ecosystem/core/commit/1e109bb3283d366ab4c0048311d4a3feaa70c851)), closes [#6](https://github.com/Accessible-Ecosystem/core/issues/6)
+* change license to ISC to keep in line with accessible menu ([b89b4e2](https://github.com/Accessible-Ecosystem/core/commit/b89b4e2d380a880e91ae117f95527ada1e486588))

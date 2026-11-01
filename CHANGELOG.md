@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.0-beta.12](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.11...v1.0.0-beta.12) (2026-11-01)
+
+
+### Features
+
+* change license to ISC to keep in line with accessible menu ([b89b4e2](https://github.com/Accessible-Ecosystem/core/commit/b89b4e2d380a880e91ae117f95527ada1e486588))
+
 ## [1.0.0-beta.11](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2026-10-31)
 
 
