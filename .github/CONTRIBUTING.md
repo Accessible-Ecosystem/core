@@ -36,7 +36,7 @@ All code changes happen through pull requests.
 
 ## Contribution license
 
-Contributions must use the same license as the project, [GNU General Public License version 3 or later](../LICENSE), identified as `GPL-3.0-or-later` in `package.json`.
+Contributions must use the same license as the project, [ISC License](../LICENSE), identified as `ISC` in `package.json`.
 
 ## Report a bug
 

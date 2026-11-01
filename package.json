@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/Accessible-Ecosystem/core.git"
   },
-  "license": "GPL-3.0-or-later",
+  "license": "ISC",
   "author": "Nick Milton",
   "type": "module",
   "main": "src/Component.js",
