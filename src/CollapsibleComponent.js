@@ -160,6 +160,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @param {?(string|string[])} [options.initializeClass = initializing]    - The class(es) to apply when the component is in the initialization state.
    * @param {boolean}            [options.emit = true]                       - Whether to emit public events.
    * @param {boolean}            [options.bootstrap = true]                  - Whether to bootstrap the component.
+   * @param {boolean}            [options.initialize = true]                 - Whether to initialize the component.
    */
   constructor({
     controllerElement,
@@ -192,6 +193,7 @@ class CollapsibleComponent extends ResponsiveComponent {
     initializeClass = "initializing",
     emit = true,
     bootstrap = true,
+    initialize = true,
   } = {}) {
     super({
       breakpoint,
@@ -201,6 +203,7 @@ class CollapsibleComponent extends ResponsiveComponent {
       initializeClass,
       emit,
       bootstrap: false,
+      initialize: false,
     });
 
     // Set the DOM elements.
@@ -246,15 +249,19 @@ class CollapsibleComponent extends ResponsiveComponent {
     if (bootstrap) {
       this._bootstrap();
     }
+
+    if (initialize) {
+      this.initialize();
+    }
   }
 
   /**
-   * Bootstraps the component.
+   * Registers the component's events and internal lifecycle listeners.
    *
    * @protected
    */
-  _bootstrap() {
-    super._bootstrap();
+  _registerEvents() {
+    super._registerEvents();
 
     // Register the base component events.
     this._registerEvent("preexpand");

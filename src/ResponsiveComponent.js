@@ -50,6 +50,7 @@ class ResponsiveComponent extends Component {
    * @param {?(string|string[])} [options.initializeClass = initializing] - The class(es) to apply when the component is in the initialization state.
    * @param {boolean}            [options.emit = true]                    - Whether to emit public events.
    * @param {boolean}            [options.bootstrap = true]               - A flag to determine if the component should bootstrap itself.
+   * @param {boolean}            [options.initialize = true]              - Whether to initialize the component.
    */
   constructor({
     breakpoint = "",
@@ -59,8 +60,16 @@ class ResponsiveComponent extends Component {
     initializeClass = "initializing",
     emit = true,
     bootstrap = true,
+    initialize = true,
   } = {}) {
-    super({ prefix, key, initializeClass, emit, bootstrap: false });
+    super({
+      prefix,
+      key,
+      initializeClass,
+      emit,
+      bootstrap: false,
+      initialize: false,
+    });
 
     // Set the breakpoint and media query.
     this._breakpoint = breakpoint || "";
@@ -69,50 +78,46 @@ class ResponsiveComponent extends Component {
     if (bootstrap) {
       this._bootstrap();
     }
+
+    if (initialize) {
+      this.initialize();
+    }
   }
 
   /**
-   * Bootstraps the component by registering the base events.
+   * Registers the component's events and internal lifecycle listeners.
    *
    * @protected
    */
-  _bootstrap() {
-    try {
-      super._bootstrap();
+  _registerEvents() {
+    super._registerEvents();
 
-      // Register the validation listener.
-      this._addInternalEventListener(this.getEventName("validate"), (event) => {
-        if (event.detail.component !== this) return;
-        // String checks.
-        const strings = {
-          mediaQuery: this._mediaQueryString,
-          breakpoint: this._breakpoint,
-        };
+    // Register the validation listener.
+    this._addInternalEventListener(this.getEventName("validate"), (event) => {
+      if (event.detail.component !== this) return;
+      // String checks.
+      const strings = {
+        mediaQuery: this._mediaQueryString,
+        breakpoint: this._breakpoint,
+      };
 
-        // Check the strings.
-        const stringChecks = isValidType("string", strings, {
-          shouldThrow: false,
-        });
-
-        // Handle string check failure.
-        if (!stringChecks.status) {
-          this._errors = [...this._errors, ...stringChecks.errors];
-          this._valid = false;
-        }
+      // Check the strings.
+      const stringChecks = isValidType("string", strings, {
+        shouldThrow: false,
       });
 
-      // Register the initialization listener.
-      this._addInternalEventListener(
-        this.getEventName("initialize"),
-        (event) => {
-          if (event.detail.component !== this) return;
-          this._handleMediaMatch();
-        }
-      );
-    } catch (error) {
-      this._valid = false;
-      console.error(error);
-    }
+      // Handle string check failure.
+      if (!stringChecks.status) {
+        this._errors = [...this._errors, ...stringChecks.errors];
+        this._valid = false;
+      }
+    });
+
+    // Register the initialization listener.
+    this._addInternalEventListener(this.getEventName("initialize"), (event) => {
+      if (event.detail.component !== this) return;
+      this._handleMediaMatch();
+    });
   }
 
   /**
