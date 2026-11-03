@@ -48,6 +48,7 @@ class ResponsiveComponent extends Component {
    * @param {?string}            [options.prefix = ae-]                   - The prefix used for CSS custom properties and attributes.
    * @param {?string}            [options.key = null]                     - The key used to generate IDs throughout the component.
    * @param {?(string|string[])} [options.initializeClass = initializing] - The class(es) to apply when the component is in the initialization state.
+   * @param {boolean}            [options.emit = true]                    - Whether to emit public events.
    * @param {boolean}            [options.bootstrap = true]               - A flag to determine if the component should bootstrap itself.
    */
   constructor({
@@ -56,9 +57,10 @@ class ResponsiveComponent extends Component {
     prefix = "ae-",
     key = null,
     initializeClass = "initializing",
+    emit = true,
     bootstrap = true,
   } = {}) {
-    super({ prefix, key, initializeClass, bootstrap: false });
+    super({ prefix, key, initializeClass, emit, bootstrap: false });
 
     // Set the breakpoint and media query.
     this._breakpoint = breakpoint || "";
@@ -79,34 +81,29 @@ class ResponsiveComponent extends Component {
       super._bootstrap();
 
       // Register the validation listener.
-      this._addEventListener(
-        this.getEventName("validate"),
-        this.rootDOMElement,
-        (event) => {
-          if (event.detail.component !== this) return;
-          // String checks.
-          const strings = {
-            mediaQuery: this._mediaQueryString,
-            breakpoint: this._breakpoint,
-          };
+      this._addInternalEventListener(this.getEventName("validate"), (event) => {
+        if (event.detail.component !== this) return;
+        // String checks.
+        const strings = {
+          mediaQuery: this._mediaQueryString,
+          breakpoint: this._breakpoint,
+        };
 
-          // Check the strings.
-          const stringChecks = isValidType("string", strings, {
-            shouldThrow: false,
-          });
+        // Check the strings.
+        const stringChecks = isValidType("string", strings, {
+          shouldThrow: false,
+        });
 
-          // Handle string check failure.
-          if (!stringChecks.status) {
-            this._errors = [...this._errors, ...stringChecks.errors];
-            this._valid = false;
-          }
+        // Handle string check failure.
+        if (!stringChecks.status) {
+          this._errors = [...this._errors, ...stringChecks.errors];
+          this._valid = false;
         }
-      );
+      });
 
       // Register the initialization listener.
-      this._addEventListener(
+      this._addInternalEventListener(
         this.getEventName("initialize"),
-        this.rootDOMElement,
         (event) => {
           if (event.detail.component !== this) return;
           this._handleMediaMatch();

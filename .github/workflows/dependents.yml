@@ -21,7 +21,7 @@ jobs:
       matrix:
         project:
           - repository: NickDJM/accessible-menu
-            ref: 5.x
+            ref: private-event-listeners
             test-script: test:run
 
     steps:

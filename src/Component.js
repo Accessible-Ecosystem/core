@@ -25,6 +25,13 @@ import { addClass, removeClass } from "./domHelpers.js";
  */
 class Component {
   /**
+   * The event target for internal lifecycle listeners.
+   *
+   * @type {EventTarget}
+   */
+  #internalEventTarget = new EventTarget();
+
+  /**
    * The DOM elements within the component.
    *
    * @protected
@@ -256,6 +263,15 @@ class Component {
   _initialized = false;
 
   /**
+   * Whether the component should emit public events.
+   *
+   * @protected
+   *
+   * @type {boolean}
+   */
+  _shouldEmit = true;
+
+  /**
    * The errors found throughout the component.
    *
    * @protected
@@ -271,12 +287,14 @@ class Component {
    * @param {?string}            [options.prefix = ae-]                   - The prefix used for CSS custom properties and attributes.
    * @param {?string}            [options.key = null]                     - The key used to generate IDs throughout the component.
    * @param {?(string|string[])} [options.initializeClass = initializing] - The class(es) to apply when the component is in the initialization state.
+   * @param {boolean}            [options.emit = true]                    - Whether to emit public events.
    * @param {boolean}            [options.bootstrap = true]               - A flag to determine if the component should bootstrap itself.
    */
   constructor({
     prefix = "ae-",
     key = null,
     initializeClass = "initializing",
+    emit = true,
     bootstrap = true,
   } = {}) {
     // Set the classes.
@@ -285,6 +303,9 @@ class Component {
     // Set the prefix and key.
     this._prefix = prefix || "";
     this._key = key || "";
+
+    // Set the public event preference.
+    this._shouldEmit = emit;
 
     // Bootstrap the component.
     if (bootstrap) {
@@ -713,6 +734,20 @@ class Component {
   }
 
   /**
+   * A flag to indicate whether public events should be emitted.
+   *
+   * @type {boolean}
+   */
+  get shouldEmit() {
+    return this._shouldEmit;
+  }
+
+  set shouldEmit(value) {
+    isValidType("boolean", { shouldEmit: value });
+    this._shouldEmit = value;
+  }
+
+  /**
    * An array to hold validation errors.
    *
    * @readonly
@@ -892,6 +927,7 @@ class Component {
     // Boolean checks.
     const booleans = {
       _shouldStore: this._shouldStore,
+      emit: this._shouldEmit,
     };
 
     // Check the booleans.
@@ -1354,31 +1390,84 @@ class Component {
   }
 
   /**
-   * Dispatch a custom event on an element in the DOM.
+   * Dispatch a custom event internally, then optionally on an element in the DOM.
    *
-   * @param {string}      eventType                       - The type of the event to dispatch.
-   * @param {HTMLElement} [element = this.rootDOMElement] - The element to dispatch the event on.
+   * Internal listeners run even when emit is false.
+   * Public dispatch also requires the component's shouldEmit getter to be true.
+   *
+   * @param {string}      eventType                       - The type of event to dispatch.
+   * @param {HTMLElement} [element = this.rootDOMElement] - The element to dispatch the public event on.
+   * @param {object}      [options = {}]                  - Dispatch options.
+   * @param {boolean}     [options.emit = true]           - A flag to dispatch the public DOM event.
    */
-  _dispatchEvent(eventType, element = this.rootDOMElement) {
+  _dispatchEvent(
+    eventType,
+    element = this.rootDOMElement,
+    { emit = true } = {}
+  ) {
     // Make sure the event type exists.
     isValidEventType(eventType, this);
 
-    // Make sure the element is an HTMLElement.
-    isValidInstance(HTMLElement, { element });
+    // Make sure emit is a boolean.
+    isValidType("boolean", { emit });
 
-    // Dispatch the event.
-    element.dispatchEvent(this.events[eventType]);
+    // Make sure the element is an HTMLElement when dispatching a public event.
+    if (emit && this.shouldEmit) isValidInstance(HTMLElement, { element });
+
+    // Dispatch the internal event.
+    const event = this.events[eventType];
+    this.#internalEventTarget.dispatchEvent(event);
+
+    // Dispatch the public event.
+    if (emit && this.shouldEmit) element.dispatchEvent(event);
+  }
+
+  /**
+   * Add an internal event listener and register it within the component.
+   *
+   * @protected
+   *
+   * @param {string}          type           - The type of event to listen for.
+   * @param {Function|object} listener       - The listener callback.
+   * @param {object|boolean}  [options = {}] - Options to pass to the listener.
+   */
+  _addInternalEventListener(type, listener, options = {}) {
+    this._addEventListener(type, this.#internalEventTarget, listener, options);
+  }
+
+  /**
+   * Remove an internal event listener and unregister it from the component.
+   *
+   * @protected
+   *
+   * @param {string}          type           - The type of event to listen for.
+   * @param {Function|object} listener       - The listener callback.
+   * @param {object|boolean}  [options = {}] - Options to pass to the listener.
+   */
+  _removeInternalEventListener(type, listener, options = {}) {
+    this._removeEventListener(
+      type,
+      this.#internalEventTarget,
+      listener,
+      options
+    );
   }
 
   /**
    * Add an event listener to an element and register it within the component.
    *
    * @param {string}         type           - The type of event to listen for.
-   * @param {HTMLElement}    element        - The element to add the listener to.
+   * @param {EventTarget}    element        - The target to add the listener to.
    * @param {Function}       listener       - The listener callback.
    * @param {object|boolean} [options = {}] - Options to pass to the listener.
    */
   _addEventListener(type, element, listener, options = {}) {
+    // Snapshot capture so later changes to the caller's options cannot break cleanup.
+    const listenerOptions =
+      typeof options === "boolean"
+        ? options
+        : { ...options, capture: Boolean(options?.capture) };
+
     // Add the listener.
     element.addEventListener(type, listener, options);
 
@@ -1387,15 +1476,15 @@ class Component {
       type,
       element,
       listener,
-      options,
+      options: listenerOptions,
     });
   }
 
   /**
-   * Remove an event listener from an element and unregister it within the component.
+   * Remove an event listener from an element and unregister it from the component.
    *
    * @param {string}         type           - The type of event to remove.
-   * @param {HTMLElement}    element        - The element to remove the listener from.
+   * @param {EventTarget}    element        - The target to remove the listener from.
    * @param {Function}       listener       - The listener callback.
    * @param {object|boolean} [options = {}] - Options to pass to the listener.
    */
@@ -1403,24 +1492,25 @@ class Component {
     // Remove the listener.
     element.removeEventListener(type, listener, options);
 
-    // Find the listener in the component's listener storage.
-    let index = -1;
+    // Native removal matches only the target, type, callback, and capture flag.
+    // Clear every tracked copy because native registration ignores duplicates.
+    const capture =
+      typeof options === "boolean" ? options : Boolean(options?.capture);
+    // Remove matching listeners from the component's listener storage.
+    this._listeners = this._listeners.filter((registeredListener) => {
+      const registeredOptions = registeredListener.options;
+      const registeredCapture =
+        typeof registeredOptions === "boolean"
+          ? registeredOptions
+          : Boolean(registeredOptions?.capture);
 
-    this._listeners.forEach((registeredListener, i) => {
-      if (
+      return !(
         registeredListener.type === type &&
         registeredListener.element === element &&
         registeredListener.listener === listener &&
-        JSON.stringify(registeredListener.options) === JSON.stringify(options)
-      ) {
-        index = i;
-      }
+        registeredCapture === capture
+      );
     });
-
-    // Remove it from the component's listener storage.
-    if (index !== -1) {
-      this._listeners.splice(index, 1);
-    }
   }
 
   /**

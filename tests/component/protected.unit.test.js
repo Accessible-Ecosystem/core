@@ -654,6 +654,69 @@ describe("Component protected methods", () => {
   });
 
   describe("_dispatchEvent", () => {
+    it("should dispatch the same event internally before dispatching it in the DOM", () => {
+      component = new Component({ bootstrap: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      component._bootstrap();
+      const events = [];
+      const targets = [];
+      component._addInternalEventListener(
+        component.getEventName("initialize"),
+        (event) => {
+          events.push(event);
+          targets.push(event.target);
+          event.stopImmediatePropagation();
+        }
+      );
+      component.rootDOMElement.addEventListener(
+        component.getEventName("initialize"),
+        (event) => {
+          events.push(event);
+          targets.push(event.target);
+        }
+      );
+
+      component._dispatchEvent("initialize");
+
+      expect(events.map((event) => event.type)).toEqual([
+        component.getEventName("initialize"),
+        component.getEventName("initialize"),
+      ]);
+      expect(events[0]).toBe(events[1]);
+      expect(events[0]).toBe(component.events.initialize);
+      expect(events[0].detail).toEqual({ component });
+      expect(targets[0]).not.toBe(component.rootDOMElement);
+      expect(targets[1]).toBe(component.rootDOMElement);
+      expect(events[0].target).toBe(component.rootDOMElement);
+    });
+
+    it("should notify internal listeners when emit is false", () => {
+      component = new Component({ bootstrap: false });
+      component._bootstrap();
+      const listener = vi.fn();
+      const publicListener = vi.fn();
+      document.addEventListener(
+        component.getEventName("initialize"),
+        publicListener,
+        { once: true }
+      );
+      component._addInternalEventListener(
+        component.getEventName("initialize"),
+        listener
+      );
+
+      component._dispatchEvent("initialize", null, { emit: false });
+
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(publicListener).not.toHaveBeenCalled();
+
+      document.removeEventListener(
+        component.getEventName("initialize"),
+        publicListener
+      );
+    });
+
     it("should dispatch to the root by default", () => {
       component = new Component({ bootstrap: false });
       component._dom.root = document.createElement("button");
@@ -714,6 +777,46 @@ describe("Component protected methods", () => {
     });
   });
 
+  describe("_addInternalEventListener", () => {
+    it("should support once and signal options and remove internal listeners on disposal", () => {
+      component = new Component({ bootstrap: false });
+      component._bootstrap();
+      const once = vi.fn();
+      const aborted = vi.fn();
+      const persistent = { handleEvent: vi.fn() };
+      const controller = new AbortController();
+      component._addInternalEventListener(
+        component.getEventName("initialize"),
+        once,
+        { once: true }
+      );
+      component._addInternalEventListener(
+        component.getEventName("initialize"),
+        aborted,
+        {
+          signal: controller.signal,
+        }
+      );
+      component._addInternalEventListener(
+        component.getEventName("initialize"),
+        persistent,
+        true
+      );
+
+      controller.abort();
+
+      component._dispatchEvent("initialize", null, { emit: false });
+      component._dispatchEvent("initialize", null, { emit: false });
+      component.dispose();
+      component._dispatchEvent("initialize", null, { emit: false });
+
+      expect(once).toHaveBeenCalledTimes(1);
+      expect(aborted).not.toHaveBeenCalled();
+      expect(persistent.handleEvent).toHaveBeenCalledTimes(2);
+      expect(component.listeners).toEqual([]);
+    });
+  });
+
   describe("_addEventListener", () => {
     it("should track registered listeners", () => {
       component = new Component({ bootstrap: false });
@@ -752,7 +855,137 @@ describe("Component protected methods", () => {
     });
   });
 
+  describe("_removeInternalEventListener", () => {
+    it("should remove the matching internal listener and leave other listeners attached", () => {
+      component = new Component({ bootstrap: false });
+      component._bootstrap();
+      const listener = { handleEvent: vi.fn() };
+      const retained = vi.fn();
+      component._addInternalEventListener(
+        component.getEventName("initialize"),
+        listener,
+        {
+          capture: true,
+          once: true,
+        }
+      );
+      component._addInternalEventListener(
+        component.getEventName("initialize"),
+        retained
+      );
+
+      component._removeInternalEventListener(
+        component.getEventName("initialize"),
+        listener,
+        true
+      );
+      component._dispatchEvent("initialize", null, { emit: false });
+
+      expect(listener.handleEvent).not.toHaveBeenCalled();
+      expect(retained).toHaveBeenCalledTimes(1);
+      expect(
+        component.listeners.some((entry) => entry.listener === listener)
+      ).toBe(false);
+
+      component.dispose();
+      component._dispatchEvent("initialize", null, { emit: false });
+
+      expect(retained).toHaveBeenCalledTimes(1);
+      expect(() =>
+        component._removeInternalEventListener(
+          component.getEventName("initialize"),
+          listener
+        )
+      ).not.toThrow();
+    });
+  });
+
   describe("_removeEventListener", () => {
+    it.each([
+      [true, { capture: true }],
+      [{ capture: true }, true],
+      [{ once: true, passive: true }, false],
+      [false, {}],
+    ])(
+      "should remove a listener registered with %j using %j",
+      (registered, removed) => {
+        component = new Component({ bootstrap: false });
+        const root = document.createElement("button");
+        const listener = vi.fn();
+        component._addEventListener("click", root, listener, registered);
+
+        component._removeEventListener("click", root, listener, removed);
+        root.click();
+
+        expect(listener).not.toHaveBeenCalled();
+        expect(component.listeners).toEqual([]);
+      }
+    );
+
+    it("should preserve listeners with a different target, type, callback, or capture", () => {
+      component = new Component({ bootstrap: false });
+      const root = document.createElement("button");
+      const other = document.createElement("button");
+      const listener = vi.fn();
+      const otherListener = vi.fn();
+      component._addEventListener("click", root, listener, true);
+      component._addEventListener("click", other, listener);
+      component._addEventListener("keyup", root, listener);
+      component._addEventListener("click", root, otherListener);
+
+      component._removeEventListener("click", root, listener, false);
+      root.click();
+      other.click();
+      root.dispatchEvent(new Event("keyup"));
+
+      expect(listener).toHaveBeenCalledTimes(3);
+      expect(otherListener).toHaveBeenCalledTimes(1);
+      expect(component.listeners).toHaveLength(4);
+    });
+
+    it("should remove all tracked copies of a listener regardless of once, passive, or signal", () => {
+      component = new Component({ bootstrap: false });
+      const root = document.createElement("button");
+      const listener = vi.fn();
+      const controller = new AbortController();
+      component._addEventListener("click", root, listener, {
+        once: true,
+        signal: controller.signal,
+      });
+      component._addEventListener("click", root, listener, { passive: true });
+
+      component._removeEventListener("click", root, listener, {
+        once: false,
+        passive: false,
+        signal: new AbortController().signal,
+      });
+      root.click();
+
+      expect(listener).not.toHaveBeenCalled();
+      expect(component.listeners).toEqual([]);
+    });
+
+    it("should use the original capture value after the options object changes", () => {
+      component = new Component({ bootstrap: false });
+      const root = document.createElement("button");
+      const listener = vi.fn();
+      const options = { capture: true };
+      component._addEventListener("click", root, listener, options);
+      options.capture = false;
+
+      component._removeEventListener("click", root, listener, options);
+      root.click();
+
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(component.listeners).toHaveLength(1);
+
+      component.dispose();
+      root.click();
+
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(component.listeners).toEqual([]);
+    });
+
     it("should remove the listener from tracking", () => {
       component = new Component({ bootstrap: false });
       component._dom.root = document.createElement("button");
