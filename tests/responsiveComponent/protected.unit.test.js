@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, vi, afterEach } from "vitest";
+import Component from "../../src/Component.js";
 import ResponsiveComponent from "../../src/ResponsiveComponent.js";
 import { setupMatchMedia } from "../helpers.js";
 
@@ -19,24 +20,38 @@ afterEach(() => {
 });
 
 describe("ResponsiveComponent protected methods", () => {
-  describe("_bootstrap", () => {
+  describe("_registerEvents", () => {
     it.each(["validate", "initialize"])(
       "should track the %s lifecycle listener",
       (name) => {
-        component = new ResponsiveComponent({ bootstrap: false });
+        component = new ResponsiveComponent({
+          bootstrap: false,
+          initialize: false,
+        });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
+        component._registerEvents();
 
         expect(component.listeners.map((listener) => listener.type)).toContain(
           component.getEventName(name)
         );
       }
     );
+  });
+
+  describe("_bootstrap", () => {
+    it("should inherit Core bootstrapping", () => {
+      expect(ResponsiveComponent.prototype._bootstrap).toBe(
+        Component.prototype._bootstrap
+      );
+    });
 
     it("should log listener registration failures", () => {
-      component = new ResponsiveComponent({ bootstrap: false });
+      component = new ResponsiveComponent({
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -53,7 +68,10 @@ describe("ResponsiveComponent protected methods", () => {
     });
 
     it("should invalidate the component when listener registration fails", () => {
-      component = new ResponsiveComponent({ bootstrap: false });
+      component = new ResponsiveComponent({
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -66,6 +84,7 @@ describe("ResponsiveComponent protected methods", () => {
       component._bootstrap();
 
       expect(component.isValid).toBe(false);
+      expect(component.isBootstrapped).toBe(false);
     });
   });
 
@@ -73,7 +92,10 @@ describe("ResponsiveComponent protected methods", () => {
     it("should skip an empty query", () => {
       const { matchMedia } = setupMatchMedia();
 
-      component = new ResponsiveComponent({ bootstrap: false });
+      component = new ResponsiveComponent({
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -90,6 +112,7 @@ describe("ResponsiveComponent protected methods", () => {
       component = new ResponsiveComponent({
         breakpoint: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -107,6 +130,7 @@ describe("ResponsiveComponent protected methods", () => {
       component = new ResponsiveComponent({
         breakpoint: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -127,6 +151,7 @@ describe("ResponsiveComponent protected methods", () => {
         component = new ResponsiveComponent({
           breakpoint: "768px",
           bootstrap: false,
+          initialize: false,
         });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
@@ -149,6 +174,7 @@ describe("ResponsiveComponent protected methods", () => {
         component = new ResponsiveComponent({
           breakpoint: "768px",
           bootstrap: false,
+          initialize: false,
         });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
@@ -173,6 +199,7 @@ describe("ResponsiveComponent protected methods", () => {
       component = new ResponsiveComponent({
         breakpoint: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -195,6 +222,7 @@ describe("ResponsiveComponent protected methods", () => {
       component = new ResponsiveComponent({
         breakpoint: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";

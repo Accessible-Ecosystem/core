@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, vi, afterEach } from "vitest";
+import Component from "../../src/Component.js";
 import CollapsibleComponent from "../../src/CollapsibleComponent.js";
 
 let component;
@@ -19,6 +20,14 @@ afterEach(() => {
 
 describe("CollapsibleComponent protected methods", () => {
   describe("_bootstrap", () => {
+    it("should inherit Core bootstrapping", () => {
+      expect(CollapsibleComponent.prototype._bootstrap).toBe(
+        Component.prototype._bootstrap
+      );
+    });
+  });
+
+  describe("_registerEvents", () => {
     it.each(["expand", "collapse", "lock", "unlock"])(
       "should register the %s action events",
       (action) => {
@@ -26,10 +35,11 @@ describe("CollapsibleComponent protected methods", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
-        component._bootstrap();
+        component._registerEvents();
 
         for (const prefix of ["pre", "", "post"])
           expect(component.events[`${prefix}${action}`]).toBeInstanceOf(
@@ -43,22 +53,24 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
-      component._bootstrap();
+      component._registerEvents();
 
       expect(component.listeners).toHaveLength(4);
     });
   });
 
   describe("_expand", () => {
-    it("should notify internal listeners after the transition duration", () => {
+    it("should notify internal postexpand listeners after the transition duration", () => {
       vi.useFakeTimers();
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -89,12 +101,13 @@ describe("CollapsibleComponent protected methods", () => {
       expect(publicListener).not.toHaveBeenCalled();
     });
 
-    it("should cancel the internal post-event when an action listener disposes the component", () => {
+    it("should cancel postexpand when an expand listener disposes the component", () => {
       vi.useFakeTimers();
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -124,12 +137,13 @@ describe("CollapsibleComponent protected methods", () => {
       expect(vi.getTimerCount()).toBe(0);
     });
 
-    it("should notify internal listeners during the transition and cancel the post-event when reversed", () => {
+    it("should cancel postexpand when the expand action is reversed", () => {
       vi.useFakeTimers();
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -164,6 +178,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -192,6 +207,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -223,6 +239,7 @@ describe("CollapsibleComponent protected methods", () => {
         controlledElement: document.createElement("div"),
         expandDuration: 80,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -257,7 +274,7 @@ describe("CollapsibleComponent protected methods", () => {
 
       expect(events).toEqual([
         { name: "preexpand", classes: "hide", expanded: "false" },
-        { name: "expand", classes: "transitioning show", expanded: "true" },
+        { name: "expand", classes: "transitioning show", expanded: "false" },
       ]);
 
       vi.advanceTimersToNextFrame();
@@ -269,8 +286,8 @@ describe("CollapsibleComponent protected methods", () => {
 
       expect(events).toEqual([
         { name: "preexpand", classes: "hide", expanded: "false" },
-        { name: "expand", classes: "transitioning show", expanded: "true" },
-        { name: "postexpand", classes: "show", expanded: "true" },
+        { name: "expand", classes: "transitioning show", expanded: "false" },
+        { name: "postexpand", classes: "show", expanded: "false" },
       ]);
     });
 
@@ -280,6 +297,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -306,6 +324,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -343,6 +362,7 @@ describe("CollapsibleComponent protected methods", () => {
           controlledElement: document.createElement("div"),
           transitionClass,
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -367,6 +387,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -390,6 +411,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -407,20 +429,22 @@ describe("CollapsibleComponent protected methods", () => {
       expect(listener).not.toHaveBeenCalled();
     });
 
-    it("should apply the action attribute", () => {
+    it("should leave the controller aria-expanded attribute unchanged", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
       component._bootstrap();
+      component.dom.controller.setAttribute("aria-expanded", "false");
 
       component._expand({ emit: false, transition: false });
 
       expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
-        "true"
+        "false"
       );
     });
 
@@ -429,6 +453,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -448,6 +473,7 @@ describe("CollapsibleComponent protected methods", () => {
         collapseClass: "hide",
         transitionClass: "transitioning",
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -471,6 +497,7 @@ describe("CollapsibleComponent protected methods", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -498,6 +525,7 @@ describe("CollapsibleComponent protected methods", () => {
           controlledElement: document.createElement("div"),
           transitionDuration: 100,
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -533,6 +561,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -553,6 +582,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -582,6 +612,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -602,6 +633,7 @@ describe("CollapsibleComponent protected methods", () => {
         expandDuration: 80,
         collapseDuration: 120,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -630,6 +662,7 @@ describe("CollapsibleComponent protected methods", () => {
         controlledElement: document.createElement("div"),
         transitionClass: "",
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -647,6 +680,7 @@ describe("CollapsibleComponent protected methods", () => {
         controlledElement: document.createElement("div"),
         transitionClass: "",
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -659,12 +693,13 @@ describe("CollapsibleComponent protected methods", () => {
   });
 
   describe("_collapse", () => {
-    it("should notify internal listeners after the transition duration", () => {
+    it("should notify internal postcollapse listeners after the transition duration", () => {
       vi.useFakeTimers();
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -695,12 +730,13 @@ describe("CollapsibleComponent protected methods", () => {
       expect(publicListener).not.toHaveBeenCalled();
     });
 
-    it("should cancel the internal post-event when an action listener disposes the component", () => {
+    it("should cancel postcollapse when a collapse listener disposes the component", () => {
       vi.useFakeTimers();
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -730,12 +766,13 @@ describe("CollapsibleComponent protected methods", () => {
       expect(vi.getTimerCount()).toBe(0);
     });
 
-    it("should notify internal listeners during the transition and cancel the post-event when reversed", () => {
+    it("should cancel postcollapse when the collapse action is reversed", () => {
       vi.useFakeTimers();
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -770,6 +807,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -798,6 +836,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -829,6 +868,7 @@ describe("CollapsibleComponent protected methods", () => {
         controlledElement: document.createElement("div"),
         collapseDuration: 80,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -863,7 +903,7 @@ describe("CollapsibleComponent protected methods", () => {
 
       expect(events).toEqual([
         { name: "precollapse", classes: "show", expanded: "true" },
-        { name: "collapse", classes: "transitioning hide", expanded: "false" },
+        { name: "collapse", classes: "transitioning hide", expanded: "true" },
       ]);
 
       vi.advanceTimersToNextFrame();
@@ -875,8 +915,8 @@ describe("CollapsibleComponent protected methods", () => {
 
       expect(events).toEqual([
         { name: "precollapse", classes: "show", expanded: "true" },
-        { name: "collapse", classes: "transitioning hide", expanded: "false" },
-        { name: "postcollapse", classes: "hide", expanded: "false" },
+        { name: "collapse", classes: "transitioning hide", expanded: "true" },
+        { name: "postcollapse", classes: "hide", expanded: "true" },
       ]);
     });
 
@@ -886,6 +926,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -912,6 +953,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -949,6 +991,7 @@ describe("CollapsibleComponent protected methods", () => {
           controlledElement: document.createElement("div"),
           transitionClass,
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -973,6 +1016,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -996,6 +1040,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1013,20 +1058,22 @@ describe("CollapsibleComponent protected methods", () => {
       expect(listener).not.toHaveBeenCalled();
     });
 
-    it("should apply the action attribute", () => {
+    it("should leave the controller aria-expanded attribute unchanged", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
       component._bootstrap();
+      component.dom.controller.setAttribute("aria-expanded", "true");
 
       component._collapse({ emit: false, transition: false });
 
       expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
-        "false"
+        "true"
       );
     });
 
@@ -1035,6 +1082,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1054,6 +1102,7 @@ describe("CollapsibleComponent protected methods", () => {
         collapseClass: "hide",
         transitionClass: "transitioning",
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1077,6 +1126,7 @@ describe("CollapsibleComponent protected methods", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -1104,6 +1154,7 @@ describe("CollapsibleComponent protected methods", () => {
           controlledElement: document.createElement("div"),
           transitionDuration: 100,
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -1139,6 +1190,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1159,6 +1211,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1188,6 +1241,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1208,6 +1262,7 @@ describe("CollapsibleComponent protected methods", () => {
         expandDuration: 80,
         collapseDuration: 120,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1236,6 +1291,7 @@ describe("CollapsibleComponent protected methods", () => {
         controlledElement: document.createElement("div"),
         transitionClass: "",
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1253,6 +1309,7 @@ describe("CollapsibleComponent protected methods", () => {
         controlledElement: document.createElement("div"),
         transitionClass: "",
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1270,6 +1327,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -1297,6 +1355,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1320,6 +1379,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1343,6 +1403,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1365,6 +1426,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1380,6 +1442,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1397,6 +1460,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -1424,6 +1488,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1447,6 +1512,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1470,6 +1536,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1492,6 +1559,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1507,6 +1575,7 @@ describe("CollapsibleComponent protected methods", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1528,7 +1597,9 @@ describe("CollapsibleComponent protected methods", () => {
         expandOutsideBreakpoint: true,
         collapseOutsideBreakpoint: true,
         transitionClass: "",
+        expanded: true,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -1538,8 +1609,8 @@ describe("CollapsibleComponent protected methods", () => {
       component._mediaQueryListEventCallback({ matches: false });
 
       expect(component.isExpanded).toBe(false);
-      expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
-        "false"
+      expect(component.dom.controller.hasAttribute("aria-expanded")).toBe(
+        false
       );
       expect(component.dom.controlled.classList.contains("hide")).toBe(true);
     });
@@ -1555,6 +1626,7 @@ describe("CollapsibleComponent protected methods", () => {
           [`expand${side}Breakpoint`]: true,
           transitionClass: "",
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -1572,6 +1644,7 @@ describe("CollapsibleComponent protected methods", () => {
           controlledElement: document.createElement("div"),
           [`lock${side}Breakpoint`]: true,
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -1591,6 +1664,7 @@ describe("CollapsibleComponent protected methods", () => {
           [`lock${side}Breakpoint`]: true,
           transitionClass: "",
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -1616,6 +1690,7 @@ describe("CollapsibleComponent protected methods", () => {
           [`collapse${side}Breakpoint`]: true,
           transitionClass: "",
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -1643,6 +1718,7 @@ describe("CollapsibleComponent protected methods", () => {
           [`collapse${side}Breakpoint`]: true,
           transitionClass: "",
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -1663,6 +1739,7 @@ describe("CollapsibleComponent protected methods", () => {
           [`unlock${side}Breakpoint`]: true,
           locked: true,
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -1682,6 +1759,7 @@ describe("CollapsibleComponent protected methods", () => {
           locked: true,
           transitionClass: "",
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -1708,6 +1786,7 @@ describe("CollapsibleComponent protected methods", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);

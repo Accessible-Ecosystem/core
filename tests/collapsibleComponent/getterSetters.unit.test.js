@@ -33,6 +33,7 @@ describe("CollapsibleComponent getter/setters", () => {
             controllerElement: document.createElement("button"),
             controlledElement: document.createElement("div"),
             bootstrap: false,
+            initialize: false,
           });
           component._rootDOMElement = "controller";
           document.body.appendChild(component.rootDOMElement);
@@ -51,6 +52,7 @@ describe("CollapsibleComponent getter/setters", () => {
             controllerElement: document.createElement("button"),
             controlledElement: document.createElement("div"),
             bootstrap: false,
+            initialize: false,
           });
           component._rootDOMElement = "controller";
           document.body.appendChild(component.rootDOMElement);
@@ -70,6 +72,7 @@ describe("CollapsibleComponent getter/setters", () => {
             controllerElement: document.createElement("button"),
             controlledElement: document.createElement("div"),
             bootstrap: false,
+            initialize: false,
           });
           component._rootDOMElement = "controller";
           document.body.appendChild(component.rootDOMElement);
@@ -90,6 +93,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -105,6 +109,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -121,6 +126,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -139,6 +145,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -158,6 +165,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -173,6 +181,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -189,6 +198,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -207,6 +217,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -225,6 +236,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controlledElement: document.createElement("div"),
         transitionDuration: 321,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -239,6 +251,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controlledElement: document.createElement("div"),
         transitionDuration: 321,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -255,6 +268,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controlledElement: document.createElement("div"),
         transitionDuration: 321,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -273,6 +287,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -288,6 +303,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -304,6 +320,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -322,6 +339,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -340,6 +358,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controlledElement: document.createElement("div"),
         transitionDuration: 321,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -354,6 +373,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controlledElement: document.createElement("div"),
         transitionDuration: 321,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -370,6 +390,7 @@ describe("CollapsibleComponent getter/setters", () => {
         controlledElement: document.createElement("div"),
         transitionDuration: 321,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -400,6 +421,7 @@ describe("CollapsibleComponent getter/setters", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -416,6 +438,7 @@ describe("CollapsibleComponent getter/setters", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -432,6 +455,7 @@ describe("CollapsibleComponent getter/setters", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -457,6 +481,7 @@ describe("CollapsibleComponent getter/setters", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -470,6 +495,7 @@ describe("CollapsibleComponent getter/setters", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -484,6 +510,7 @@ describe("CollapsibleComponent getter/setters", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -499,6 +526,7 @@ describe("CollapsibleComponent getter/setters", () => {
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);

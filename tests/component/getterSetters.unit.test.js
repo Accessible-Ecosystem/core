@@ -20,19 +20,19 @@ afterEach(() => {
 describe("Component getter/setters", () => {
   describe("shouldEmit", () => {
     it("should default to true", () => {
-      component = new Component();
+      component = new Component({ initialize: false });
 
       expect(component.shouldEmit).toBe(true);
     });
 
     it("should use the emit value from the constructor", () => {
-      component = new Component({ emit: false });
+      component = new Component({ emit: false, initialize: false });
 
       expect(component.shouldEmit).toBe(false);
     });
 
     it("should update the value through the setter", () => {
-      component = new Component();
+      component = new Component({ initialize: false });
 
       component.shouldEmit = false;
 
@@ -46,7 +46,7 @@ describe("Component getter/setters", () => {
     it.each([null, "false", 0, undefined])(
       "should throw when shouldEmit is set to the invalid value %s",
       (value) => {
-        component = new Component();
+        component = new Component({ initialize: false });
 
         expect(() => {
           component.shouldEmit = value;
@@ -74,12 +74,13 @@ describe("Component getter/setters", () => {
     id: "_id",
     isValid: "_valid",
     isInitialized: "_initialized",
+    isBootstrapped: "_bootstrapped",
     errors: "_errors",
   };
   for (const [name, field] of Object.entries(readonly))
     describe(name, () => {
       it("should get the protected field value", () => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -89,7 +90,7 @@ describe("Component getter/setters", () => {
       });
 
       it("should throw when set manually", () => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -105,7 +106,7 @@ describe("Component getter/setters", () => {
 
   describe("eventPrefix", () => {
     it("should combine the scope and name by default", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -115,7 +116,7 @@ describe("Component getter/setters", () => {
     });
 
     it("should combine a custom scope and name when the event prefix is empty", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -129,7 +130,7 @@ describe("Component getter/setters", () => {
     it.each(["customEvents", "CustomEvents"])(
       "should return the configured prefix %s unchanged",
       (prefix) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -141,7 +142,7 @@ describe("Component getter/setters", () => {
     );
 
     it("should throw when set manually", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -155,7 +156,7 @@ describe("Component getter/setters", () => {
 
   describe("rootDOMElement", () => {
     it("should return the configured root", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -165,7 +166,7 @@ describe("Component getter/setters", () => {
     });
 
     it("should fall back to the document root when the configured root is invalid", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -176,7 +177,7 @@ describe("Component getter/setters", () => {
     });
 
     it("should fall back to the document root when the configured root is missing", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -187,7 +188,7 @@ describe("Component getter/setters", () => {
     });
 
     it("should throw when set manually", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -206,7 +207,7 @@ describe("Component getter/setters", () => {
   ])
     describe(name, () => {
       it.each(values)("should accept %j", (value) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -218,7 +219,7 @@ describe("Component getter/setters", () => {
       });
 
       it.each(values)("should retain %j when assigned again", (value) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -231,7 +232,7 @@ describe("Component getter/setters", () => {
       });
 
       it("should reject invalid values without changing state", () => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -247,7 +248,7 @@ describe("Component getter/setters", () => {
 
   describe("shouldFocus", () => {
     it("should throw when set manually", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -266,7 +267,7 @@ describe("Component getter/setters", () => {
     ])(
       "should derive focus eligibility from %s",
       (currentEvent, expectedFocus) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);

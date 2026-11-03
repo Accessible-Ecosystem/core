@@ -19,10 +19,87 @@ afterEach(() => {
 
 describe("Component initialization", () => {
   describe("constructor", () => {
+    it("should call initialize once after bootstrapping by default", () => {
+      const states = [];
+      const initialize = vi
+        .spyOn(Component.prototype, "initialize")
+        .mockImplementation(function () {
+          states.push(this.isBootstrapped);
+        });
+
+      component = new Component();
+
+      expect(initialize).toHaveBeenCalledTimes(1);
+      expect(states).toEqual([true]);
+    });
+
+    it("should bootstrap without initializing when initialize is false", () => {
+      const initialize = vi.spyOn(Component.prototype, "initialize");
+
+      component = new Component({ initialize: false });
+
+      expect(component.isBootstrapped).toBe(true);
+      expect(component.isInitialized).toBe(false);
+      expect(initialize).not.toHaveBeenCalled();
+    });
+
+    it("should log an error when initialization is requested without bootstrapping", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      const initialize = vi.spyOn(Component.prototype, "initialize");
+
+      component = new Component({ bootstrap: false });
+
+      expect(error).toHaveBeenCalledWith(
+        new Error(
+          "Cannot initialize a component before it has been bootstrapped."
+        )
+      );
+
+      expect(component.isBootstrapped).toBe(false);
+      expect(component.isInitialized).toBe(false);
+      expect(initialize).toHaveBeenCalledTimes(1);
+    });
+
+    it("should log an error when automatic initialization follows failed bootstrapping", () => {
+      vi.spyOn(Component.prototype, "_registerEvent").mockImplementation(() => {
+        throw new Error("registration failed");
+      });
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      const initialize = vi.spyOn(Component.prototype, "initialize");
+
+      component = new Component();
+
+      expect(error).toHaveBeenCalledWith(
+        new Error(
+          "Cannot initialize a component before it has been bootstrapped."
+        )
+      );
+
+      expect(component.isBootstrapped).toBe(false);
+      expect(component.isInitialized).toBe(false);
+      expect(component.isValid).toBe(false);
+      expect(initialize).toHaveBeenCalledTimes(1);
+    });
+
+    it("should allow manual bootstrapping without automatically initializing", () => {
+      const initialize = vi.spyOn(Component.prototype, "initialize");
+      component = new Component({ bootstrap: false, initialize: false });
+
+      component._bootstrap();
+
+      expect(component.isBootstrapped).toBe(true);
+      expect(component.isInitialized).toBe(false);
+      expect(initialize).not.toHaveBeenCalled();
+    });
+
     it.each([null, "false", 0])(
       "should report a validation error when emit is %s",
       (emit) => {
-        component = new Component({ emit, bootstrap: false });
+        component = new Component({
+          emit,
+          bootstrap: false,
+          initialize: false,
+        });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         component._bootstrap();
@@ -38,7 +115,7 @@ describe("Component initialization", () => {
     );
 
     it("should default the protected event prefix to an empty string", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -52,7 +129,10 @@ describe("Component initialization", () => {
         _eventPrefix = "customEvents";
       }
 
-      component = new PrefixedComponent({ bootstrap: false });
+      component = new PrefixedComponent({
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -66,7 +146,7 @@ describe("Component initialization", () => {
     it("should bootstrap by default", () => {
       const spy = vi.spyOn(Component.prototype, "_bootstrap");
 
-      component = new Component();
+      component = new Component({ initialize: false });
 
       expect(spy).toHaveBeenCalledTimes(1);
     });
@@ -74,7 +154,7 @@ describe("Component initialization", () => {
     it("should skip bootstrapping when bootstrap is false", () => {
       const spy = vi.spyOn(Component.prototype, "_bootstrap");
 
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
 
       expect(spy).not.toHaveBeenCalled();
     });
@@ -86,7 +166,11 @@ describe("Component initialization", () => {
       { initializeClass: ["one", "two"] },
       { prefix: null, key: null, initializeClass: null },
     ])("should initialize with valid options %j", (options) => {
-      component = new Component({ ...options, bootstrap: false });
+      component = new Component({
+        ...options,
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -101,6 +185,67 @@ describe("Component initialization", () => {
   });
 
   describe("initialize", () => {
+    it("should log an error before validation or events when the component is not bootstrapped", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      component = new Component({ bootstrap: false, initialize: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      const validate = vi.spyOn(component, "_validate");
+      const dispatch = vi.spyOn(component, "_dispatchEvent");
+
+      component.initialize();
+
+      expect(error).toHaveBeenCalledWith(
+        new Error(
+          "Cannot initialize a component before it has been bootstrapped."
+        )
+      );
+      expect(validate).not.toHaveBeenCalled();
+      expect(dispatch).not.toHaveBeenCalled();
+      expect(component.isInitialized).toBe(false);
+      expect(component.isValid).toBe(false);
+      expect(component.errors).toEqual([]);
+      expect(component.rootDOMElement.className).toBe("");
+    });
+
+    it("should initialize successfully after a previous attempt without bootstrapping", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      component = new Component({ bootstrap: false, initialize: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+
+      component.initialize();
+
+      expect(error).toHaveBeenCalledTimes(1);
+      expect(component.isInitialized).toBe(false);
+      expect(component.isValid).toBe(false);
+
+      component._bootstrap();
+      component.initialize();
+
+      expect(component.isBootstrapped).toBe(true);
+      expect(component.isInitialized).toBe(true);
+      expect(component.isValid).toBe(true);
+    });
+
+    it("should log an error when initialization is attempted after disposal", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      component = new Component({ bootstrap: false, initialize: false });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      component._bootstrap();
+      component.initialize();
+
+      component.dispose();
+      component.initialize();
+
+      expect(error).toHaveBeenCalledWith(
+        new Error(
+          "Cannot initialize a component before it has been bootstrapped."
+        )
+      );
+    });
+
     it.each([
       [
         true,
@@ -115,9 +260,13 @@ describe("Component initialization", () => {
       ],
       [false, []],
     ])(
-      "should respect emit %s during initialization",
+      "should use emit=%s to control public initialization events",
       (emit, expectedEvents) => {
-        component = new Component({ emit, bootstrap: false });
+        component = new Component({
+          emit,
+          bootstrap: false,
+          initialize: false,
+        });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         component._bootstrap();
@@ -166,7 +315,11 @@ describe("Component initialization", () => {
       { initializeClass: ["valid", {}] },
     ])("should log validation failure for %j", (options) => {
       const error = vi.spyOn(console, "error").mockImplementation(() => {});
-      component = new Component({ ...options, bootstrap: false });
+      component = new Component({
+        ...options,
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -181,7 +334,7 @@ describe("Component initialization", () => {
 
     it("should report a validation failure when the root is missing", () => {
       const error = vi.spyOn(console, "error").mockImplementation(() => {});
-      component = new Component();
+      component = new Component({ initialize: false });
 
       component.initialize();
 
@@ -190,7 +343,7 @@ describe("Component initialization", () => {
     });
 
     it("should call initialization methods in order", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -219,7 +372,7 @@ describe("Component initialization", () => {
     });
 
     it("should dispatch initialization lifecycle events in order", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -240,7 +393,7 @@ describe("Component initialization", () => {
     it.each(["preinitialize", "initialize", "postinitialize"])(
       "should include the component in the %s lifecycle event",
       (name) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -267,7 +420,7 @@ describe("Component initialization", () => {
     ])(
       "should expose the expected initialized state during %s",
       (name, expectedState) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -292,7 +445,7 @@ describe("Component initialization", () => {
     ])(
       "should expose the initialization class during %s",
       (name, expectedState) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -314,7 +467,7 @@ describe("Component initialization", () => {
     );
 
     it("should log failures from initialization hooks", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -333,7 +486,7 @@ describe("Component initialization", () => {
     });
 
     it("should collect invalid-root validation errors before initialization", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
