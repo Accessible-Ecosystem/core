@@ -1,12 +1,13 @@
-## [1.0.0-beta.13](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.12...v1.0.0-beta.13) (2026-11-03)
+## [1.0.0-beta.14](https://github.com/Accessible-Ecosystem/core/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2026-11-03)
 
 
 ### Features
 
-* allow components to always listen for events on private event target ([694f7e9](https://github.com/Accessible-Ecosystem/core/commit/694f7e911576964f6b29716f696ee12757e4da32))
-* **events:** integrate pre/post events properly into expand and collapse ([282c836](https://github.com/Accessible-Ecosystem/core/commit/282c8369222f6d433d4d910105eda64560931ed2))
+* do not assume aria-expanded ([16d5e46](https://github.com/Accessible-Ecosystem/core/commit/16d5e466ebd040dc43040ce6ebb5d0fe40c2054c))
+* make bootstrapping and initialization safer and add register events ([34ebb9b](https://github.com/Accessible-Ecosystem/core/commit/34ebb9b05f3d9ecbb6edb4d3a7ecb80c608b1e02))
+* make controller optional ([b0c9f30](https://github.com/Accessible-Ecosystem/core/commit/b0c9f3027784b21db61fa9f6d8d321696ab3011e))
 
 
-### Continuous Integration
+### Reverts
 
-* target accessible menu's new branch temporarily ([ec8c33d](https://github.com/Accessible-Ecosystem/core/commit/ec8c33d67393dc33cb44a1fd048ebb93d954d011))
+* Revert "ci: target accessible menu's new branch temporarily" ([dcc11d3](https://github.com/Accessible-Ecosystem/core/commit/dcc11d36607e023049fb43bdbc909d6c0f2979c4))
