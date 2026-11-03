@@ -785,8 +785,7 @@ class CollapsibleComponent extends ResponsiveComponent {
   /**
    * Applies the required attributes and classes for the component's expanded state.
    *
-   * Sets the controller's `aria-expanded` to "true", adds the expand class(es) to
-   * the controlled element, and removes the collapse class(es) from the controlled element.
+   * Adds the expand class(es) to the controlled element and removes its collapse class(es).
    *
    * Emits preexpand before DOM changes and expand when the expand class is added.
    * With transitions, emits postexpand after the configured duration and removal
@@ -816,8 +815,6 @@ class CollapsibleComponent extends ResponsiveComponent {
     this._cancelAnimationFrame("collapseTransition");
     this._clearTimeout("expandTransition");
     this._clearTimeout("collapseTransition");
-
-    this.dom.controller.setAttribute("aria-expanded", "true");
 
     // Use animation frames to remove the collapse class and add the expand class.
     // Remove the transition class after the expand duration.
@@ -866,8 +863,7 @@ class CollapsibleComponent extends ResponsiveComponent {
   /**
    * Applies the required attributes and classes for the component's collapsed state.
    *
-   * Sets the controller's `aria-expanded` to "false", adds the collapse class(es) to
-   * the controlled element, and removes the expand class(es) from the controlled element.
+   * Adds the collapse class(es) to the controlled element and removes its expand class(es).
    *
    * Emits precollapse before DOM changes and collapse when the collapse class is added.
    * With transitions, emits postcollapse after the configured duration and removal
@@ -897,8 +893,6 @@ class CollapsibleComponent extends ResponsiveComponent {
     this._cancelAnimationFrame("collapseTransition");
     this._clearTimeout("expandTransition");
     this._clearTimeout("collapseTransition");
-
-    this.dom.controller.setAttribute("aria-expanded", "false");
 
     // Use animation frames to remove the expand class and add the collapse class.
     // Remove the transition class after the collapse duration.
