@@ -199,6 +199,62 @@ describe("CollapsibleComponent initialization", () => {
   });
 
   describe("initialize", () => {
+    it("should complete initialization without public events when emit is false", () => {
+      vi.useFakeTimers();
+      const controller = document.createElement("button");
+      controller.setAttribute("aria-expanded", "true");
+      component = new CollapsibleComponent({
+        controllerElement: controller,
+        controlledElement: document.createElement("div"),
+        emit: false,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const internal = [];
+      const publicListener = vi.fn();
+      for (const name of Object.keys(component.events)) {
+        component._addInternalEventListener(component.getEventName(name), () =>
+          internal.push(name)
+        );
+        component._addEventListener(
+          component.getEventName(name),
+          component.rootDOMElement,
+          publicListener
+        );
+      }
+
+      component.initialize();
+
+      expect(component.isInitialized).toBe(true);
+      expect(component.shouldEmit).toBe(false);
+      expect(component.isExpanded).toBe(true);
+      expect(component.dom.controlled.classList.contains("show")).toBe(true);
+      expect(internal).toContain("initialize");
+      expect(internal).toContain("expand");
+      expect(publicListener).not.toHaveBeenCalled();
+    });
+
+    it("should report invalid component settings even when emit is false", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        expandOnFocus: "invalid",
+        emit: false,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      component.initialize();
+
+      expect(component.isInitialized).toBe(false);
+      expect(component.isValid).toBe(false);
+      expect(component.errors).toContainEqual(expect.any(TypeError));
+      expect(error).toHaveBeenCalled();
+    });
+
     it.each([
       [true, "show"],
       [false, "hide"],

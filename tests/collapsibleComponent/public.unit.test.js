@@ -157,6 +157,58 @@ describe("CollapsibleComponent public methods", () => {
   });
 
   describe("expand", () => {
+    it("should default emit to false when shouldEmit is false", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        emit: false,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      component.initialize();
+      const spy = vi.spyOn(component, "_expand");
+
+      component.expand({ force: true, transition: false });
+
+      expect(spy).toHaveBeenCalledExactlyOnceWith({
+        emit: false,
+        transition: false,
+      });
+    });
+
+    it("should suppress the public postexpand event when shouldEmit is disabled during a transition", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+
+      component.initialize();
+      const internal = vi.fn();
+      const publicListener = vi.fn();
+      component._addInternalEventListener(
+        component.getEventName("postexpand"),
+        internal
+      );
+      component._addEventListener(
+        component.getEventName("postexpand"),
+        component.rootDOMElement,
+        publicListener
+      );
+
+      component.expand({ transition: true });
+      component.shouldEmit = false;
+      vi.runAllTimers();
+
+      expect(internal).toHaveBeenCalledTimes(1);
+      expect(publicListener).not.toHaveBeenCalled();
+      expect(component.isExpanded).toBe(true);
+    });
+
     it("should set aria-expanded to true", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
@@ -372,6 +424,72 @@ describe("CollapsibleComponent public methods", () => {
   });
 
   describe("collapse", () => {
+    it("should default emit to false when shouldEmit is false", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        emit: false,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      component.initialize();
+      const spy = vi.spyOn(component, "_collapse");
+
+      component.collapse({ force: true, transition: false });
+
+      expect(spy).toHaveBeenCalledExactlyOnceWith({
+        emit: false,
+        transition: false,
+      });
+    });
+
+    it("should honor shouldEmit and the emit option while still updating state", () => {
+      vi.useFakeTimers();
+      const controller = document.createElement("button");
+      controller.setAttribute("aria-expanded", "true");
+      component = new CollapsibleComponent({
+        controllerElement: controller,
+        controlledElement: document.createElement("div"),
+        emit: false,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const internal = [];
+      const publicListener = vi.fn();
+      for (const name of Object.keys(component.events)) {
+        component._addInternalEventListener(component.getEventName(name), () =>
+          internal.push(name)
+        );
+        component._addEventListener(
+          component.getEventName(name),
+          component.rootDOMElement,
+          publicListener
+        );
+      }
+
+      component.initialize();
+      internal.length = 0;
+
+      component.collapse({ emit: true, transition: true });
+      vi.runAllTimers();
+
+      expect(component.isExpanded).toBe(false);
+      expect(controller.getAttribute("aria-expanded")).toBe("false");
+      expect(internal).toEqual(["precollapse", "collapse", "postcollapse"]);
+      expect(publicListener).not.toHaveBeenCalled();
+
+      component.shouldEmit = true;
+      component.expand({ transition: false });
+
+      expect(publicListener).toHaveBeenCalledTimes(3);
+
+      component.collapse({ emit: false, transition: false });
+
+      expect(publicListener).toHaveBeenCalledTimes(3);
+    });
+
     it("should set aria-expanded to false", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
@@ -575,6 +693,23 @@ describe("CollapsibleComponent public methods", () => {
   });
 
   describe("lock", () => {
+    it("should default emit to false when shouldEmit is false", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        emit: false,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      component.initialize();
+      const spy = vi.spyOn(component, "_lock");
+
+      component.lock({ force: true });
+
+      expect(spy).toHaveBeenCalledExactlyOnceWith({ emit: false });
+    });
+
     it("should replace the unlocked class with the locked class", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
@@ -705,6 +840,23 @@ describe("CollapsibleComponent public methods", () => {
   });
 
   describe("unlock", () => {
+    it("should default emit to false when shouldEmit is false", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        emit: false,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      component.initialize();
+      const spy = vi.spyOn(component, "_unlock");
+
+      component.unlock({ force: true });
+
+      expect(spy).toHaveBeenCalledExactlyOnceWith({ emit: false });
+    });
+
     it("should replace the locked class with the unlocked class", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
@@ -846,6 +998,26 @@ describe("CollapsibleComponent public methods", () => {
   });
 
   describe("preview", () => {
+    it("should default emit to false when shouldEmit is false", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        emit: false,
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      component.initialize();
+      const spy = vi.spyOn(component, "_expand");
+
+      component.preview({ force: true, transition: false });
+
+      expect(spy).toHaveBeenCalledExactlyOnceWith({
+        emit: false,
+        transition: false,
+      });
+    });
+
     it("should update the current state", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
@@ -1038,28 +1210,32 @@ describe("CollapsibleComponent public methods", () => {
       expect(spy).toHaveBeenCalledExactlyOnceWith(options);
     });
 
-    it("should forward default options to expand", () => {
-      component = new CollapsibleComponent({
-        controllerElement: document.createElement("button"),
-        controlledElement: document.createElement("div"),
-        transitionClass: "",
-        bootstrap: false,
-      });
-      component._rootDOMElement = "controller";
-      document.body.appendChild(component.rootDOMElement);
-      component._bootstrap();
-      component.initialize();
-      const spy = vi.spyOn(component, "expand");
+    it.each([true, false])(
+      "should pass shouldEmit %s as the default emit option to expand",
+      (shouldEmit) => {
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          emit: shouldEmit,
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        const spy = vi.spyOn(component, "expand");
 
-      component.toggle();
+        component.toggle();
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith({
-        force: false,
-        emit: true,
-        transition: true,
-        preserveState: false,
-      });
-    });
+        expect(spy).toHaveBeenCalledExactlyOnceWith({
+          force: false,
+          emit: shouldEmit,
+          transition: true,
+          preserveState: false,
+        });
+      }
+    );
 
     it("should collapse when currently expanded", () => {
       component = new CollapsibleComponent({
@@ -1104,29 +1280,33 @@ describe("CollapsibleComponent public methods", () => {
       expect(spy).toHaveBeenCalledExactlyOnceWith(options);
     });
 
-    it("should forward default options to collapse", () => {
-      component = new CollapsibleComponent({
-        controllerElement: document.createElement("button"),
-        controlledElement: document.createElement("div"),
-        transitionClass: "",
-        bootstrap: false,
-      });
-      component._rootDOMElement = "controller";
-      document.body.appendChild(component.rootDOMElement);
-      component._bootstrap();
-      component.initialize();
-      component.expand();
-      const spy = vi.spyOn(component, "collapse");
+    it.each([true, false])(
+      "should pass shouldEmit %s as the default emit option to collapse",
+      (shouldEmit) => {
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          emit: shouldEmit,
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        component.expand();
+        const spy = vi.spyOn(component, "collapse");
 
-      component.toggle();
+        component.toggle();
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith({
-        force: false,
-        emit: true,
-        transition: true,
-        preserveState: false,
-      });
-    });
+        expect(spy).toHaveBeenCalledExactlyOnceWith({
+          force: false,
+          emit: shouldEmit,
+          transition: true,
+          preserveState: false,
+        });
+      }
+    );
   });
 
   describe("toggleLock", () => {
@@ -1166,27 +1346,31 @@ describe("CollapsibleComponent public methods", () => {
       expect(spy).toHaveBeenCalledExactlyOnceWith(options);
     });
 
-    it("should forward default options to lock", () => {
-      component = new CollapsibleComponent({
-        controllerElement: document.createElement("button"),
-        controlledElement: document.createElement("div"),
-        transitionClass: "",
-        bootstrap: false,
-      });
-      component._rootDOMElement = "controller";
-      document.body.appendChild(component.rootDOMElement);
-      component._bootstrap();
-      component.initialize();
-      const spy = vi.spyOn(component, "lock");
+    it.each([true, false])(
+      "should pass shouldEmit %s as the default emit option to lock",
+      (shouldEmit) => {
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          emit: shouldEmit,
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        const spy = vi.spyOn(component, "lock");
 
-      component.toggleLock();
+        component.toggleLock();
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith({
-        force: false,
-        emit: true,
-        preserveState: false,
-      });
-    });
+        expect(spy).toHaveBeenCalledExactlyOnceWith({
+          force: false,
+          emit: shouldEmit,
+          preserveState: false,
+        });
+      }
+    );
 
     it("should unlock when currently locked", () => {
       component = new CollapsibleComponent({
@@ -1226,27 +1410,31 @@ describe("CollapsibleComponent public methods", () => {
       expect(spy).toHaveBeenCalledExactlyOnceWith(options);
     });
 
-    it("should forward default options to unlock", () => {
-      component = new CollapsibleComponent({
-        controllerElement: document.createElement("button"),
-        controlledElement: document.createElement("div"),
-        transitionClass: "",
-        bootstrap: false,
-      });
-      component._rootDOMElement = "controller";
-      document.body.appendChild(component.rootDOMElement);
-      component._bootstrap();
-      component.initialize();
-      component.lock();
-      const spy = vi.spyOn(component, "unlock");
+    it.each([true, false])(
+      "should pass shouldEmit %s as the default emit option to unlock",
+      (shouldEmit) => {
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          transitionClass: "",
+          emit: shouldEmit,
+          bootstrap: false,
+        });
+        component._rootDOMElement = "controller";
+        document.body.appendChild(component.rootDOMElement);
+        component._bootstrap();
+        component.initialize();
+        component.lock();
+        const spy = vi.spyOn(component, "unlock");
 
-      component.toggleLock();
+        component.toggleLock();
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith({
-        force: false,
-        emit: true,
-        preserveState: false,
-      });
-    });
+        expect(spy).toHaveBeenCalledExactlyOnceWith({
+          force: false,
+          emit: shouldEmit,
+          preserveState: false,
+        });
+      }
+    );
   });
 });

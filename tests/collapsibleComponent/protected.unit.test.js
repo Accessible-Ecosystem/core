@@ -53,6 +53,139 @@ describe("CollapsibleComponent protected methods", () => {
   });
 
   describe("_expand", () => {
+    it("should notify internal listeners after the transition duration", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const events = [];
+      const publicListener = vi.fn();
+      for (const prefix of ["pre", "", "post"]) {
+        const name = `${prefix}expand`;
+        component._addInternalEventListener(component.getEventName(name), () =>
+          events.push(name)
+        );
+        component.rootDOMElement.addEventListener(
+          component.getEventName(name),
+          publicListener
+        );
+      }
+
+      component._expand({ emit: false, transition: true });
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersByTime(component.expandDuration - 1);
+
+      expect(events).toEqual(["preexpand", "expand"]);
+
+      vi.advanceTimersByTime(1);
+
+      expect(events).toEqual(["preexpand", "expand", "postexpand"]);
+      expect(publicListener).not.toHaveBeenCalled();
+    });
+
+    it("should cancel the internal post-event when an action listener disposes the component", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const events = [];
+      const publicListener = vi.fn();
+      for (const prefix of ["pre", "", "post"]) {
+        const name = `${prefix}expand`;
+        component._addInternalEventListener(component.getEventName(name), () =>
+          events.push(name)
+        );
+        component.rootDOMElement.addEventListener(
+          component.getEventName(name),
+          publicListener
+        );
+      }
+
+      component._addInternalEventListener(
+        component.getEventName("expand"),
+        () => component.dispose()
+      );
+
+      component._expand({ emit: false, transition: true });
+      vi.runAllTimers();
+
+      expect(events).toEqual(["preexpand", "expand"]);
+      expect(component.frames).toEqual({});
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("should notify internal listeners during the transition and cancel the post-event when reversed", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const events = [];
+      for (const prefix of ["pre", "", "post"]) {
+        const name = `${prefix}expand`;
+        component._addInternalEventListener(component.getEventName(name), () =>
+          events.push(name)
+        );
+      }
+
+      component._expand({ emit: false, transition: true });
+
+      expect(events).toEqual(["preexpand"]);
+
+      vi.advanceTimersToNextFrame();
+
+      expect(events).toEqual(["preexpand"]);
+
+      vi.advanceTimersToNextFrame();
+
+      expect(events).toEqual(["preexpand", "expand"]);
+
+      component._collapse({ emit: false, transition: false });
+      vi.runAllTimers();
+
+      expect(events).toEqual(["preexpand", "expand"]);
+    });
+
+    it("should notify internal listeners when public events are disabled", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const events = [];
+      const publicListener = vi.fn();
+      for (const prefix of ["pre", "", "post"]) {
+        const name = `${prefix}expand`;
+        component._addInternalEventListener(component.getEventName(name), () =>
+          events.push(name)
+        );
+        component.rootDOMElement.addEventListener(
+          component.getEventName(name),
+          publicListener
+        );
+      }
+
+      component._expand({ emit: false, transition: false });
+
+      expect(events).toEqual(["preexpand", "expand", "postexpand"]);
+      expect(publicListener).not.toHaveBeenCalled();
+    });
+
     it("should cancel completion when disposed by the expand listener", () => {
       vi.useFakeTimers();
       component = new CollapsibleComponent({
@@ -526,6 +659,139 @@ describe("CollapsibleComponent protected methods", () => {
   });
 
   describe("_collapse", () => {
+    it("should notify internal listeners after the transition duration", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const events = [];
+      const publicListener = vi.fn();
+      for (const prefix of ["pre", "", "post"]) {
+        const name = `${prefix}collapse`;
+        component._addInternalEventListener(component.getEventName(name), () =>
+          events.push(name)
+        );
+        component.rootDOMElement.addEventListener(
+          component.getEventName(name),
+          publicListener
+        );
+      }
+
+      component._collapse({ emit: false, transition: true });
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersToNextFrame();
+      vi.advanceTimersByTime(component.collapseDuration - 1);
+
+      expect(events).toEqual(["precollapse", "collapse"]);
+
+      vi.advanceTimersByTime(1);
+
+      expect(events).toEqual(["precollapse", "collapse", "postcollapse"]);
+      expect(publicListener).not.toHaveBeenCalled();
+    });
+
+    it("should cancel the internal post-event when an action listener disposes the component", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const events = [];
+      const publicListener = vi.fn();
+      for (const prefix of ["pre", "", "post"]) {
+        const name = `${prefix}collapse`;
+        component._addInternalEventListener(component.getEventName(name), () =>
+          events.push(name)
+        );
+        component.rootDOMElement.addEventListener(
+          component.getEventName(name),
+          publicListener
+        );
+      }
+
+      component._addInternalEventListener(
+        component.getEventName("collapse"),
+        () => component.dispose()
+      );
+
+      component._collapse({ emit: false, transition: true });
+      vi.runAllTimers();
+
+      expect(events).toEqual(["precollapse", "collapse"]);
+      expect(component.frames).toEqual({});
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("should notify internal listeners during the transition and cancel the post-event when reversed", () => {
+      vi.useFakeTimers();
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const events = [];
+      for (const prefix of ["pre", "", "post"]) {
+        const name = `${prefix}collapse`;
+        component._addInternalEventListener(component.getEventName(name), () =>
+          events.push(name)
+        );
+      }
+
+      component._collapse({ emit: false, transition: true });
+
+      expect(events).toEqual(["precollapse"]);
+
+      vi.advanceTimersToNextFrame();
+
+      expect(events).toEqual(["precollapse"]);
+
+      vi.advanceTimersToNextFrame();
+
+      expect(events).toEqual(["precollapse", "collapse"]);
+
+      component._expand({ emit: false, transition: false });
+      vi.runAllTimers();
+
+      expect(events).toEqual(["precollapse", "collapse"]);
+    });
+
+    it("should notify internal listeners when public events are disabled", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const events = [];
+      const publicListener = vi.fn();
+      for (const prefix of ["pre", "", "post"]) {
+        const name = `${prefix}collapse`;
+        component._addInternalEventListener(component.getEventName(name), () =>
+          events.push(name)
+        );
+        component.rootDOMElement.addEventListener(
+          component.getEventName(name),
+          publicListener
+        );
+      }
+
+      component._collapse({ emit: false, transition: false });
+
+      expect(events).toEqual(["precollapse", "collapse", "postcollapse"]);
+      expect(publicListener).not.toHaveBeenCalled();
+    });
+
     it("should cancel completion when disposed by the collapse listener", () => {
       vi.useFakeTimers();
       component = new CollapsibleComponent({
@@ -999,6 +1265,33 @@ describe("CollapsibleComponent protected methods", () => {
   });
 
   describe("_lock", () => {
+    it("should notify internal listeners when public events are disabled", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const events = [];
+      const publicListener = vi.fn();
+      for (const prefix of ["pre", "", "post"]) {
+        const name = `${prefix}lock`;
+        component._addInternalEventListener(component.getEventName(name), () =>
+          events.push(name)
+        );
+        component.rootDOMElement.addEventListener(
+          component.getEventName(name),
+          publicListener
+        );
+      }
+
+      component._lock({ emit: false, transition: false });
+
+      expect(events).toEqual(["prelock", "lock", "postlock"]);
+      expect(publicListener).not.toHaveBeenCalled();
+    });
+
     it("should emit lifecycle events in order", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
@@ -1099,6 +1392,33 @@ describe("CollapsibleComponent protected methods", () => {
   });
 
   describe("_unlock", () => {
+    it("should notify internal listeners when public events are disabled", () => {
+      component = new CollapsibleComponent({
+        controllerElement: document.createElement("button"),
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+      });
+      component._rootDOMElement = "controller";
+      component._bootstrap();
+      const events = [];
+      const publicListener = vi.fn();
+      for (const prefix of ["pre", "", "post"]) {
+        const name = `${prefix}unlock`;
+        component._addInternalEventListener(component.getEventName(name), () =>
+          events.push(name)
+        );
+        component.rootDOMElement.addEventListener(
+          component.getEventName(name),
+          publicListener
+        );
+      }
+
+      component._unlock({ emit: false, transition: false });
+
+      expect(events).toEqual(["preunlock", "unlock", "postunlock"]);
+      expect(publicListener).not.toHaveBeenCalled();
+    });
+
     it("should emit lifecycle events in order", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),

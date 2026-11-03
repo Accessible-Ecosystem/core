@@ -70,6 +70,24 @@ describe("ResponsiveComponent initialization", () => {
   });
 
   describe("initialize", () => {
+    it("should set up the media query even when emit is false", () => {
+      const { matchMedia } = setupMatchMedia(false);
+      component = new ResponsiveComponent({
+        breakpoint: "800px",
+        emit: false,
+        bootstrap: false,
+      });
+      component._dom.root = document.createElement("button");
+      component._rootDOMElement = "root";
+      component._bootstrap();
+
+      component.initialize();
+
+      expect(component.isInitialized).toBe(true);
+      expect(component.shouldEmit).toBe(false);
+      expect(matchMedia).toHaveBeenCalled();
+    });
+
     it("should set up the media query during initialization", () => {
       vi.useFakeTimers();
       const { list, matchMedia } = setupMatchMedia(true);

@@ -19,6 +19,24 @@ afterEach(() => {
 
 describe("Component initialization", () => {
   describe("constructor", () => {
+    it.each([null, "false", 0])(
+      "should report a validation error when emit is %s",
+      (emit) => {
+        component = new Component({ emit, bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        component._bootstrap();
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+        component.initialize();
+
+        expect(component.isInitialized).toBe(false);
+        expect(component.isValid).toBe(false);
+        expect(component.errors).toContainEqual(expect.any(TypeError));
+        expect(error).toHaveBeenCalled();
+      }
+    );
+
     it("should default the protected event prefix to an empty string", () => {
       component = new Component({ bootstrap: false });
       component._dom.root = document.createElement("button");
@@ -83,6 +101,63 @@ describe("Component initialization", () => {
   });
 
   describe("initialize", () => {
+    it.each([
+      [
+        true,
+        [
+          "prevalidate",
+          "validate",
+          "postvalidate",
+          "preinitialize",
+          "initialize",
+          "postinitialize",
+        ],
+      ],
+      [false, []],
+    ])(
+      "should respect emit %s during initialization",
+      (emit, expectedEvents) => {
+        component = new Component({ emit, bootstrap: false });
+        component._dom.root = document.createElement("button");
+        component._rootDOMElement = "root";
+        component._bootstrap();
+        const internal = [];
+        const publicEvents = [];
+        for (const name of [
+          "prevalidate",
+          "validate",
+          "postvalidate",
+          "preinitialize",
+          "initialize",
+          "postinitialize",
+        ]) {
+          component._addInternalEventListener(
+            component.getEventName(name),
+            () => internal.push(name)
+          );
+          component._addEventListener(
+            component.getEventName(name),
+            component.rootDOMElement,
+            () => publicEvents.push(name)
+          );
+        }
+
+        component.initialize();
+
+        expect(component.isInitialized).toBe(true);
+        expect(internal).toEqual([
+          "prevalidate",
+          "validate",
+          "postvalidate",
+          "preinitialize",
+          "initialize",
+          "postinitialize",
+        ]);
+        expect(publicEvents).toEqual(expectedEvents);
+        expect(component.shouldEmit).toBe(emit);
+      }
+    );
+
     it.each([
       { prefix: 123 },
       { key: {} },

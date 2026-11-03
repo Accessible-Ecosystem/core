@@ -18,6 +18,44 @@ afterEach(() => {
 });
 
 describe("Component getter/setters", () => {
+  describe("shouldEmit", () => {
+    it("should default to true", () => {
+      component = new Component();
+
+      expect(component.shouldEmit).toBe(true);
+    });
+
+    it("should use the emit value from the constructor", () => {
+      component = new Component({ emit: false });
+
+      expect(component.shouldEmit).toBe(false);
+    });
+
+    it("should update the value through the setter", () => {
+      component = new Component();
+
+      component.shouldEmit = false;
+
+      expect(component.shouldEmit).toBe(false);
+
+      component.shouldEmit = true;
+
+      expect(component.shouldEmit).toBe(true);
+    });
+
+    it.each([null, "false", 0, undefined])(
+      "should throw when shouldEmit is set to the invalid value %s",
+      (value) => {
+        component = new Component();
+
+        expect(() => {
+          component.shouldEmit = value;
+        }).toThrow(TypeError);
+        expect(component.shouldEmit).toBe(true);
+      }
+    );
+  });
+
   const readonly = {
     dom: "_dom",
     selectors: "_selectors",
