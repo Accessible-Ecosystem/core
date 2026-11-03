@@ -130,8 +130,8 @@ class CollapsibleComponent extends ResponsiveComponent {
    * Constructs a collapsible component.
    *
    * @param {object}             [options = {}]                              - The options for generating the component.
-   * @param {HTMLElement}        options.controllerElement                   - The element controlling expansion.
    * @param {HTMLElement}        options.controlledElement                   - The element to expand or collapse.
+   * @param {?HTMLElement}       [options.controllerElement = null]          - The optional element controlling expansion.
    * @param {?HTMLElement}       [options.triggerElement = null]             - The element receiving expansion clicks. If null, the controller element is used.
    * @param {?(string|string[])} [options.lockClass = locked]                - The class(es) to apply when the component is in the locked state.
    * @param {?(string|string[])} [options.unlockClass = unlocked]            - The class(es) to apply when the component is in the unlocked state.
@@ -152,6 +152,7 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @param {boolean}            [options.unlockOutsideBreakpoint = false]   - Whether to unlock outside the breakpoint.
    * @param {boolean}            [options.expandOnFocus = false]             - Whether calling focus should expand the component.
    * @param {boolean}            [options.collapseOnBlur = false]            - Whether calling blur should collapse the component.
+   * @param {boolean}            [options.expanded = false]                  - The initial expanded state.
    * @param {boolean}            [options.locked = false]                    - The initial locked state.
    * @param {?string}            [options.breakpoint = ""]                   - The breakpoint used to generate the component's media query.
    * @param {?string}            [options.mediaQuery = ""]                   - An explicit media query to use to trigger media query list events.
@@ -163,8 +164,8 @@ class CollapsibleComponent extends ResponsiveComponent {
    * @param {boolean}            [options.initialize = true]                 - Whether to initialize the component.
    */
   constructor({
-    controllerElement,
     controlledElement,
+    controllerElement = null,
     triggerElement = null,
     lockClass = "locked",
     unlockClass = "unlocked",
@@ -185,6 +186,7 @@ class CollapsibleComponent extends ResponsiveComponent {
     unlockOutsideBreakpoint = false,
     expandOnFocus = false,
     collapseOnBlur = false,
+    expanded = false,
     locked = false,
     breakpoint = "",
     mediaQuery = "",
@@ -242,6 +244,10 @@ class CollapsibleComponent extends ResponsiveComponent {
     this._expandOnFocus = expandOnFocus;
     this._collapseOnBlur = collapseOnBlur;
 
+    // Set the initial expanded state for the component.
+    this._expanded.value = expanded;
+    this._expanded.commit();
+
     // Set the initial locked state for the component.
     this._locked.value = locked;
     this._locked.commit();
@@ -282,6 +288,7 @@ class CollapsibleComponent extends ResponsiveComponent {
       if (event.detail.component !== this) return;
       // Boolean checks.
       const booleans = {
+        expanded: this._expanded.value,
         locked: this._locked.value,
         expandOnFocus: this._expandOnFocus,
         collapseOnBlur: this._collapseOnBlur,
@@ -310,7 +317,7 @@ class CollapsibleComponent extends ResponsiveComponent {
     // Register the initialization listener.
     this._addInternalEventListener(this.getEventName("initialize"), (event) => {
       if (event.detail.component !== this) return;
-      if (this.dom.controller.getAttribute("aria-expanded") === "true") {
+      if (this.isExpanded) {
         this.expand();
       } else {
         this.collapse();
@@ -954,7 +961,7 @@ class CollapsibleComponent extends ResponsiveComponent {
     // Remove the unlocked class.
     removeClass(this.unlockedClass, this.dom.controlled);
 
-    this.dom.controller.setAttribute("disabled", "true");
+    this.dom.controller?.setAttribute("disabled", "true");
 
     this._dispatchEvent("lock", this.rootDOMElement, { emit });
     this._dispatchEvent("postlock", this.rootDOMElement, { emit });
@@ -977,7 +984,7 @@ class CollapsibleComponent extends ResponsiveComponent {
     // Remove the locked class.
     removeClass(this.lockedClass, this.dom.controlled);
 
-    this.dom.controller.removeAttribute("disabled");
+    this.dom.controller?.removeAttribute("disabled");
 
     this._dispatchEvent("unlock", this.rootDOMElement, { emit });
     this._dispatchEvent("postunlock", this.rootDOMElement, { emit });
