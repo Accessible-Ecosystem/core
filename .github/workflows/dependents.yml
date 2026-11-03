@@ -21,7 +21,7 @@ jobs:
       matrix:
         project:
           - repository: NickDJM/accessible-menu
-            ref: 5.x
+            ref: new-core-features
             test-script: test:run
 
     steps:
