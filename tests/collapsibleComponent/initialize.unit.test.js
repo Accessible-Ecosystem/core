@@ -25,6 +25,109 @@ afterEach(() => {
 
 describe("CollapsibleComponent initialization", () => {
   describe("constructor", () => {
+    it("should call initialize once after bootstrapping by default", () => {
+      const states = [];
+      const initialize = vi
+        .spyOn(CollapsibleComponent.prototype, "initialize")
+        .mockImplementation(function () {
+          states.push(this.isBootstrapped);
+        });
+
+      component = new CollapsibleComponent();
+
+      expect(initialize).toHaveBeenCalledTimes(1);
+      expect(states).toEqual([true]);
+    });
+
+    it("should bootstrap without initializing when initialize is false", () => {
+      const initialize = vi.spyOn(CollapsibleComponent.prototype, "initialize");
+
+      component = new CollapsibleComponent({ initialize: false });
+
+      expect(component.isBootstrapped).toBe(true);
+      expect(component.isInitialized).toBe(false);
+      expect(initialize).not.toHaveBeenCalled();
+    });
+
+    it("should log an error when initialization is requested without bootstrapping", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      const initialize = vi.spyOn(CollapsibleComponent.prototype, "initialize");
+
+      component = new CollapsibleComponent({ bootstrap: false });
+
+      expect(error).toHaveBeenCalledWith(
+        new Error(
+          "Cannot initialize a component before it has been bootstrapped."
+        )
+      );
+
+      expect(component.isBootstrapped).toBe(false);
+      expect(component.isInitialized).toBe(false);
+      expect(initialize).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([undefined, null])(
+      "should initialize with controllerElement set to %s",
+      (controllerElement) => {
+        component = new CollapsibleComponent({
+          controllerElement,
+          controlledElement: document.createElement("div"),
+          bootstrap: false,
+          initialize: false,
+        });
+        component._rootDOMElement = "controlled";
+        component._bootstrap();
+
+        component.initialize();
+
+        expect(component.isInitialized).toBe(true);
+        expect(component.dom.controller).toBe(null);
+        expect(component.dom.trigger).toBe(null);
+      }
+    );
+
+    it("should reject an invalid controller element", () => {
+      component = new CollapsibleComponent({
+        controllerElement: {},
+        controlledElement: document.createElement("div"),
+        bootstrap: false,
+        initialize: false,
+      });
+      component._rootDOMElement = "controlled";
+      component._bootstrap();
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      component.initialize();
+
+      expect(component.isInitialized).toBe(false);
+      expect(component.isValid).toBe(false);
+      expect(component.errors).toContainEqual(expect.any(TypeError));
+      expect(error).toHaveBeenCalled();
+    });
+
+    it.each([null, "true", 0])(
+      "should report an invalid expanded value %s",
+      (expanded) => {
+        component = new CollapsibleComponent({
+          controllerElement: document.createElement("button"),
+          controlledElement: document.createElement("div"),
+          expanded,
+          bootstrap: false,
+          initialize: false,
+        });
+        component._rootDOMElement = "controller";
+        component._bootstrap();
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+        component.initialize();
+
+        expect(component.isInitialized).toBe(false);
+        expect(component.isValid).toBe(false);
+        expect(component.errors).toContainEqual(expect.any(TypeError));
+        expect(error).toHaveBeenCalled();
+      }
+    );
+
     it.each([
       [undefined, false],
       [false, false],
@@ -34,6 +137,7 @@ describe("CollapsibleComponent initialization", () => {
         expandOnFocus: value,
         collapseOnBlur: value,
         bootstrap: false,
+        initialize: false,
       });
 
       expect(component.expandOnFocus).toBe(expected);
@@ -49,6 +153,7 @@ describe("CollapsibleComponent initialization", () => {
           controlledElement: document.createElement("div"),
           [option]: null,
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -61,10 +166,34 @@ describe("CollapsibleComponent initialization", () => {
       }
     );
 
+    it("should log an error when automatic initialization follows failed bootstrapping", () => {
+      vi.spyOn(
+        CollapsibleComponent.prototype,
+        "_registerEvent"
+      ).mockImplementation(() => {
+        throw new Error("registration failed");
+      });
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      const initialize = vi.spyOn(CollapsibleComponent.prototype, "initialize");
+
+      component = new CollapsibleComponent();
+
+      expect(error).toHaveBeenCalledWith(
+        new Error(
+          "Cannot initialize a component before it has been bootstrapped."
+        )
+      );
+
+      expect(component.isBootstrapped).toBe(false);
+      expect(component.isInitialized).toBe(false);
+      expect(component.isValid).toBe(false);
+      expect(initialize).toHaveBeenCalledTimes(1);
+    });
+
     it("should bootstrap by default", () => {
       const spy = vi.spyOn(CollapsibleComponent.prototype, "_bootstrap");
 
-      component = new CollapsibleComponent();
+      component = new CollapsibleComponent({ initialize: false });
 
       expect(spy).toHaveBeenCalledTimes(1);
     });
@@ -72,7 +201,10 @@ describe("CollapsibleComponent initialization", () => {
     it("should skip bootstrapping when bootstrap is false", () => {
       const spy = vi.spyOn(CollapsibleComponent.prototype, "_bootstrap");
 
-      component = new CollapsibleComponent({ bootstrap: false });
+      component = new CollapsibleComponent({
+        bootstrap: false,
+        initialize: false,
+      });
 
       expect(spy).not.toHaveBeenCalled();
     });
@@ -85,6 +217,7 @@ describe("CollapsibleComponent initialization", () => {
           controlledElement: document.createElement("div"),
           triggerElement,
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
@@ -101,6 +234,7 @@ describe("CollapsibleComponent initialization", () => {
         controlledElement: document.createElement("div"),
         triggerElement: trigger,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -115,6 +249,7 @@ describe("CollapsibleComponent initialization", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -135,6 +270,7 @@ describe("CollapsibleComponent initialization", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -152,6 +288,7 @@ describe("CollapsibleComponent initialization", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -165,6 +302,7 @@ describe("CollapsibleComponent initialization", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -189,6 +327,7 @@ describe("CollapsibleComponent initialization", () => {
         controlledElement: document.createElement("div"),
         [option]: null,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -207,7 +346,9 @@ describe("CollapsibleComponent initialization", () => {
         controllerElement: controller,
         controlledElement: document.createElement("div"),
         emit: false,
+        expanded: true,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -242,6 +383,7 @@ describe("CollapsibleComponent initialization", () => {
         expandOnFocus: "invalid",
         emit: false,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       component._bootstrap();
@@ -256,26 +398,28 @@ describe("CollapsibleComponent initialization", () => {
     });
 
     it.each([
-      [true, "show"],
-      [false, "hide"],
+      [true, "show", "false"],
+      [false, "hide", "true"],
     ])(
-      "should initialize expansion from aria-expanded=%s",
-      (expanded, expectedClass) => {
+      "should initialize with expanded set to %s",
+      (expanded, expectedClass, controllerValue) => {
         component = new CollapsibleComponent({
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
+          expanded,
           bootstrap: false,
+          initialize: false,
         });
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
         component._bootstrap();
-        component.dom.controller.setAttribute(
-          "aria-expanded",
-          String(expanded)
-        );
+        component.dom.controller.setAttribute("aria-expanded", controllerValue);
 
         component.initialize();
 
+        expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
+          controllerValue
+        );
         expect(component.isExpanded).toBe(expanded);
         expect(component.shouldBeExpanded).toBe(expanded);
         expect(component.dom.controlled.classList.contains(expectedClass)).toBe(
@@ -290,6 +434,7 @@ describe("CollapsibleComponent initialization", () => {
         controlledElement: document.createElement("div"),
         locked: true,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -307,6 +452,7 @@ describe("CollapsibleComponent initialization", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -322,6 +468,7 @@ describe("CollapsibleComponent initialization", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -337,6 +484,7 @@ describe("CollapsibleComponent initialization", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -357,6 +505,7 @@ describe("CollapsibleComponent initialization", () => {
         controlledElement: document.createElement("div"),
         triggerElement: "invalid",
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -369,13 +518,14 @@ describe("CollapsibleComponent initialization", () => {
       expect(error).toHaveBeenCalledWith(expect.any(Error));
     });
 
-    it("should keep ARIA attributes and lifecycle events on the controller", () => {
+    it("should keep lifecycle events on the controller without adding aria-expanded", () => {
       const trigger = document.createElement("span");
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         triggerElement: trigger,
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -383,6 +533,7 @@ describe("CollapsibleComponent initialization", () => {
       component.dom.controller.appendChild(trigger);
 
       component.initialize();
+
       const expanded = vi.fn();
       component.dom.controller.addEventListener(
         component.getEventName("expand"),
@@ -391,8 +542,8 @@ describe("CollapsibleComponent initialization", () => {
 
       component.expand({ transition: false });
 
-      expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
-        "true"
+      expect(component.dom.controller.hasAttribute("aria-expanded")).toBe(
+        false
       );
       expect(trigger.hasAttribute("aria-expanded")).toBe(false);
       expect(expanded).toHaveBeenCalledOnce();
@@ -418,6 +569,7 @@ describe("CollapsibleComponent initialization", () => {
         controlledElement: document.createElement("div"),
         [option]: "invalid",
         bootstrap: false,
+        initialize: false,
       });
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
@@ -435,6 +587,7 @@ describe("CollapsibleComponent initialization", () => {
         controlledElement: document.createElement("div"),
         controllerElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       parent._rootDOMElement = "controller";
       document.body.appendChild(parent.rootDOMElement);
@@ -443,6 +596,7 @@ describe("CollapsibleComponent initialization", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       child._rootDOMElement = "controller";
       document.body.appendChild(child.rootDOMElement);
@@ -450,8 +604,33 @@ describe("CollapsibleComponent initialization", () => {
       parent.rootDOMElement.append(child.rootDOMElement);
       const collapse = vi.spyOn(parent, "collapse");
 
+      const publicListener = vi.fn();
+      parent._addEventListener(
+        parent.getEventName("initialize"),
+        parent.rootDOMElement,
+        publicListener
+      );
+
       child._dispatchEvent("initialize");
 
+      expect(publicListener).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ target: child.rootDOMElement })
+      );
+
+      expect(collapse).not.toHaveBeenCalled();
+
+      const internalListener = vi.fn();
+      parent._addInternalEventListener(
+        parent.getEventName("initialize"),
+        internalListener
+      );
+      parent._registerEvent("initialize", { detail: { component: child } });
+
+      parent._dispatchEvent("initialize");
+
+      expect(internalListener).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ detail: { component: child } })
+      );
       expect(collapse).not.toHaveBeenCalled();
     });
 
@@ -460,6 +639,7 @@ describe("CollapsibleComponent initialization", () => {
         controlledElement: document.createElement("div"),
         controllerElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       parent._rootDOMElement = "controller";
       document.body.appendChild(parent.rootDOMElement);
@@ -468,6 +648,7 @@ describe("CollapsibleComponent initialization", () => {
         controllerElement: document.createElement("button"),
         controlledElement: document.createElement("div"),
         bootstrap: false,
+        initialize: false,
       });
       child._rootDOMElement = "controller";
       document.body.appendChild(child.rootDOMElement);
@@ -475,8 +656,33 @@ describe("CollapsibleComponent initialization", () => {
       parent.rootDOMElement.append(child.rootDOMElement);
       parent._expandInsideBreakpoint = "invalid";
 
+      const publicListener = vi.fn();
+      parent._addEventListener(
+        parent.getEventName("validate"),
+        parent.rootDOMElement,
+        publicListener
+      );
+
       child._dispatchEvent("validate");
 
+      expect(publicListener).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ target: child.rootDOMElement })
+      );
+
+      expect(parent.isValid).toBe(true);
+
+      const internalListener = vi.fn();
+      parent._addInternalEventListener(
+        parent.getEventName("validate"),
+        internalListener
+      );
+      parent._registerEvent("validate", { detail: { component: child } });
+
+      parent._dispatchEvent("validate");
+
+      expect(internalListener).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ detail: { component: child } })
+      );
       expect(parent.isValid).toBe(true);
     });
   });

@@ -263,6 +263,15 @@ class Component {
   _initialized = false;
 
   /**
+   * Whether the component has completed bootstrapping.
+   *
+   * @protected
+   *
+   * @type {boolean}
+   */
+  _bootstrapped = false;
+
+  /**
    * Whether the component should emit public events.
    *
    * @protected
@@ -289,6 +298,7 @@ class Component {
    * @param {?(string|string[])} [options.initializeClass = initializing] - The class(es) to apply when the component is in the initialization state.
    * @param {boolean}            [options.emit = true]                    - Whether to emit public events.
    * @param {boolean}            [options.bootstrap = true]               - A flag to determine if the component should bootstrap itself.
+   * @param {boolean}            [options.initialize = true]              - Whether to initialize the component.
    */
   constructor({
     prefix = "ae-",
@@ -296,6 +306,7 @@ class Component {
     initializeClass = "initializing",
     emit = true,
     bootstrap = true,
+    initialize = true,
   } = {}) {
     // Set the classes.
     this._classes.initialize = initializeClass || "";
@@ -311,33 +322,63 @@ class Component {
     if (bootstrap) {
       this._bootstrap();
     }
+
+    // Initialize the component.
+    if (initialize) {
+      this.initialize();
+    }
   }
 
   /**
-   * Bootstraps the component by registering the base events.
+   * Bootstraps the component by registering its events and internal listeners.
    *
    * @protected
    */
   _bootstrap() {
+    this._bootstrapped = false;
+
     try {
-      // Register the base component events.
-      this._registerEvent("initialize");
-      this._registerEvent("preinitialize");
-      this._registerEvent("postinitialize");
-      this._registerEvent("validate");
-      this._registerEvent("prevalidate");
-      this._registerEvent("postvalidate");
+      this._registerEvents();
+      this._bootstrapped = true;
     } catch (error) {
+      this._bootstrapped = false;
       this._valid = false;
       console.error(error);
     }
   }
 
   /**
+   * Registers the component's lifecycle events.
+   *
+   * Subclasses can call super._registerEvents() and register their own events
+   * and internal listeners here, before bootstrapping completes.
+   *
+   * @protected
+   */
+  _registerEvents() {
+    // Register the base component events.
+    this._registerEvent("initialize");
+    this._registerEvent("preinitialize");
+    this._registerEvent("postinitialize");
+    this._registerEvent("validate");
+    this._registerEvent("prevalidate");
+    this._registerEvent("postvalidate");
+  }
+
+  /**
    * Initialize the component.
+   *
+   * Reports initialization errors through console.error.
    */
   initialize() {
     try {
+      // Require bootstrapping before validation begins.
+      if (!this.isBootstrapped) {
+        throw new Error(
+          "Cannot initialize a component before it has been bootstrapped."
+        );
+      }
+
       if (!this._validate()) {
         throw new Error(
           `${this.scope} ${this.name}: Cannot initialize component. The following errors have been found:\n - ${this.errors
@@ -731,6 +772,19 @@ class Component {
    */
   get isInitialized() {
     return this._initialized;
+  }
+
+  /**
+   * Whether the component has completed bootstrapping.
+   *
+   * @readonly
+   *
+   * @type {boolean}
+   *
+   * @see _bootstrapped
+   */
+  get isBootstrapped() {
+    return this._bootstrapped;
   }
 
   /**
@@ -1581,6 +1635,7 @@ class Component {
     this._clearTimeouts();
     this._cancelAnimationFrames();
     this._removeEventListeners();
+    this._bootstrapped = false;
     this._unstore();
 
     delete this;

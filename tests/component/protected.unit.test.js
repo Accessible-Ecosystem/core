@@ -24,13 +24,13 @@ afterEach(() => {
 });
 
 describe("Component protected methods", () => {
-  describe("_bootstrap", () => {
+  describe("_registerEvents", () => {
     it("should register all lifecycle events", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
-      component._bootstrap();
+      component._registerEvents();
 
       expect(Object.keys(component.events)).toEqual([
         "initialize",
@@ -42,8 +42,43 @@ describe("Component protected methods", () => {
       ]);
     });
 
+    it("should let subclasses register events without overriding bootstrapping", () => {
+      class CustomComponent extends Component {
+        _registerEvents() {
+          super._registerEvents();
+          this._registerEvent("custom");
+        }
+      }
+
+      component = new CustomComponent({ initialize: false });
+
+      expect(component.isBootstrapped).toBe(true);
+      expect(component.events.initialize).toBeInstanceOf(CustomEvent);
+      expect(component.events.custom).toBeInstanceOf(CustomEvent);
+      expect(CustomComponent.prototype._bootstrap).toBe(
+        Component.prototype._bootstrap
+      );
+    });
+  });
+
+  describe("_bootstrap", () => {
+    it("should mark bootstrapping complete after registering events", () => {
+      component = new Component({ initialize: false });
+      const states = [];
+      const registerEvents = component._registerEvents;
+      vi.spyOn(component, "_registerEvents").mockImplementation(function () {
+        states.push(this.isBootstrapped);
+        registerEvents.call(this);
+      });
+
+      component._bootstrap();
+
+      expect(states).toEqual([false]);
+      expect(component.isBootstrapped).toBe(true);
+    });
+
     it("should log registration failures", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -60,7 +95,7 @@ describe("Component protected methods", () => {
     });
 
     it("should invalidate the component after a registration failure", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -73,6 +108,7 @@ describe("Component protected methods", () => {
       component._bootstrap();
 
       expect(component.isValid).toBe(false);
+      expect(component.isBootstrapped).toBe(false);
     });
   });
 
@@ -91,7 +127,7 @@ describe("Component protected methods", () => {
       ["_protectedDOMElements", [123]],
       ["_shouldStore", "yes"],
     ])("should report invalid %s", (field, value) => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -103,7 +139,7 @@ describe("Component protected methods", () => {
     });
 
     it("should report invalid _dom", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -115,7 +151,7 @@ describe("Component protected methods", () => {
     });
 
     it("should accept an empty selector alongside a valid selector", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -127,7 +163,7 @@ describe("Component protected methods", () => {
     });
 
     it("should still report an invalid selector alongside an empty selector", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -140,7 +176,7 @@ describe("Component protected methods", () => {
     });
 
     it("should collect all validation errors", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -154,7 +190,7 @@ describe("Component protected methods", () => {
     });
 
     it("should clear previous errors before validating again", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -169,7 +205,7 @@ describe("Component protected methods", () => {
     });
 
     it("should dispatch validation lifecycle events in order", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -188,7 +224,7 @@ describe("Component protected methods", () => {
     });
 
     it("should accept valid DOM arrays", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -199,7 +235,7 @@ describe("Component protected methods", () => {
     });
 
     it("should accept null for an optional DOM element", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -212,7 +248,7 @@ describe("Component protected methods", () => {
 
   describe("_generateKey", () => {
     it("should generate a key when none is configured", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -225,7 +261,11 @@ describe("Component protected methods", () => {
     });
 
     it("should preserve an existing key", () => {
-      component = new Component({ key: "existing", bootstrap: false });
+      component = new Component({
+        key: "existing",
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -237,7 +277,11 @@ describe("Component protected methods", () => {
     });
 
     it("should regenerate a key when requested", () => {
-      component = new Component({ key: "existing", bootstrap: false });
+      component = new Component({
+        key: "existing",
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -253,7 +297,7 @@ describe("Component protected methods", () => {
 
   describe("_setDOMElementType", () => {
     it("should select all matching descendants", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -272,7 +316,7 @@ describe("Component protected methods", () => {
     });
 
     it("should select only matching direct children", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -288,7 +332,7 @@ describe("Component protected methods", () => {
     });
 
     it("should append matches when overwrite is false", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -309,7 +353,7 @@ describe("Component protected methods", () => {
     });
 
     it("should replace existing matches by default", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -328,7 +372,7 @@ describe("Component protected methods", () => {
     });
 
     it("should set a single DOM element to the first match", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -345,7 +389,7 @@ describe("Component protected methods", () => {
     });
 
     it("should set a single DOM element to null when no elements match", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -365,7 +409,7 @@ describe("Component protected methods", () => {
     it.each(["missing", "root", "protected"])(
       "should reject the %s element type",
       (type) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -383,7 +427,7 @@ describe("Component protected methods", () => {
     );
 
     it("should reject an invalid context", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -398,7 +442,7 @@ describe("Component protected methods", () => {
 
   describe("_resetDOMElementType", () => {
     it("should reset a DOM element array", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -412,7 +456,7 @@ describe("Component protected methods", () => {
     });
 
     it("should reset a single DOM element", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -428,7 +472,7 @@ describe("Component protected methods", () => {
     it.each(["missing", "root", "protected"])(
       "should reject the %s element type",
       (type) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -449,7 +493,7 @@ describe("Component protected methods", () => {
     describe(set, () => {
       it("should run the callback at the scheduled frequency", () => {
         vi.useFakeTimers();
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -472,7 +516,7 @@ describe("Component protected methods", () => {
 
       it("should replace the previous timer in the same scope", () => {
         vi.useFakeTimers();
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -490,7 +534,7 @@ describe("Component protected methods", () => {
 
       it("should leave timers in other scopes active", () => {
         vi.useFakeTimers();
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -508,7 +552,7 @@ describe("Component protected methods", () => {
     describe(clear, () => {
       it("should cancel callbacks in the selected scope", () => {
         vi.useFakeTimers();
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -524,7 +568,7 @@ describe("Component protected methods", () => {
 
       it("should leave other scopes active", () => {
         vi.useFakeTimers();
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -540,7 +584,7 @@ describe("Component protected methods", () => {
       });
 
       it("should tolerate a missing scope", () => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -553,7 +597,7 @@ describe("Component protected methods", () => {
     describe(all, () => {
       it("should cancel callbacks in all scopes", () => {
         vi.useFakeTimers();
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -572,7 +616,7 @@ describe("Component protected methods", () => {
 
   describe("_registerEvent", () => {
     it("should use the eventPrefix getter when naming events", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -585,7 +629,7 @@ describe("Component protected methods", () => {
     });
 
     it("should register a CustomEvent with the generated name", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -602,7 +646,7 @@ describe("Component protected methods", () => {
     it.each([true, false])(
       "should set the event bubbles value to %s",
       (bubbles) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -615,7 +659,7 @@ describe("Component protected methods", () => {
     );
 
     it("should include the component in the default detail", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -627,7 +671,7 @@ describe("Component protected methods", () => {
     });
 
     it("should include custom event detail", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -643,7 +687,7 @@ describe("Component protected methods", () => {
       ["ready", { bubbles: "yes" }],
       ["ready", { detail: "bad" }],
     ])("should reject event name=%j options=%j", (name, options) => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -655,7 +699,7 @@ describe("Component protected methods", () => {
 
   describe("_dispatchEvent", () => {
     it("should dispatch the same event internally before dispatching it in the DOM", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       component._bootstrap();
@@ -692,7 +736,7 @@ describe("Component protected methods", () => {
     });
 
     it("should notify internal listeners when emit is false", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._bootstrap();
       const listener = vi.fn();
       const publicListener = vi.fn();
@@ -718,7 +762,7 @@ describe("Component protected methods", () => {
     });
 
     it("should dispatch to the root by default", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -736,7 +780,7 @@ describe("Component protected methods", () => {
     });
 
     it("should dispatch to an explicit element", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -755,7 +799,7 @@ describe("Component protected methods", () => {
     });
 
     it("should reject unregistered events", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -765,7 +809,7 @@ describe("Component protected methods", () => {
     });
 
     it("should reject invalid elements", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -778,48 +822,66 @@ describe("Component protected methods", () => {
   });
 
   describe("_addInternalEventListener", () => {
-    it("should support once and signal options and remove internal listeners on disposal", () => {
-      component = new Component({ bootstrap: false });
+    it("should call a once listener only once", () => {
+      component = new Component({ bootstrap: false, initialize: false });
       component._bootstrap();
-      const once = vi.fn();
-      const aborted = vi.fn();
-      const persistent = { handleEvent: vi.fn() };
+      const listener = vi.fn();
+      component._addInternalEventListener(
+        component.getEventName("initialize"),
+        listener,
+        { once: true }
+      );
+
+      component._dispatchEvent("initialize", null, { emit: false });
+      component._dispatchEvent("initialize", null, { emit: false });
+
+      expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it("should stop calling a listener when its signal is aborted", () => {
+      component = new Component({ bootstrap: false, initialize: false });
+      component._bootstrap();
+      const listener = vi.fn();
       const controller = new AbortController();
       component._addInternalEventListener(
         component.getEventName("initialize"),
-        once,
-        { once: true }
-      );
-      component._addInternalEventListener(
-        component.getEventName("initialize"),
-        aborted,
-        {
-          signal: controller.signal,
-        }
-      );
-      component._addInternalEventListener(
-        component.getEventName("initialize"),
-        persistent,
-        true
+        listener,
+        { signal: controller.signal }
       );
 
       controller.abort();
+      component._dispatchEvent("initialize", null, { emit: false });
+      component._dispatchEvent("initialize", null, { emit: false });
+
+      expect(listener).not.toHaveBeenCalled();
+    });
+
+    it("should call an object's handleEvent method until disposal", () => {
+      component = new Component({ bootstrap: false, initialize: false });
+      component._bootstrap();
+      const listener = { handleEvent: vi.fn() };
+      component._addInternalEventListener(
+        component.getEventName("initialize"),
+        listener,
+        true
+      );
 
       component._dispatchEvent("initialize", null, { emit: false });
       component._dispatchEvent("initialize", null, { emit: false });
+
+      expect(listener.handleEvent).toHaveBeenCalledTimes(2);
+
       component.dispose();
       component._dispatchEvent("initialize", null, { emit: false });
 
-      expect(once).toHaveBeenCalledTimes(1);
-      expect(aborted).not.toHaveBeenCalled();
-      expect(persistent.handleEvent).toHaveBeenCalledTimes(2);
+      expect(listener.handleEvent).toHaveBeenCalledTimes(2);
       expect(component.listeners).toEqual([]);
     });
   });
 
   describe("_addEventListener", () => {
     it("should track registered listeners", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -839,7 +901,7 @@ describe("Component protected methods", () => {
     });
 
     it("should attach the callback to the element", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -857,7 +919,7 @@ describe("Component protected methods", () => {
 
   describe("_removeInternalEventListener", () => {
     it("should remove the matching internal listener and leave other listeners attached", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._bootstrap();
       const listener = { handleEvent: vi.fn() };
       const retained = vi.fn();
@@ -909,7 +971,7 @@ describe("Component protected methods", () => {
     ])(
       "should remove a listener registered with %j using %j",
       (registered, removed) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         const root = document.createElement("button");
         const listener = vi.fn();
         component._addEventListener("click", root, listener, registered);
@@ -923,7 +985,7 @@ describe("Component protected methods", () => {
     );
 
     it("should preserve listeners with a different target, type, callback, or capture", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       const root = document.createElement("button");
       const other = document.createElement("button");
       const listener = vi.fn();
@@ -944,7 +1006,7 @@ describe("Component protected methods", () => {
     });
 
     it("should remove all tracked copies of a listener regardless of once, passive, or signal", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       const root = document.createElement("button");
       const listener = vi.fn();
       const controller = new AbortController();
@@ -966,7 +1028,7 @@ describe("Component protected methods", () => {
     });
 
     it("should use the original capture value after the options object changes", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       const root = document.createElement("button");
       const listener = vi.fn();
       const options = { capture: true };
@@ -987,7 +1049,7 @@ describe("Component protected methods", () => {
     });
 
     it("should remove the listener from tracking", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1008,7 +1070,7 @@ describe("Component protected methods", () => {
     });
 
     it("should detach the callback from the element", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1030,7 +1092,7 @@ describe("Component protected methods", () => {
     });
 
     it("should tolerate an unregistered listener", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1049,7 +1111,7 @@ describe("Component protected methods", () => {
 
   describe("_removeEventListeners", () => {
     it("should remove all listeners", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1073,7 +1135,7 @@ describe("Component protected methods", () => {
     });
 
     it("should remove listeners of the requested type", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1097,7 +1159,7 @@ describe("Component protected methods", () => {
     });
 
     it("should remove listeners on the requested element", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1121,7 +1183,7 @@ describe("Component protected methods", () => {
     });
 
     it("should remove listeners matching both type and element", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1152,7 +1214,11 @@ describe("Component protected methods", () => {
     ])(
       "should store using id=%j or fall back to the key",
       (id, expectedKey) => {
-        component = new Component({ key: "key", bootstrap: false });
+        component = new Component({
+          key: "key",
+          bootstrap: false,
+          initialize: false,
+        });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -1171,7 +1237,7 @@ describe("Component protected methods", () => {
     );
 
     it("should skip storage when disabled", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1184,7 +1250,11 @@ describe("Component protected methods", () => {
     });
 
     it("should replace incompatible global storage", () => {
-      component = new Component({ key: "key", bootstrap: false });
+      component = new Component({
+        key: "key",
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1209,7 +1279,11 @@ describe("Component protected methods", () => {
     ])(
       "should remove the component using id=%j or the key",
       (id, expectedKey) => {
-        component = new Component({ key: "key", bootstrap: false });
+        component = new Component({
+          key: "key",
+          bootstrap: false,
+          initialize: false,
+        });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -1229,7 +1303,11 @@ describe("Component protected methods", () => {
     );
 
     it("should preserve other stored entries", () => {
-      component = new Component({ key: "key", bootstrap: false });
+      component = new Component({
+        key: "key",
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1244,7 +1322,11 @@ describe("Component protected methods", () => {
     });
 
     it("should skip removal when storage is disabled", () => {
-      component = new Component({ key: "key", bootstrap: false });
+      component = new Component({
+        key: "key",
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1263,7 +1345,7 @@ describe("Component protected methods", () => {
     });
 
     it("should tolerate absent global storage", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1274,7 +1356,7 @@ describe("Component protected methods", () => {
     });
 
     it("should leave incompatible global storage unchanged", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1290,7 +1372,7 @@ describe("Component protected methods", () => {
 
   describe("_requestAnimationFrame", () => {
     it("should pass the timestamp and remove a completed frame before its callback", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1318,7 +1400,7 @@ describe("Component protected methods", () => {
     });
 
     it("should replace a pending frame in the same scope without cancelling other scopes", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1338,7 +1420,7 @@ describe("Component protected methods", () => {
     });
 
     it("should preserve a new frame requested from inside a callback", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1361,7 +1443,7 @@ describe("Component protected methods", () => {
     });
 
     it("should remove frames even when their callbacks throw", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1383,12 +1465,12 @@ describe("Component protected methods", () => {
     });
 
     it("should keep frame storage separate for each component", () => {
-      first = new Component({ bootstrap: false });
+      first = new Component({ bootstrap: false, initialize: false });
       first._dom.root = document.createElement("button");
       first._rootDOMElement = "root";
       document.body.appendChild(first.rootDOMElement);
       first._bootstrap();
-      second = new Component({ bootstrap: false });
+      second = new Component({ bootstrap: false, initialize: false });
       second._dom.root = document.createElement("button");
       second._rootDOMElement = "root";
       document.body.appendChild(second.rootDOMElement);
@@ -1402,7 +1484,7 @@ describe("Component protected methods", () => {
     });
 
     it("should not store frames whose callbacks run synchronously", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -1422,7 +1504,7 @@ describe("Component protected methods", () => {
 
   describe("_cancelAnimationFrame", () => {
     it("should cancel a scoped frame and allow repeated cancellation", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);

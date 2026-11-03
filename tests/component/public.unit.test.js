@@ -20,7 +20,7 @@ afterEach(() => {
 describe("Component public methods", () => {
   describe("init", () => {
     it("should initialize through the alias", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -34,7 +34,7 @@ describe("Component public methods", () => {
 
   describe("getEventName", () => {
     it("should return a registered event name", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -46,7 +46,7 @@ describe("Component public methods", () => {
     });
 
     it("should return null for an unregistered event", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -60,7 +60,7 @@ describe("Component public methods", () => {
     it.each(["none", "mouse", "keyboard", "character"])(
       "should update the focus state for the %s event",
       (currentEvent) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -81,7 +81,7 @@ describe("Component public methods", () => {
     ])(
       "should respect DOM focus eligibility for the %s event",
       (currentEvent, expectedFocus) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -103,7 +103,7 @@ describe("Component public methods", () => {
     it.each(["none", "mouse", "keyboard", "character"])(
       "should update the focus state for the %s event",
       (currentEvent) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -124,7 +124,7 @@ describe("Component public methods", () => {
     ])(
       "should respect DOM focus eligibility for the %s event",
       (currentEvent, expectedFocus) => {
-        component = new Component({ bootstrap: false });
+        component = new Component({ bootstrap: false, initialize: false });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -144,7 +144,7 @@ describe("Component public methods", () => {
   describe("dispose", () => {
     it("should cancel pending timeouts", () => {
       vi.useFakeTimers();
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -160,7 +160,7 @@ describe("Component public methods", () => {
 
     it("should cancel active intervals", () => {
       vi.useFakeTimers();
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -175,7 +175,7 @@ describe("Component public methods", () => {
     });
 
     it("should detach event listeners", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -188,10 +188,15 @@ describe("Component public methods", () => {
 
       expect(callback).not.toHaveBeenCalled();
       expect(component.listeners).toEqual([]);
+      expect(component.isBootstrapped).toBe(false);
     });
 
     it("should remove the component from storage", () => {
-      component = new Component({ key: "dispose", bootstrap: false });
+      component = new Component({
+        key: "dispose",
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -209,7 +214,7 @@ describe("Component public methods", () => {
     });
 
     it("should cancel all pending frames on disposal", () => {
-      component = new Component({ bootstrap: false });
+      component = new Component({ bootstrap: false, initialize: false });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);

@@ -32,7 +32,11 @@ describe("ResponsiveComponent getter/setters", () => {
       (options, value, query) => {
         vi.useFakeTimers();
         const { list: oldList } = setupMatchMedia();
-        component = new ResponsiveComponent({ ...options, bootstrap: false });
+        component = new ResponsiveComponent({
+          ...options,
+          bootstrap: false,
+          initialize: false,
+        });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -67,6 +71,7 @@ describe("ResponsiveComponent getter/setters", () => {
       component = new ResponsiveComponent({
         breakpoint: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -80,6 +85,7 @@ describe("ResponsiveComponent getter/setters", () => {
       component = new ResponsiveComponent({
         breakpoint: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -93,7 +99,10 @@ describe("ResponsiveComponent getter/setters", () => {
 
     it("should wait for initialization before registering a listener", () => {
       const { matchMedia } = setupMatchMedia();
-      component = new ResponsiveComponent({ bootstrap: false });
+      component = new ResponsiveComponent({
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -110,6 +119,7 @@ describe("ResponsiveComponent getter/setters", () => {
       component = new ResponsiveComponent({
         breakpoint: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -138,6 +148,7 @@ describe("ResponsiveComponent getter/setters", () => {
       component = new ResponsiveComponent({
         breakpoint: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -161,7 +172,10 @@ describe("ResponsiveComponent getter/setters", () => {
     });
 
     it("should retain its value when assigned again", () => {
-      component = new ResponsiveComponent({ bootstrap: false });
+      component = new ResponsiveComponent({
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -180,6 +194,7 @@ describe("ResponsiveComponent getter/setters", () => {
         component = new ResponsiveComponent({
           breakpoint: "768px",
           bootstrap: false,
+          initialize: false,
         });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
@@ -212,7 +227,11 @@ describe("ResponsiveComponent getter/setters", () => {
       (options, value, query) => {
         vi.useFakeTimers();
         const { list: oldList } = setupMatchMedia();
-        component = new ResponsiveComponent({ ...options, bootstrap: false });
+        component = new ResponsiveComponent({
+          ...options,
+          bootstrap: false,
+          initialize: false,
+        });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
         document.body.appendChild(component.rootDOMElement);
@@ -247,6 +266,7 @@ describe("ResponsiveComponent getter/setters", () => {
       component = new ResponsiveComponent({
         breakpoint: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -260,6 +280,7 @@ describe("ResponsiveComponent getter/setters", () => {
       component = new ResponsiveComponent({
         breakpoint: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -275,6 +296,7 @@ describe("ResponsiveComponent getter/setters", () => {
         breakpoint: "768px",
         mediaQuery: "(min-width: 1024px)",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -285,7 +307,10 @@ describe("ResponsiveComponent getter/setters", () => {
     });
 
     it("should update an explicit query", () => {
-      component = new ResponsiveComponent({ bootstrap: false });
+      component = new ResponsiveComponent({
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -301,6 +326,7 @@ describe("ResponsiveComponent getter/setters", () => {
         breakpoint: "768px",
         mediaQuery: "(orientation: portrait)",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -313,7 +339,10 @@ describe("ResponsiveComponent getter/setters", () => {
     });
 
     it("should return an empty query when no breakpoint or query is configured", () => {
-      component = new ResponsiveComponent({ bootstrap: false });
+      component = new ResponsiveComponent({
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -324,7 +353,10 @@ describe("ResponsiveComponent getter/setters", () => {
 
     it("should wait for initialization before registering a listener", () => {
       const { matchMedia } = setupMatchMedia();
-      component = new ResponsiveComponent({ bootstrap: false });
+      component = new ResponsiveComponent({
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -341,6 +373,7 @@ describe("ResponsiveComponent getter/setters", () => {
       component = new ResponsiveComponent({
         mediaQuery: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -369,6 +402,7 @@ describe("ResponsiveComponent getter/setters", () => {
       component = new ResponsiveComponent({
         mediaQuery: "768px",
         bootstrap: false,
+        initialize: false,
       });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
@@ -392,7 +426,10 @@ describe("ResponsiveComponent getter/setters", () => {
     });
 
     it("should retain its value when assigned again", () => {
-      component = new ResponsiveComponent({ bootstrap: false });
+      component = new ResponsiveComponent({
+        bootstrap: false,
+        initialize: false,
+      });
       component._dom.root = document.createElement("button");
       component._rootDOMElement = "root";
       document.body.appendChild(component.rootDOMElement);
@@ -411,6 +448,7 @@ describe("ResponsiveComponent getter/setters", () => {
         component = new ResponsiveComponent({
           breakpoint: "768px",
           bootstrap: false,
+          initialize: false,
         });
         component._dom.root = document.createElement("button");
         component._rootDOMElement = "root";
