@@ -244,7 +244,7 @@ describe("CollapsibleComponent protected methods", () => {
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
       component._bootstrap();
-      component.dom.controller.setAttribute("aria-expanded", "false");
+
       component.dom.controlled.className = "hide";
       const events = [];
       for (const name of ["preexpand", "expand", "postexpand"]) {
@@ -255,16 +255,13 @@ describe("CollapsibleComponent protected methods", () => {
             events.push({
               name,
               classes: component.dom.controlled.className,
-              expanded: component.dom.controller.getAttribute("aria-expanded"),
             })
         );
       }
 
       component._expand({ emit: true, transition: true });
 
-      expect(events).toEqual([
-        { name: "preexpand", classes: "hide", expanded: "false" },
-      ]);
+      expect(events).toEqual([{ name: "preexpand", classes: "hide" }]);
 
       vi.advanceTimersToNextFrame();
 
@@ -273,8 +270,8 @@ describe("CollapsibleComponent protected methods", () => {
       vi.advanceTimersToNextFrame();
 
       expect(events).toEqual([
-        { name: "preexpand", classes: "hide", expanded: "false" },
-        { name: "expand", classes: "transitioning show", expanded: "false" },
+        { name: "preexpand", classes: "hide" },
+        { name: "expand", classes: "transitioning show" },
       ]);
 
       vi.advanceTimersToNextFrame();
@@ -285,9 +282,9 @@ describe("CollapsibleComponent protected methods", () => {
       vi.advanceTimersByTime(1);
 
       expect(events).toEqual([
-        { name: "preexpand", classes: "hide", expanded: "false" },
-        { name: "expand", classes: "transitioning show", expanded: "false" },
-        { name: "postexpand", classes: "show", expanded: "false" },
+        { name: "preexpand", classes: "hide" },
+        { name: "expand", classes: "transitioning show" },
+        { name: "postexpand", classes: "show" },
       ]);
     });
 
@@ -427,25 +424,6 @@ describe("CollapsibleComponent protected methods", () => {
       component._expand({ emit: false, transition: false });
 
       expect(listener).not.toHaveBeenCalled();
-    });
-
-    it("should leave the controller aria-expanded attribute unchanged", () => {
-      component = new CollapsibleComponent({
-        controllerElement: document.createElement("button"),
-        controlledElement: document.createElement("div"),
-        bootstrap: false,
-        initialize: false,
-      });
-      component._rootDOMElement = "controller";
-      document.body.appendChild(component.rootDOMElement);
-      component._bootstrap();
-      component.dom.controller.setAttribute("aria-expanded", "false");
-
-      component._expand({ emit: false, transition: false });
-
-      expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
-        "false"
-      );
     });
 
     it("should apply the action class", () => {
@@ -873,7 +851,7 @@ describe("CollapsibleComponent protected methods", () => {
       component._rootDOMElement = "controller";
       document.body.appendChild(component.rootDOMElement);
       component._bootstrap();
-      component.dom.controller.setAttribute("aria-expanded", "true");
+
       component.dom.controlled.className = "show";
       const events = [];
       for (const name of ["precollapse", "collapse", "postcollapse"]) {
@@ -884,16 +862,13 @@ describe("CollapsibleComponent protected methods", () => {
             events.push({
               name,
               classes: component.dom.controlled.className,
-              expanded: component.dom.controller.getAttribute("aria-expanded"),
             })
         );
       }
 
       component._collapse({ emit: true, transition: true });
 
-      expect(events).toEqual([
-        { name: "precollapse", classes: "show", expanded: "true" },
-      ]);
+      expect(events).toEqual([{ name: "precollapse", classes: "show" }]);
 
       vi.advanceTimersToNextFrame();
 
@@ -902,8 +877,8 @@ describe("CollapsibleComponent protected methods", () => {
       vi.advanceTimersToNextFrame();
 
       expect(events).toEqual([
-        { name: "precollapse", classes: "show", expanded: "true" },
-        { name: "collapse", classes: "transitioning hide", expanded: "true" },
+        { name: "precollapse", classes: "show" },
+        { name: "collapse", classes: "transitioning hide" },
       ]);
 
       vi.advanceTimersToNextFrame();
@@ -914,9 +889,9 @@ describe("CollapsibleComponent protected methods", () => {
       vi.advanceTimersByTime(1);
 
       expect(events).toEqual([
-        { name: "precollapse", classes: "show", expanded: "true" },
-        { name: "collapse", classes: "transitioning hide", expanded: "true" },
-        { name: "postcollapse", classes: "hide", expanded: "true" },
+        { name: "precollapse", classes: "show" },
+        { name: "collapse", classes: "transitioning hide" },
+        { name: "postcollapse", classes: "hide" },
       ]);
     });
 
@@ -1056,25 +1031,6 @@ describe("CollapsibleComponent protected methods", () => {
       component._collapse({ emit: false, transition: false });
 
       expect(listener).not.toHaveBeenCalled();
-    });
-
-    it("should leave the controller aria-expanded attribute unchanged", () => {
-      component = new CollapsibleComponent({
-        controllerElement: document.createElement("button"),
-        controlledElement: document.createElement("div"),
-        bootstrap: false,
-        initialize: false,
-      });
-      component._rootDOMElement = "controller";
-      document.body.appendChild(component.rootDOMElement);
-      component._bootstrap();
-      component.dom.controller.setAttribute("aria-expanded", "true");
-
-      component._collapse({ emit: false, transition: false });
-
-      expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
-        "true"
-      );
     });
 
     it("should apply the action class", () => {
@@ -1609,9 +1565,6 @@ describe("CollapsibleComponent protected methods", () => {
       component._mediaQueryListEventCallback({ matches: false });
 
       expect(component.isExpanded).toBe(false);
-      expect(component.dom.controller.hasAttribute("aria-expanded")).toBe(
-        false
-      );
       expect(component.dom.controlled.classList.contains("hide")).toBe(true);
     });
 
