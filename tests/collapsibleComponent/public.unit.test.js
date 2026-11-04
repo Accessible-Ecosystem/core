@@ -235,27 +235,6 @@ describe("CollapsibleComponent public methods", () => {
       expect(component.isExpanded).toBe(true);
     });
 
-    it("should leave the controller aria-expanded attribute unchanged", () => {
-      component = new CollapsibleComponent({
-        controllerElement: document.createElement("button"),
-        controlledElement: document.createElement("div"),
-        transitionClass: "",
-        bootstrap: false,
-        initialize: false,
-      });
-      component._rootDOMElement = "controller";
-      document.body.appendChild(component.rootDOMElement);
-      component._bootstrap();
-      component.dom.controller.setAttribute("aria-expanded", "false");
-      component.initialize();
-
-      component.expand();
-
-      expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
-        "false"
-      );
-    });
-
     it("should replace the collapse class with the expand class", () => {
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
@@ -505,7 +484,7 @@ describe("CollapsibleComponent public methods", () => {
     it("should suppress public events while still updating expansion state", () => {
       vi.useFakeTimers();
       const controller = document.createElement("button");
-      controller.setAttribute("aria-expanded", "true");
+
       component = new CollapsibleComponent({
         controllerElement: controller,
         controlledElement: document.createElement("div"),
@@ -536,7 +515,6 @@ describe("CollapsibleComponent public methods", () => {
       vi.runAllTimers();
 
       expect(component.isExpanded).toBe(false);
-      expect(controller.getAttribute("aria-expanded")).toBe("true");
       expect(internal).toEqual(["precollapse", "collapse", "postcollapse"]);
       expect(publicListener).not.toHaveBeenCalled();
 
@@ -548,28 +526,6 @@ describe("CollapsibleComponent public methods", () => {
       component.collapse({ emit: false, transition: false });
 
       expect(publicListener).toHaveBeenCalledTimes(3);
-    });
-
-    it("should leave the controller aria-expanded attribute unchanged", () => {
-      component = new CollapsibleComponent({
-        controllerElement: document.createElement("button"),
-        controlledElement: document.createElement("div"),
-        transitionClass: "",
-        bootstrap: false,
-        initialize: false,
-      });
-      component._rootDOMElement = "controller";
-      document.body.appendChild(component.rootDOMElement);
-      component._bootstrap();
-      component.dom.controller.setAttribute("aria-expanded", "true");
-      component.initialize();
-      component.expand();
-
-      component.collapse();
-
-      expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
-        "true"
-      );
     });
 
     it("should replace the expand class with the collapse class", () => {

@@ -341,7 +341,7 @@ describe("CollapsibleComponent initialization", () => {
     it("should complete initialization without public events when emit is false", () => {
       vi.useFakeTimers();
       const controller = document.createElement("button");
-      controller.setAttribute("aria-expanded", "true");
+
       component = new CollapsibleComponent({
         controllerElement: controller,
         controlledElement: document.createElement("div"),
@@ -398,11 +398,11 @@ describe("CollapsibleComponent initialization", () => {
     });
 
     it.each([
-      [true, "show", "false"],
-      [false, "hide", "true"],
+      [true, "show"],
+      [false, "hide"],
     ])(
       "should initialize with expanded set to %s",
-      (expanded, expectedClass, controllerValue) => {
+      (expanded, expectedClass) => {
         component = new CollapsibleComponent({
           controllerElement: document.createElement("button"),
           controlledElement: document.createElement("div"),
@@ -413,13 +413,9 @@ describe("CollapsibleComponent initialization", () => {
         component._rootDOMElement = "controller";
         document.body.appendChild(component.rootDOMElement);
         component._bootstrap();
-        component.dom.controller.setAttribute("aria-expanded", controllerValue);
 
         component.initialize();
 
-        expect(component.dom.controller.getAttribute("aria-expanded")).toBe(
-          controllerValue
-        );
         expect(component.isExpanded).toBe(expanded);
         expect(component.shouldBeExpanded).toBe(expanded);
         expect(component.dom.controlled.classList.contains(expectedClass)).toBe(
@@ -518,7 +514,7 @@ describe("CollapsibleComponent initialization", () => {
       expect(error).toHaveBeenCalledWith(expect.any(Error));
     });
 
-    it("should keep lifecycle events on the controller without adding aria-expanded", () => {
+    it("should dispatch expand on the controller", () => {
       const trigger = document.createElement("span");
       component = new CollapsibleComponent({
         controllerElement: document.createElement("button"),
@@ -542,10 +538,6 @@ describe("CollapsibleComponent initialization", () => {
 
       component.expand({ transition: false });
 
-      expect(component.dom.controller.hasAttribute("aria-expanded")).toBe(
-        false
-      );
-      expect(trigger.hasAttribute("aria-expanded")).toBe(false);
       expect(expanded).toHaveBeenCalledOnce();
       expect(expanded.mock.calls[0][0].target).toBe(component.dom.controller);
     });

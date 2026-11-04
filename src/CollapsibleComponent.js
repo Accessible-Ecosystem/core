@@ -790,7 +790,7 @@ class CollapsibleComponent extends ResponsiveComponent {
   }
 
   /**
-   * Applies the required attributes and classes for the component's expanded state.
+   * Applies the classes for the component's expanded state.
    *
    * Adds the expand class(es) to the controlled element and removes its collapse class(es).
    *
@@ -868,7 +868,7 @@ class CollapsibleComponent extends ResponsiveComponent {
   }
 
   /**
-   * Applies the required attributes and classes for the component's collapsed state.
+   * Applies the classes for the component's collapsed state.
    *
    * Adds the collapse class(es) to the controlled element and removes its expand class(es).
    *
