@@ -23,6 +23,9 @@ jobs:
           - repository: NickDJM/accessible-menu
             ref: 5.x
             test-script: test:run
+          - repository: Graupl/graupl
+            ref: 1.x
+            test-script: test:unit
 
     steps:
       - name: Checkout Core
